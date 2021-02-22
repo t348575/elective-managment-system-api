@@ -1,0 +1,36 @@
+{
+    "entryFile": "src/server.ts",
+    "noImplicitAdditionalProperties": "silently-remove-extras",
+    "spec": {
+        "specMerging": "recursive",
+        "outputDirectory": "build/src",
+        "specVersion": 3,
+        "entryFile": "src/server.ts",
+        "securityDefinitions": {
+            "oauth2": {
+                "type": "oauth2",
+                "authorizationUrl": "https://amrita-elective.tk/oauth/login",
+                "tokenUrl": "https://amrita-elective.tk/oauth/token",
+                "refreshUrl": "https://amrita-elective.tk/oauth/refresh",
+                "flow": "accessCode",
+                "scopes": {
+                    "student": "student",
+                    "teacher": "teacher",
+                    "admin": "admin"
+                }
+            },
+            "access_token": {
+                "type": "https",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    },
+    "routes": {
+        "routesDir": "src/routes",
+        "middleware": "express",
+        "iocModule": "src/ioc",
+        "authenticationModule": "src/shared/authentication-module.ts",
+        "controllerPathGlobs": ["src/routes/**/*controller.ts"]
+    }
+}

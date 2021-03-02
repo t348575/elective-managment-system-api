@@ -1,1 +1,1 @@
-cp -Rf /home/ubuntu/resources /var/lib/jenkins/workspace/elective-managment-system-api/build
+cp -Rf /home/ubuntu/ /var/lib/jenkins/workspace/elective-managment-system-api/

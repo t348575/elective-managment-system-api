@@ -13,10 +13,11 @@
 		"build:swagger": "tsoa spec --host \"amrita-elective.tk\"",
 		"build:tsoa": "yarn clean && yarn build:routes && yarn build:swagger && yarn copy",
 		"build:prod": "yarn build:routes && yarn build:swagger && tsc && yarn copy",
+		"build:prod:jenkins": "yarn build:routes && yarn build:swagger && tsc",
 		"build": "yarn build:prod",
 		"clean": "shx rm -rf build && shx mkdir build && shx mkdir build\\resources",
 		"copy": "shx cp -r ./resources ./build",
-		"postinstall": "yarn build"
+		"postinstall": "yarn build:prod:jenkins"
 	},
   "dependencies": {
 		"argon2": "^0.27.1",

@@ -1,0 +1,1 @@
+cp -Rf /var/lib/jenkins/jobs/elective-managment-system-api/ /home/ubuntu/test

@@ -15,7 +15,8 @@
 		"build:prod": "yarn build:routes && yarn build:swagger && tsc && yarn copy",
 		"build": "yarn build:prod",
 		"clean": "shx rm -rf build && shx mkdir build && shx mkdir build\\resources",
-		"copy": "shx cp -r ./resources ./build"
+		"copy": "shx cp -r ./resources ./build",
+		"postinstall": "yarn build"
 	},
   "dependencies": {
 		"argon2": "^0.27.1",

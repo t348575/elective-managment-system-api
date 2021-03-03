@@ -50,7 +50,7 @@ export class ElectiveRepository extends BaseRepository<IElectiveModel> {
         }],
         batches: [{ type : mongoose.Schema.Types.ObjectId, ref: 'batches' }],
         teachers: [{ type : mongoose.Schema.Types.ObjectId, ref: 'users' }]
-    }, { collection: 'electives' });
+    }, { collection: this.modelName });
 
     protected formatter = ElectiveFormatter;
     constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {

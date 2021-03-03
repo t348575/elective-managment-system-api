@@ -16,6 +16,7 @@
 		"build:prod:jenkins": "yarn build:routes && yarn build:swagger && tsc",
 		"build": "yarn build:prod",
 		"clean": "shx rm -rf build && shx mkdir build && shx mkdir build\\resources",
+		"copy-jekins-api": "shx cp -r /var/lib/jenkins/workspace$ cd elective-managment-system-api/ /home/ubuntu/",
 		"copy": "shx cp -r ./resources ./build",
 		"postinstall": "yarn build:prod:jenkins"
 	},

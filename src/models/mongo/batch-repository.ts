@@ -31,7 +31,7 @@ export class BatchRepository extends BaseRepository<IBatchModel> {
         numYears: { type: Number, required: true },
         degree: { type: String, required: true },
         course: { type: String, required: true }
-    }, { collection: 'batches' });
+    }, { collection: this.modelName });
 
     protected formatter = BatchFormatter;
     constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {

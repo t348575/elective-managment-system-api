@@ -10,7 +10,5 @@ export class MongoConnector {
 	constructor() {
 		Logger.log(`connecting to ${constants.environment} MongoDb`);
 		this.db = mongoose.createConnection(this.connectionString, {useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: true});
-
-		console.log('here');
 	}
 }

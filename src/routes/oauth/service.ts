@@ -20,6 +20,7 @@ export class AuthService extends BaseService <IAuthTokenRequest> {
 		@inject(RedisConnector) protected redis: RedisConnector
 	) {
 		super();
+		console.log('here');
 	}
 	authorize(username: string, password: string, code_challenge: string, state: string, redirectUri: string, clientId: string, scope: scopes, response: ExResponse): Promise<null> {
 		return new Promise<null>((resolve, reject) => {

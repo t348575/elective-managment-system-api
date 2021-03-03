@@ -18,6 +18,7 @@
 		"clean": "shx rm -rf build && shx mkdir build && shx mkdir build\\resources",
 		"copy-jekins-api": "shx cp -r /var/lib/jenkins/workspace$ cd elective-managment-system-api/ /home/ubuntu/",
 		"copy": "shx cp -r ./resources ./build",
+		"copy-server": "shx cp -r /home/ubuntu/resources /server/build",
 		"postinstall": "yarn build:prod:jenkins"
 	},
   "dependencies": {

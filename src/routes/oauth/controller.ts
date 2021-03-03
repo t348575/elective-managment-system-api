@@ -7,15 +7,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {
 	jwtToken,
-	logoutToken,
 	refreshToken,
 	scopeArray,
 	scopes,
-	tokenBodyType,
-	tokenResponse
+	tokenBodyType
 } from '../../models/types';
 import {OAuthError} from '../../shared/error-handler';
-import * as qs from 'querystring';
 
 type acceptedChallengeMethods = 'S256';
 type clientIds = 'api' | 'site';

@@ -33,3 +33,5 @@ export type jwtToken = {
 	scope: scopes,
 	sub: jwtSubjects
 }
+
+export type electiveAttributes = {key: string; value: string;}[];

@@ -19,6 +19,23 @@ const models: TsoaRoute.Models = {
         "type": {"dataType":"string","validators":{"minLength":{"value":12},"maxLength":{"value":24}}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IBatchModel": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string"},
+            "year": {"dataType":"double","required":true},
+            "numYears": {"dataType":"double","required":true},
+            "degree": {"dataType":"string","required":true},
+            "course": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "electiveAttributes": {
+        "dataType": "refAlias",
+        "type": {"dataType":"array","array":{"dataType":"nestedObjectLiteral","nestedProperties":{"value":{"dataType":"string","required":true},"key":{"dataType":"string","required":true}}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IUserModel": {
         "dataType": "refObject",
         "properties": {
@@ -26,6 +43,25 @@ const models: TsoaRoute.Models = {
             "name": {"dataType":"string","required":true},
             "username": {"dataType":"string","required":true},
             "password": {"dataType":"string","required":true},
+            "role": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["admin"]},{"dataType":"enum","enums":["teacher"]},{"dataType":"enum","enums":["student"]}],"required":true},
+            "batch": {"ref":"IBatchModel","required":true},
+            "electives": {"dataType":"array","array":{"ref":"IElectiveModel"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IElectiveModel": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string"},
+            "name": {"dataType":"string","required":true},
+            "description": {"dataType":"string","required":true},
+            "courseCode": {"dataType":"string","required":true},
+            "version": {"dataType":"double","required":true},
+            "strength": {"dataType":"double","required":true},
+            "attributes": {"ref":"electiveAttributes","required":true},
+            "batches": {"dataType":"array","array":{"ref":"IBatchModel"},"required":true},
+            "teachers": {"dataType":"array","array":{"ref":"IUserModel"},"required":true},
         },
         "additionalProperties": false,
     },

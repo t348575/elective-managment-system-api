@@ -16,7 +16,6 @@
 		"build:prod:jenkins": "yarn build:routes && yarn build:swagger && tsc",
 		"build": "yarn build:prod",
 		"clean": "shx rm -rf build && shx mkdir build && shx mkdir build\\resources",
-		"copy-jekins-api": "shx cp -r /var/lib/jenkins/workspace/elective-managment-system-api/ /server",
 		"copy-flutter": "shx cp -r /var/lib/jenkins/workspace/elective_management_system/build/web/. /server/resources/public",
 		"copy": "shx cp -r ./resources ./build",
 		"copy-server": "shx cp -r /server/resources /server/build",

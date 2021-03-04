@@ -1,1 +1,1 @@
-cp -Rf /var/lib/jenkins/workspace/elective-managment-system-api/ /server
+cp -Rf /var/lib/jenkins/workspace/elective-managment-system-api/. /server/

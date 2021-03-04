@@ -3,6 +3,7 @@ import { inject } from 'inversify';
 import {IUserModel, UserFormatter, UserRepository} from '../../models/mongo/user-repository';
 import {BaseService} from '../../models/shared/base-service';
 import mongoose from 'mongoose';
+import {scopes} from '../../models/types';
 
 @ProvideSingleton(UsersService)
 export class UsersService extends BaseService<IUserModel> {
@@ -13,8 +14,8 @@ export class UsersService extends BaseService<IUserModel> {
 		super();
 	}
 
-	public async get(userId: string) {
-		return this.repository.getById(userId);
+	public async basic(userId: string, role: scopes) {
+		return this.repository.getPopulated(userId, role);
 	}
 
 	public async create(userCreationParams: IUserModel): Promise<IUserModel> {

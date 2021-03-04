@@ -7,7 +7,7 @@ export class RedisConnector {
 	public db: redis.RedisClient;
 	constructor() {
 		Logger.log(`connecting to ${constants.environment} Redis`);
-		this.db = redis.createClient({ auth_pass: constants.redisPassword });
+		this.db = redis.createClient({ auth_pass: constants.redisPassword, host: 'amrita-elective.tk' });
 	}
 	setex(key: string, time: number, value: string): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {

@@ -9,13 +9,17 @@ import {
 	SuccessResponse,
 	Security,
 	Response,
+	Request,
 	Tags
 } from 'tsoa';
+import express, {Request as ExRequest, Response as ExResponse} from 'express';
 import {UsersService} from './service';
 import {ProvideSingleton} from '../../shared/provide-singleton';
 import {inject} from 'inversify';
-import {id} from '../../models/types';
-import {IUserModel} from '../../models/mongo/user-repository';
+import {id, jwtToken, scopeArray} from '../../models/types';
+import {remove} from '../../util/base-formatter';
+import {getSafeUserOmit, IUserModel, SafeUser} from '../../models/mongo/user-repository';
+
 
 @Tags('users')
 @Route('users')
@@ -26,21 +30,23 @@ export class UsersController extends Controller {
 		super();
 	}
 
-	/**
-	 * User related endpoints, such as get user information etc.
-	 * Supply the unique user ID.
-	 */
-	@Get('{userId}')
-	public getUser(
-		@Path() userId: id
+	@Get('basic')
+	@Security('jwt', scopeArray)
+	public async basic(
+		@Request() request: ExRequest
 	) {
-		return this.service.get(userId);
+		// @ts-ignore
+		const jwtRefresh = request.accessToken as jwtToken;
+		return remove<IUserModel, SafeUser>(await this.service.basic(jwtRefresh.id, jwtRefresh.scope), getSafeUserOmit(jwtRefresh.scope));
 	}
 
-	@Post()
-	public addUser(
-		@Body() requestBody: IUserModel
-	): Promise<IUserModel> {
-		return this.service.create(requestBody);
+	@Get('scope')
+	@Security('jwt', scopeArray)
+	public getScope(
+		@Request() request: ExRequest
+	) {
+		// @ts-ignore
+		const jwtRefresh = request.accessToken as jwtToken;
+		return jwtRefresh.scope;
 	}
 }

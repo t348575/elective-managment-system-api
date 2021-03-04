@@ -1,21 +1,25 @@
 import {ProvideSingleton} from '../../shared/provide-singleton';
 import {inject} from 'inversify';
 import {MongoConnector} from '../../shared/mongo-connector';
-import {Schema} from 'mongoose';
+import {Document, Schema} from 'mongoose';
 import {BaseRepository} from '../shared/base-repository';
 import {BaseFormatter} from '../../util/base-formatter';
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import {IBatchModel} from "./batch-repository";
 import {IElectiveModel} from "./elective-repository";
+import {scopes} from '../types';
+import {ApiError} from '../../shared/error-handler';
+import constants from '../../constants';
 
 export interface IUserModel {
 	id?: string;
 	name: string;
 	username: string;
 	password: string;
+	rollNo ?: string;
 	role: 'admin' | 'teacher' | 'student';
-	batch: IBatchModel;
-	electives: IElectiveModel[];
+	batch ?: IBatchModel;
+	electives ?: IElectiveModel[];
 }
 
 export class UserFormatter extends BaseFormatter implements IUserModel {
@@ -23,12 +27,41 @@ export class UserFormatter extends BaseFormatter implements IUserModel {
 	username: string;
 	password: string;
 	role: 'admin' | 'teacher' | 'student';
-	batch: IBatchModel;
-	electives: IElectiveModel[];
+	rollNo ?: string;
+	batch ?: IBatchModel;
+	electives ?: IElectiveModel[];
 	id: string;
 	constructor(args: any) {
 		super();
 		this.format(args);
+	}
+}
+
+export interface SafeUser {
+	name: string;
+	username: string;
+	role: 'admin' | 'teacher' | 'student';
+	rollNo ?: string;
+	batch ?: IBatchModel;
+	electives ?: IElectiveModel[];
+	id: string;
+}
+
+const safeAdminRemover = ['password', 'electives'];
+const safeTeacherRemover = ['password'];
+const safeStudentRemover = ['password'];
+
+export function getSafeUserOmit(role: scopes) {
+	switch (role) {
+		case 'teacher': {
+			return safeTeacherRemover;
+		}
+		case 'student': {
+			return safeStudentRemover;
+		}
+		case 'admin': {
+			return safeAdminRemover
+		}
 	}
 }
 
@@ -49,5 +82,23 @@ export class UserRepository extends BaseRepository<IUserModel> {
 	constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
 		super();
 		super.init();
+	}
+
+	public async getPopulated(id: string, role: scopes) {
+		switch (role) {
+			case 'admin': {
+				// @ts-ignore
+				const document: Document = await this.documentModel.findOne({ _id: mongoose.Types.ObjectId(id) });
+				if (!document) throw new ApiError(constants.errorTypes.notFound);
+				return new this.formatter(document);
+			}
+			case 'teacher':
+			case 'student': {
+				// @ts-ignore
+				const document: Document = await this.documentModel.findOne({ _id: mongoose.Types.ObjectId(id) }).populate('batches').populate('electives');
+				if (!document) throw new ApiError(constants.errorTypes.notFound);
+				return new this.formatter(document);
+			}
+		}
 	}
 }

@@ -6,7 +6,16 @@ export default {
 	mongoConnectionString: 'mongodb://admin:bj9kSX99VWwwPw8@amrita-elective.tk:27017/amrita-elective?authSource=admin&readPreference=primary&appname=api&ssl=false',
 	redisPassword: '960c3dac4fa81b4204779fd16ad7c954f95942876b9c4fb1a255667a9dbe389d',
 	jwtExpiry: {
-		oneTimeAuthCodeExpiry: 60
+		oneTimeAuthCodeExpiry: 60,
+		refreshExpiry: 900,
+		accessExpiry: 900,
+		idExpiry: 86400
+	},
+	mailAccess: {
+		host: '',
+		username: '',
+		password: '',
+		name: ''
 	},
 	errorTypes: {
 		db: { statusCode: 500, name: 'Internal Server Error', message: 'database error' },

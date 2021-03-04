@@ -18,3 +18,12 @@ export abstract class BaseFormatter {
 		}
 	}
 }
+
+export function remove<Entity, SafeEntity>(args: any, omit: string[]): SafeEntity {
+	for (const v of Object.keys(args)) {
+		if (omit.indexOf(v) > -1) {
+			delete args[v];
+		}
+	}
+	return args as SafeEntity;
+}

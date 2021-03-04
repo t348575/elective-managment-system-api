@@ -7,8 +7,8 @@ import constants from './constants';
 const config: ConfigModel = JSON.parse(fs.readFileSync(path.join(__dirname, './../resources/config.json')).toString());
 const port = config.port || 8080;
 
-constants.privateKey = fs.readFileSync(path.resolve(config.privateKey)).toString();
-constants.publicKey = fs.readFileSync(path.resolve(config.publicKey)).toString();
+setConstants();
+
 const server = https.createServer({
 	// @ts-ignore
 	key: constants.privateKey,
@@ -28,3 +28,15 @@ function shutdown() {
 server.listen(port, () =>
 	console.log(`App listening at ${config.serverAddress}:${port}`)
 );
+
+function setConstants() {
+
+	constants.privateKey = fs.readFileSync(path.resolve(config.privateKey)).toString();
+	constants.publicKey = fs.readFileSync(path.resolve(config.publicKey)).toString();
+
+	constants.mailAccess.host = config.mailHost;
+	constants.mailAccess.username = config.mailUser;
+	constants.mailAccess.password = config.mailPassword;
+	constants.mailAccess.name = config.mailName;
+
+}

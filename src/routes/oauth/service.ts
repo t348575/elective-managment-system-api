@@ -154,9 +154,9 @@ export class AuthService extends BaseService <IAuthTokenRequest> {
 			this.repository.getById(id)
 			.then(async (user) => {
 				try {
-					const idToken = await getJWT(user, state, 86400, 'idToken', scope);
-					const accessToken = await getJWT(user, state, 900, 'accessToken', scope);
-					const refreshToken = await getJWT(user, state, 960, 'refreshToken', scope);
+					const idToken = await getJWT(user, state, constants.jwtExpiry.idExpiry, 'idToken', scope);
+					const accessToken = await getJWT(user, state, constants.jwtExpiry.accessExpiry, 'accessToken', scope);
+					const refreshToken = await getJWT(user, state, constants.jwtExpiry.refreshExpiry, 'refreshToken', scope);
 					await this.redis.setex(`idToken::${id}::${idToken.expiry}`, idToken.expiry, idToken.jwt);
 					await this.redis.setex(`accessToken::${id}::${accessToken.expiry}`, accessToken.expiry, accessToken.jwt);
 					await this.redis.setex(`refreshToken::${id}::${refreshToken.expiry}`, refreshToken.expiry, refreshToken.jwt);
@@ -174,8 +174,8 @@ export class AuthService extends BaseService <IAuthTokenRequest> {
 			this.repository.getById(jwtAccess.id)
 			.then(async (user) => {
 				try {
-					const accessToken = await getJWT(user, jwtAccess.stateSlice, 900, 'accessToken', jwtAccess.scope);
-					const refreshToken = await getJWT(user, jwtAccess.stateSlice, 960, 'refreshToken', jwtAccess.scope);
+					const accessToken = await getJWT(user, jwtAccess.stateSlice, constants.jwtExpiry.accessExpiry, 'accessToken', jwtAccess.scope);
+					const refreshToken = await getJWT(user, jwtAccess.stateSlice, constants.jwtExpiry.refreshExpiry, 'refreshToken', jwtAccess.scope);
 					await this.redis.remove(`accessToken::${jwtAccess.id}::${jwtAccess.exp}`);
 					await this.redis.remove(`refreshToken::${jwtAccess.id}::${jwtRefresh.exp}`);
 					await this.redis.setex(`accessToken::${jwtAccess.id}::${accessToken.expiry}`, accessToken.expiry, accessToken.jwt);

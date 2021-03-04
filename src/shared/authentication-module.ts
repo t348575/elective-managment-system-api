@@ -34,6 +34,8 @@ export function expressAuthentication(
 							}
 						}
 						if (await redis.exists(`accessToken::${accessToken.id}::${accessToken.exp}`)) {
+							// @ts-ignore
+							req.accessToken = accessToken;
 							if (securityName === 'jwtRefresh') {
 								if (req.body.hasOwnProperty('refresh_token') && typeof req.body.refresh_token === 'string' && req.body.refresh_token.length > 0) {
 									decipherJWT(req.body.refresh_token, 'refreshToken')

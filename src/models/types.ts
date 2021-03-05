@@ -11,6 +11,10 @@ export type scopes = 'teacher' | 'admin' | 'student';
 
 export const scopeArray = ['teacher', 'admin', 'student'];
 
+export const adminOnly = ['admin'];
+
+export const teacherOrStudent = ['student', 'teacher'];
+
 export type OAuthErrorTypes = 'invalid_request' | 'unauthorized_client' | 'access_denied' | 'unsupported_response_type' | 'invalid_scope' | 'server_error' | 'temporarily_unavailable';
 
 export type tokenResponse = { id_token: string, access_token: string, refresh_token: string };
@@ -23,8 +27,6 @@ export type refreshTokenResponse = { refresh_token: string, access_token: string
 
 export type refreshToken = {refresh_token: string};
 
-export type logoutToken = {refresh_token: string, id_token: string}
-
 export type jwtToken = {
 	exp: number,
 	iat: number,
@@ -35,3 +37,8 @@ export type jwtToken = {
 }
 
 export type electiveAttributes = {key: string; value: string;}[];
+
+export interface DefaultSuccess {
+	status: true;
+	message?: string;
+}

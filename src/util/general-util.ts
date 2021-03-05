@@ -101,3 +101,23 @@ export function urlSafe(str: string) {
 	str = str.replace(/=/g, '');
 	return str;
 }
+
+export function checkString(body: any, prop: string, limit ?: string[], nonZero = true): boolean {
+	try {
+		if (body.hasOwnProperty(prop) && typeof body[prop] === 'string') {
+			if (nonZero) {
+				if (limit) {
+					return body[prop].length > 0 && limit.indexOf(body[prop]) > -1;
+				}
+				else {
+					return body[prop].length > 0;
+				}
+			} else {
+				return true;
+			}
+		}
+		return false;
+	} catch (e) {
+		return false;
+	}
+}

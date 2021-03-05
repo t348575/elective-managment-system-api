@@ -7,7 +7,7 @@ import * as path from 'path';
 import morgan from 'morgan';
 import { RegisterRoutes } from './routes/routes';
 import {Logger} from './shared/logger';
-import {ApiError, OAuthError} from './shared/error-handler';
+import {ApiError, ErrorHandler, OAuthError} from './shared/error-handler';
 import cors from 'cors';
 import * as fs from 'fs';
 export const app = express();
@@ -23,7 +23,8 @@ app.use(morgan(function (tokens, req, res) {
 	].join(' ')
 }))
 app.use(bodyParser.urlencoded({
-	extended: true
+	extended: true,
+	limit: '55mb'
 }));
 app.use(bodyParser.json());
 
@@ -53,7 +54,6 @@ app.use(function errorHandler(
 	res: ExResponse,
 	next: NextFunction
 ): ExResponse | void {
-	Logger.error(err);
 	if (err instanceof ValidateError) {
 		if (req.path === '/oauth/authorize') {
 			return res.status(400).json({
@@ -69,7 +69,7 @@ app.use(function errorHandler(
 		}
 	}
 	if (err instanceof ApiError) {
-		return res.status(err.statusCode).json({...err});
+		return ErrorHandler.handleError(err, req, res, next);
 	}
 	if (err instanceof OAuthError) {
 		return res.status(err.statusCode).json({

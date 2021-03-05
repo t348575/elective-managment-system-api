@@ -65,6 +65,12 @@ export function getSafeUserOmit(role: scopes) {
 	}
 }
 
+export type UploadUser = {
+	admin: ''
+} | {
+
+}
+
 @ProvideSingleton(UserRepository)
 export class UserRepository extends BaseRepository<IUserModel> {
 	protected modelName: string = 'users';

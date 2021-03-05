@@ -38,3 +38,9 @@ export class BatchRepository extends BaseRepository<IBatchModel> {
         super();
     }
 }
+
+const batchRegex = /^\d{4}-\d{4}-\d-[a-z]{4,5}-[a-z]{3,4}$/gm
+
+export function isBatchString(str: string): boolean {
+    return batchRegex.test(str);
+}

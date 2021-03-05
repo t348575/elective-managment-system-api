@@ -24,6 +24,25 @@
                 "scheme": "bearer",
                 "bearerFormat": "JWT"
             }
+        },
+        "spec": {
+            "paths": {
+                "/users/create-csv": {
+                    "post": {
+                        "consumes": [
+                            "multipart/form-data"
+                        ],
+                        "parameters": [
+                            {
+                                "in": "formData",
+                                "name": "file",
+                                "required": true,
+                                "type": "file"
+                            }
+                        ]
+                    }
+                }
+            }
         }
     },
     "routes": {

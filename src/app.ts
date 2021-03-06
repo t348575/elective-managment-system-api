@@ -65,7 +65,13 @@ app.use(function errorHandler(
 	res: ExResponse,
 	next: NextFunction
 ): ExResponse | void {
-	console.log(err);
+	Logger.error(err);
+	if (err instanceof OAuthError) {
+		return res.status(err.statusCode).json({
+			error: err.name,
+			error_description: err?.message
+		});
+	}
 	if (err instanceof ValidateError) {
 		if (req.path === '/oauth/authorize') {
 			return res.status(400).json({
@@ -82,12 +88,6 @@ app.use(function errorHandler(
 	}
 	if (err instanceof ApiError) {
 		return ErrorHandler.handleError(err, req, res, next);
-	}
-	if (err instanceof OAuthError) {
-		return res.status(err.statusCode).json({
-			error: err.name,
-			error_description: err?.message
-		});
 	}
 	return res.status(500).json(err);
 });

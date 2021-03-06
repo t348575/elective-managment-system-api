@@ -28,10 +28,8 @@ export function expressAuthentication(
 				decipherJWT(token, 'accessToken')
 				.then(async (accessToken) => {
 					try {
-						for (const scope of scopes) {
-							if (!accessToken.scope.includes(scope)) {
-								reject(new OAuthError({ name: 'invalid_scope', error_description: 'JWT does not contain required scope'}));
-							}
+						if (scopes.indexOf(accessToken.scope) === -1) {
+							reject(new OAuthError({ name: 'invalid_scope', error_description: 'JWT does not contain required scope'}));
 						}
 						if (await redis.exists(`accessToken::${accessToken.id}::${accessToken.exp}`)) {
 							if (securityName === 'jwtRefresh') {
@@ -39,10 +37,8 @@ export function expressAuthentication(
 									decipherJWT(req.body.refresh_token, 'refreshToken')
 									.then(async (refreshToken) => {
 										try {
-											for (const scope of scopes) {
-												if (!refreshToken.scope.includes(scope)) {
-													reject(new OAuthError({ name: 'invalid_scope', error_description: 'JWT does not contain required scope'}));
-												}
+											if (scopes.indexOf(refreshToken.scope) === -1) {
+												reject(new OAuthError({ name: 'invalid_scope', error_description: 'JWT does not contain required scope'}));
 											}
 											if (await redis.exists(`refreshToken::${refreshToken.id}::${refreshToken.exp}`)) {
 												// @ts-ignore
@@ -70,10 +66,8 @@ export function expressAuthentication(
 									decipherJWT(req.query.id_token, 'idToken')
 										.then(async (idToken) => {
 											try {
-												for (const scope of scopes) {
-													if (!idToken.scope.includes(scope)) {
-														reject(new OAuthError({ name: 'invalid_scope', error_description: 'JWT does not contain required scope'}));
-													}
+												if (scopes.indexOf(idToken.scope) === -1) {
+													reject(new OAuthError({ name: 'invalid_scope', error_description: 'JWT does not contain required scope'}));
 												}
 											} catch (err) {
 												return reject(new OAuthError({ name: 'server_error', error_description: err.message }));
@@ -83,10 +77,8 @@ export function expressAuthentication(
 												decipherJWT(req.query.refresh_token, 'refreshToken')
 													.then(async (refreshToken) => {
 														try {
-															for (const scope of scopes) {
-																if (!refreshToken.scope.includes(scope)) {
-																	reject(new OAuthError({ name: 'invalid_scope', error_description: 'JWT does not contain required scope'}));
-																}
+															if (scopes.indexOf(refreshToken.scope) === -1) {
+																reject(new OAuthError({ name: 'invalid_scope', error_description: 'JWT does not contain required scope'}));
 															}
 															if (await redis.exists(`refreshToken::${refreshToken.id}::${refreshToken.exp}`)) {
 																// @ts-ignore

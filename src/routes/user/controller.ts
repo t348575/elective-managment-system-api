@@ -54,8 +54,8 @@ export class UsersController extends Controller {
 		@Request() request: ExRequest
 	) {
 		// @ts-ignore
-		const jwtRefresh = request.user as jwtToken;
-		return remove<IUserModel, SafeUser>(await this.service.basic(jwtRefresh.id, jwtRefresh.scope), getSafeUserOmit(jwtRefresh.scope));
+		const accessToken = request.user as jwtToken;
+		return remove<IUserModel, SafeUser>(await this.service.basic(accessToken.id, accessToken.scope), getSafeUserOmit(accessToken.scope));
 	}
 
 	@Get('scope')
@@ -64,18 +64,18 @@ export class UsersController extends Controller {
 		@Request() request: ExRequest
 	) {
 		// @ts-ignore
-		const jwtRefresh = request.user as jwtToken;
-		return jwtRefresh.scope;
+		const accessToken = request.user as jwtToken;
+		return accessToken.scope;
 	}
 
-	@Post('create')
+	/*@Post('create')
 	@Security('jwt', adminOnly)
 	public async create(
 		@Request() request: ExRequest
-	) {
+	): Promise<CreateUserResponse> {
 		// @ts-ignore
-		const jwtRefresh = request.user as jwtToken;
-	}
+		const accessToken = request.user as jwtToken;
+	}*/
 
 	@Post('create-csv')
 	@Security('jwt', adminOnly)

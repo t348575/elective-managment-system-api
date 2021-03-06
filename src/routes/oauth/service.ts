@@ -25,47 +25,52 @@ export class AuthService extends BaseService <IAuthTokenRequest> {
 		return new Promise<null>((resolve, reject) => {
 			this.repository.findOne({ username: username })
 			.then(user => {
-				argon2.verify(user.password, password)
-				.then(passwordState => {
-					try {
-						if (passwordState) {
-							getJWT(user, state.slice(0, 8), constants.jwtExpiry.oneTimeAuthCodeExpiry, 'oneTimeAuthCode', scope)
-							.then(jwt => {
-								this.redis.setex(`oneTimeAuthCode::${user.id}::${state.slice(0, 8)}`, jwt.expiry, `${jwt.jwt}::${urlSafe(code_challenge)}::${urlSafe(redirectUri)}`)
-								.then(status => {
-									if (status) {
-										if (clientId === 'site') {
-											response.status(200);
-											response.json({code:jwt.jwt});
-											resolve(null);
-										}
-										else {
-											response.redirect(redirectUri + '?' + qs.stringify({code: jwt.jwt}));
-											resolve(null);
-										}
-									}
-									else {
-										return reject(new OAuthError({ name: 'access_denied', error_description: 'Username or password incorrect' }));
-									}
-								})
-								.catch(err => {
-									reject(new OAuthError({ name: 'server_error', error_description: err?.message }))
-								});
-							})
-							.catch(err => {
-								return reject(new OAuthError({ name: 'server_error', error_description: err?.message }));
-							});
+				if (user.role === scope) {
+					argon2.verify(user.password, password)
+					.then(passwordState => {
+						try {
+							if (passwordState) {
+								getJWT(user, state.slice(0, 8), constants.jwtExpiry.oneTimeAuthCodeExpiry, 'oneTimeAuthCode', scope)
+									.then(jwt => {
+										this.redis.setex(`oneTimeAuthCode::${user.id}::${state.slice(0, 8)}`, jwt.expiry, `${jwt.jwt}::${urlSafe(code_challenge)}::${urlSafe(redirectUri)}`)
+											.then(status => {
+												if (status) {
+													if (clientId === 'site') {
+														response.status(200);
+														response.json({code:jwt.jwt});
+														resolve(null);
+													}
+													else {
+														response.redirect(redirectUri + '?' + qs.stringify({code: jwt.jwt}));
+														resolve(null);
+													}
+												}
+												else {
+													return reject(new OAuthError({ name: 'access_denied', error_description: 'Username or password incorrect' }));
+												}
+											})
+											.catch(err => {
+												reject(new OAuthError({ name: 'server_error', error_description: err?.message }))
+											});
+									})
+									.catch(err => {
+										return reject(new OAuthError({ name: 'server_error', error_description: err?.message }));
+									});
+							}
+							else {
+								return reject(new OAuthError({ name: 'access_denied', error_description: 'Username or password incorrect' }));
+							}
+						} catch (err) {
+							reject(new OAuthError({ name: 'server_error', error_description: err?.message }));
 						}
-						else {
-							return reject(new OAuthError({ name: 'access_denied', error_description: 'Username or password incorrect' }));
-						}
-					} catch (err) {
-						reject(new OAuthError({ name: 'server_error', error_description: err?.message }));
-					}
-				})
-				.catch(err => {
-					return reject(new OAuthError({ name: 'access_denied', error_description: 'User does not exist' }));
-				});
+					})
+					.catch(err => {
+						return reject(new OAuthError({ name: 'access_denied', error_description: 'User does not exist' }));
+					});
+				}
+				else {
+					return reject(new OAuthError({ name: 'invalid_scope', error_description: 'Login id does not have access to requested scope' }));
+				}
 			})
 			.catch(err => {
 				if (err.statusCode === 404) {
@@ -82,32 +87,37 @@ export class AuthService extends BaseService <IAuthTokenRequest> {
 			.then(decodedIdToken => {
 				this.repository.getById(decodedIdToken.id)
 				.then(user => {
-					getJWT(user, state.slice(0, 8), constants.jwtExpiry.oneTimeAuthCodeExpiry, 'oneTimeAuthCode', scope)
-					.then(jwt => {
-						this.redis.setex(`oneTimeAuthCode::${user.id}::${state.slice(0, 8)}`, jwt.expiry, `${jwt.jwt}::${urlSafe(code_challenge)}::${urlSafe(redirectUri)}`)
-						.then(status => {
-							if (status) {
-								if (clientId === 'site') {
-									response.status(200);
-									response.json({code:jwt.jwt});
-									resolve(null);
-								}
-								else {
-									response.redirect(redirectUri + '?' + qs.stringify({code: jwt.jwt}));
-									resolve(null);
-								}
-							}
-							else {
-								return reject(new OAuthError({ name: 'access_denied', error_description: 'User does not exist' }));
-							}
-						})
-						.catch(err => {
-							reject(new OAuthError({ name: 'server_error', error_description: err?.message }))
-						});
-					})
-					.catch(err => {
-						return reject(new OAuthError({ name: 'server_error', error_description: err?.message }));
-					});
+					if (user.role === scope) {
+						getJWT(user, state.slice(0, 8), constants.jwtExpiry.oneTimeAuthCodeExpiry, 'oneTimeAuthCode', scope)
+							.then(jwt => {
+								this.redis.setex(`oneTimeAuthCode::${user.id}::${state.slice(0, 8)}`, jwt.expiry, `${jwt.jwt}::${urlSafe(code_challenge)}::${urlSafe(redirectUri)}`)
+									.then(status => {
+										if (status) {
+											if (clientId === 'site') {
+												response.status(200);
+												response.json({code:jwt.jwt});
+												resolve(null);
+											}
+											else {
+												response.redirect(redirectUri + '?' + qs.stringify({code: jwt.jwt}));
+												resolve(null);
+											}
+										}
+										else {
+											return reject(new OAuthError({ name: 'access_denied', error_description: 'User does not exist' }));
+										}
+									})
+									.catch(err => {
+										reject(new OAuthError({ name: 'server_error', error_description: err?.message }))
+									});
+							})
+							.catch(err => {
+								return reject(new OAuthError({ name: 'server_error', error_description: err?.message }));
+							});
+					}
+					else {
+						return reject(new OAuthError({ name: 'invalid_scope', error_description: 'Login id does not have access to requested scope' }));
+					}
 				})
 				.catch(err => reject(new OAuthError({ name: 'server_error', error_description: err.message })));
 			})

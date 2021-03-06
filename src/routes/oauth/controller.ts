@@ -8,7 +8,6 @@ import * as path from 'path';
 import {
 	jwtToken,
 	refreshToken,
-	scopeArray,
 	scopes,
 	tokenBodyType
 } from '../../models/types';
@@ -17,6 +16,12 @@ import {OAuthError} from '../../shared/error-handler';
 type acceptedChallengeMethods = 'S256';
 type clientIds = 'api' | 'site';
 type responseTypes = 'code'
+
+const scopeArray: string[] = ['teacher', 'admin', 'student'];
+
+const adminOnly: string[] = ['admin'];
+
+const teacherOrStudent: string[] = ['student', 'teacher'];
 
 @Tags('oauth')
 @Route('oauth')

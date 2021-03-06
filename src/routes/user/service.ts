@@ -3,7 +3,7 @@ import {inject, injectable} from 'inversify';
 import {IUserModel, UserFormatter, UserRepository} from '../../models/mongo/user-repository';
 import {BaseService} from '../../models/shared/base-service';
 import mongoose from 'mongoose';
-import {scopes, teacherOrStudent} from '../../models/types';
+import {scopes} from '../../models/types';
 import {BatchFormatter, BatchRepository, batchStringToModel, isBatchString} from '../../models/mongo/batch-repository';
 import {checkString, getArgonHash} from '../../util/general-util';
 import {MailService} from '../../shared/mail-service';
@@ -13,6 +13,12 @@ import cryptoRandomString from 'crypto-random-string';
 import {Logger} from '../../shared/logger';
 import constants from '../../constants';
 import {CreateUserCSV} from './controller';
+
+const scopeArray: string[] = ['teacher', 'admin', 'student'];
+
+const adminOnly: string[] = ['admin'];
+
+const teacherOrStudent: string[] = ['student', 'teacher'];
 
 @ProvideSingleton(UsersService)
 export class UsersService extends BaseService<IUserModel> {

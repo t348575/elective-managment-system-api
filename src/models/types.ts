@@ -9,12 +9,6 @@ export type id = string;
 
 export type scopes = 'teacher' | 'admin' | 'student';
 
-export const scopeArray = ['teacher', 'admin', 'student'];
-
-export const adminOnly = ['admin'];
-
-export const teacherOrStudent = ['student', 'teacher'];
-
 export type OAuthErrorTypes = 'invalid_request' | 'unauthorized_client' | 'access_denied' | 'unsupported_response_type' | 'invalid_scope' | 'server_error' | 'temporarily_unavailable';
 
 export type tokenResponse = { id_token: string, access_token: string, refresh_token: string };

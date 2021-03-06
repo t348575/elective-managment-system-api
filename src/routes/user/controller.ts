@@ -18,7 +18,7 @@ import csv from 'csvtojson';
 import {UsersService} from './service';
 import {ProvideSingleton} from '../../shared/provide-singleton';
 import {inject} from 'inversify';
-import {adminOnly, jwtToken, scopeArray} from '../../models/types';
+import {jwtToken} from '../../models/types';
 import {remove} from '../../util/base-formatter';
 import {getSafeUserOmit, IUserModel, SafeUser, UserFormatter} from '../../models/mongo/user-repository';
 import {ApiError, ErrorType} from '../../shared/error-handler';
@@ -32,6 +32,12 @@ interface CreateUserResponse {
 	status: boolean;
 	failed: any[];
 }
+
+const scopeArray: string[] = ['teacher', 'admin', 'student'];
+
+const adminOnly: string[] = ['admin'];
+
+const teacherOrStudent: string[] = ['student', 'teacher'];
 
 @Tags('users')
 @Route('users')

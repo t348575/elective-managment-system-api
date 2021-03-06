@@ -9,6 +9,6 @@ export class MongoConnector {
 	private readonly connectionString: string = constants.mongoConnectionString;
 	constructor() {
 		Logger.log(`connecting to ${constants.environment} MongoDb`);
-		this.db = mongoose.createConnection(this.connectionString, {useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: true});
+		this.db = mongoose.createConnection(this.connectionString, {useNewUrlParser: true, useCreateIndex: true, useFindAndModify: true});
 	}
 }

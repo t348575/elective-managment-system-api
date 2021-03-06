@@ -3,6 +3,7 @@ import {BaseRepository} from "../shared/base-repository";
 import {Schema} from "mongoose";
 import {MongoConnector} from "../../shared/mongo-connector";
 import {inject} from "inversify";
+import {ProvideSingleton} from '../../shared/provide-singleton';
 
 export interface IBatchModel {
     id ?: string;
@@ -10,6 +11,7 @@ export interface IBatchModel {
     numYears: number;
     degree: string;
     course: string;
+    batchString: string;
 }
 
 export class BatchFormatter extends BaseFormatter implements  IBatchModel {
@@ -17,6 +19,7 @@ export class BatchFormatter extends BaseFormatter implements  IBatchModel {
     numYears: number;
     degree: string;
     course: string;
+    batchString: string;
     id: string;
     constructor(args: any) {
         super();
@@ -24,23 +27,34 @@ export class BatchFormatter extends BaseFormatter implements  IBatchModel {
     }
 }
 
+@ProvideSingleton(BatchRepository)
 export class BatchRepository extends BaseRepository<IBatchModel> {
     protected modelName = 'batches';
     protected schema: Schema = new Schema({
         year: { type: Number, required: true },
         numYears: { type: Number, required: true },
         degree: { type: String, required: true },
-        course: { type: String, required: true }
+        course: { type: String, required: true },
+        batchString: { type: String, required: true, unique: true }
     }, { collection: this.modelName });
 
     protected formatter = BatchFormatter;
     constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
         super();
+        super.init();
     }
 }
 
-const batchRegex = /^\d{4}-\d{4}-\d-[a-z]{4,5}-[a-z]{3,4}$/gm
-
 export function isBatchString(str: string): boolean {
-    return batchRegex.test(str);
+    return /^\d{4}-\d-[a-zA-Z]{4,5}-[a-zA-Z]{3,4}$/gm.test(str);
+}
+
+export function batchStringToModel(str: string): BatchFormatter {
+    return new BatchFormatter({
+        year: str.match(/^\d{4}/)?.[0],
+        numYears: str.match(/(?<=.{4})(\d)/)?.[0],
+        degree: str.match(/(?<=.{7})([a-zA-Z]{4,5})/)?.[0],
+        course: str.match(/(?<=.{10})([a-zA-Z]{3,4})/)?.[0],
+        batchString: str
+    });
 }

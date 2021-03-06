@@ -16,7 +16,7 @@ export interface IUserModel {
 	name: string;
 	username: string;
 	password: string;
-	rollNo ?: string;
+	rollNo: string;
 	role: 'admin' | 'teacher' | 'student';
 	batch ?: IBatchModel;
 	electives ?: IElectiveModel[];
@@ -27,7 +27,7 @@ export class UserFormatter extends BaseFormatter implements IUserModel {
 	username: string;
 	password: string;
 	role: 'admin' | 'teacher' | 'student';
-	rollNo ?: string;
+	rollNo: string;
 	batch ?: IBatchModel;
 	electives ?: IElectiveModel[];
 	id: string;
@@ -41,7 +41,7 @@ export interface SafeUser {
 	name: string;
 	username: string;
 	role: 'admin' | 'teacher' | 'student';
-	rollNo ?: string;
+	rollNo: string;
 	batch ?: IBatchModel;
 	electives ?: IElectiveModel[];
 	id: string;

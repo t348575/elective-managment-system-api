@@ -1,9 +1,8 @@
 import { Request } from 'express';
 import multer from 'multer';
 import * as jwt from 'jsonwebtoken';
-import {ErrorType} from '../shared/error-handler';
-import {FieldErrors} from '@tsoa/runtime';
 import {createHash} from 'crypto';
+import * as argon2 from 'argon2';
 import {IUserModel} from '../models/mongo/user-repository';
 import constants from '../constants';
 import {VerifyErrors} from 'jsonwebtoken';
@@ -120,4 +119,8 @@ export function checkString(body: any, prop: string, limit ?: string[], nonZero 
 	} catch (e) {
 		return false;
 	}
+}
+
+export async function getArgonHash(str: string) {
+	return argon2.hash(str);
 }

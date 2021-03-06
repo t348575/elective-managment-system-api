@@ -26,18 +26,23 @@ import multer from 'multer';
 import {ApiError, ErrorType} from '../../shared/error-handler';
 import {Readable} from 'stream';
 import {checkString} from '../../util/general-util';
-import {isBatchString} from '../../models/mongo/batch-repository';
+import {batchStringToModel, isBatchString} from '../../models/mongo/batch-repository';
+import constants from '../../constants';
+import {Logger} from '../../shared/logger';
 
-export interface CreateUserCSV {
+interface CreateUserCSV {
 	defaultRollNoAsEmail: boolean
+}
+
+interface CreateUserResponse {
+	status: boolean;
+	failed: any[];
 }
 
 @Tags('users')
 @Route('users')
 @ProvideSingleton(UsersController)
 export class UsersController extends Controller {
-
-	private multerSingle = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50000000 } }).single('file');
 
 	constructor(@inject(UsersService) private service: UsersService) {
 		super();
@@ -49,7 +54,7 @@ export class UsersController extends Controller {
 		@Request() request: ExRequest
 	) {
 		// @ts-ignore
-		const jwtRefresh = request.accessToken as jwtToken;
+		const jwtRefresh = request.user as jwtToken;
 		return remove<IUserModel, SafeUser>(await this.service.basic(jwtRefresh.id, jwtRefresh.scope), getSafeUserOmit(jwtRefresh.scope));
 	}
 
@@ -59,7 +64,7 @@ export class UsersController extends Controller {
 		@Request() request: ExRequest
 	) {
 		// @ts-ignore
-		const jwtRefresh = request.accessToken as jwtToken;
+		const jwtRefresh = request.user as jwtToken;
 		return jwtRefresh.scope;
 	}
 
@@ -69,39 +74,40 @@ export class UsersController extends Controller {
 		@Request() request: ExRequest
 	) {
 		// @ts-ignore
-		const jwtRefresh = request.accessToken as jwtToken;
+		const jwtRefresh = request.user as jwtToken;
 	}
 
 	@Post('create-csv')
 	@Security('jwt', adminOnly)
 	@Response<ErrorType>(401, 'Form validation failed')
 	@Response<ErrorType>(500, 'Unknown server error')
-	@Response<DefaultSuccess>(200, 'Success')
+	@Response<CreateUserResponse>(200, 'Success')
 	public createCSV(
 		@Body() options: CreateUserCSV,
 		@Request() request: ExRequest
-	): Promise<DefaultSuccess> {
-		return new Promise<DefaultSuccess>((resolve, reject) => {
+	): Promise<CreateUserResponse> {
+		return new Promise<CreateUserResponse>((resolve, reject) => {
 			// @ts-ignore
-			this.multerSingle(request, undefined, async (err: multer.MulterError | Error) => {
-				try {
-					if (err) {
-						reject(new ApiError({ name: 'form_error', statusCode: 401, message: err?.message }));
-					}
-					else {
-						if (request.file.originalname.indexOf('.csv') > -1) {
-							const inputStream = new Readable();
-							inputStream.push(request.file.buffer);
-							inputStream.push(null);
-							csv().fromStream(inputStream)
+			/*this.multerSingle(request, undefined, async (err: multer.MulterError | Error) => {
+
+			});*/
+			try {
+				if (request.file === undefined) {
+					reject(new ApiError({ name: 'form_error', statusCode: 401, message: 'Not a valid multipart form' }));
+				}
+				else {
+					if (request.file.originalname.indexOf('.csv') > -1) {
+						const inputStream = new Readable();
+						inputStream.push(request.file.buffer);
+						inputStream.push(null);
+						csv().fromStream(inputStream)
 							.then(async (obj) => {
 								const invalid: any[] = [];
-								for (const [i, v] of obj.entries()) {
-									if (
-										checkString(v, 'role', teacherOrStudent) &&
+								const mailList = [];
+								for (const v of obj) {
+									if (checkString(v, 'role', teacherOrStudent) &&
 										checkString(v, 'rollNo') &&
 										checkString(v, 'name') &&
-										checkString(v, 'batch') &&
 										(
 											v['role'] === 'teacher' ||
 											(
@@ -110,28 +116,24 @@ export class UsersController extends Controller {
 											)
 										) &&
 										(
+
 											options.defaultRollNoAsEmail ||
 											(
 												!options.defaultRollNoAsEmail &&
-												checkString(v, 'email')
+												checkString(v, 'username')
 											)
-										)
-									) {
+										)) {
 										try {
-											resolve({ status: true });
-											/*
-											if (await this.service.create(
-												{
-													name: v['name'],
-													username: this.getEmail(v as IUserModel, options.defaultRollNoAsEmail)
-												}
-											)) {
-
-											}
-											else {
-
-											}
-											 */
+											const user = {
+												name: v['name'],
+												username: UsersController.getEmail(v as IUserModel, options.defaultRollNoAsEmail),
+												password: cryptoRandomString({ length: 8, type: 'url-safe' }),
+												rollNo: v['rollNo'],
+												role: v['role'],
+												batch: v['batch']
+											};
+											await this.service.create(user);
+											mailList.push(user);
 										}
 										catch (err) {
 											invalid.push(v);
@@ -141,21 +143,29 @@ export class UsersController extends Controller {
 										invalid.push(v);
 									}
 								}
+								this.service.sendCreateEmails(mailList).then().catch(err => Logger.error(err));
+								resolve({ status: true, failed: invalid });
 							});
-							// resolve({ status: true, message: 'Added successfully' });
-						}
-						else {
-							reject(new ApiError({ name: 'file_type', statusCode: 402, message: 'Improper file type'}))
-						}
 					}
-				} catch (err) {
-					reject(new ApiError({ name: 'unknown_error', statusCode: 500, message: err?.message }));
+					else {
+						reject(new ApiError({ name: 'file_type', statusCode: 402, message: 'Improper file type'}))
+					}
 				}
-			});
+			} catch (err) {
+				reject(new ApiError({ name: 'unknown_error', statusCode: 500, message: err?.message }));
+			}
 		});
 	}
 
-	private getEmail(obj: IUserModel, rollNoAsEmail: boolean): string {
-		return '';
+	private static getEmail(obj: IUserModel, rollNoAsEmail: boolean): string {
+		if (rollNoAsEmail) {
+			if (checkString(obj, 'username')) {
+				return obj['username'];
+			}
+			else {
+				return obj['rollNo'] + '@' + (obj['role'] === 'student' ? constants.emailSuffix.student : constants.emailSuffix.teacher);
+			}
+		}
+		return obj['username'];
 	}
 }

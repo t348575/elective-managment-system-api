@@ -35,7 +35,7 @@ function setConstants() {
 	constants.publicKey = fs.readFileSync(path.resolve(config.publicKey)).toString();
 
 	constants.mailAccess.host = config.mailHost;
-	constants.mailAccess.username = config.mailUser;
+	constants.mailAccess.username = config.mailUsername;
 	constants.mailAccess.password = config.mailPassword;
 	constants.mailAccess.name = config.mailName;
 

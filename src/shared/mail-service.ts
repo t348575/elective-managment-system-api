@@ -22,6 +22,7 @@ export class MailService {
             },
             sendingRate: 2
         } as TransportOptions);
+        console.log('Mail service initialized');
     }
 
     async sendEmail(to: string | string[], subject: string, html: string, text ?: string, attachments ?: Attachment[]) {
@@ -64,7 +65,7 @@ export class MailService {
                         }
                         returnItems.push(await this.transporter.sendMail({
                             from: `"${constants.mailAccess.name}" <${constants.mailAccess.username}>`,
-                            to: to.join(', '),
+                            to: to[i],
                             subject: replaceSubject,
                             text: replaceText,
                             html: replaceHTML,

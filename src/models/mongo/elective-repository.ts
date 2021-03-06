@@ -7,6 +7,7 @@ import {Schema} from "mongoose";
 import * as mongoose from 'mongoose';
 import {inject} from "inversify";
 import {MongoConnector} from "../../shared/mongo-connector";
+import {ProvideSingleton} from '../../shared/provide-singleton';
 
 export interface IElectiveModel {
     id ?: string;
@@ -35,7 +36,7 @@ export class ElectiveFormatter extends BaseFormatter implements IElectiveModel {
         this.format(args);
     }
 }
-
+@ProvideSingleton(ElectiveRepository)
 export class ElectiveRepository extends BaseRepository<IElectiveModel> {
     protected modelName: string = 'electives';
     protected schema: Schema = new Schema({
@@ -55,5 +56,6 @@ export class ElectiveRepository extends BaseRepository<IElectiveModel> {
     protected formatter = ElectiveFormatter;
     constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
         super();
+        super.init();
     }
 }

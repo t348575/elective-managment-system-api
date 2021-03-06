@@ -22,6 +22,7 @@ const models: TsoaRoute.Models = {
             "numYears": {"dataType":"double","required":true},
             "degree": {"dataType":"string","required":true},
             "course": {"dataType":"string","required":true},
+            "batchString": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
@@ -54,7 +55,7 @@ const models: TsoaRoute.Models = {
             "name": {"dataType":"string","required":true},
             "username": {"dataType":"string","required":true},
             "password": {"dataType":"string","required":true},
-            "rollNo": {"dataType":"string"},
+            "rollNo": {"dataType":"string","required":true},
             "role": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["admin"]},{"dataType":"enum","enums":["teacher"]},{"dataType":"enum","enums":["student"]}],"required":true},
             "batch": {"ref":"IBatchModel"},
             "electives": {"dataType":"array","array":{"ref":"IElectiveModel"}},
@@ -68,7 +69,7 @@ const models: TsoaRoute.Models = {
             "name": {"dataType":"string","required":true},
             "username": {"dataType":"string","required":true},
             "role": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["admin"]},{"dataType":"enum","enums":["teacher"]},{"dataType":"enum","enums":["student"]}],"required":true},
-            "rollNo": {"dataType":"string"},
+            "rollNo": {"dataType":"string","required":true},
             "batch": {"ref":"IBatchModel"},
             "electives": {"dataType":"array","array":{"ref":"IElectiveModel"}},
             "id": {"dataType":"string","required":true},
@@ -81,11 +82,11 @@ const models: TsoaRoute.Models = {
         "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["teacher"]},{"dataType":"enum","enums":["admin"]},{"dataType":"enum","enums":["student"]}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "DefaultSuccess": {
+    "CreateUserResponse": {
         "dataType": "refObject",
         "properties": {
-            "status": {"dataType":"enum","enums":[true],"required":true},
-            "message": {"dataType":"string"},
+            "status": {"dataType":"boolean","required":true},
+            "failed": {"dataType":"array","array":{"dataType":"any"},"required":true},
         },
         "additionalProperties": false,
     },

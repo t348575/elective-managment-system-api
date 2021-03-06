@@ -5,6 +5,10 @@ export default {
 	baseUrl: 'https://amrita-elective.tk',
 	mongoConnectionString: 'mongodb://admin:bj9kSX99VWwwPw8@amrita-elective.tk:27017/amrita-elective?authSource=admin&readPreference=primary&appname=api&ssl=false',
 	redisPassword: '960c3dac4fa81b4204779fd16ad7c954f95942876b9c4fb1a255667a9dbe389d',
+	emailSuffix: {
+		student: 'cb.students.amrita.edu',
+		teacher: 'cb.amrita.edu'
+	},
 	jwtExpiry: {
 		oneTimeAuthCodeExpiry: 60,
 		refreshExpiry: 900,

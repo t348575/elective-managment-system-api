@@ -10,6 +10,7 @@ import {Logger} from './shared/logger';
 import {ApiError, ErrorHandler, OAuthError} from './shared/error-handler';
 import cors from 'cors';
 import * as fs from 'fs';
+import multer from 'multer';
 export const app = express();
 app.use(cors())
 app.use(morgan(function (tokens, req, res) {
@@ -27,6 +28,8 @@ app.use(bodyParser.urlencoded({
 	limit: '55mb'
 }));
 app.use(bodyParser.json());
+
+app.use(multer({ storage: multer.memoryStorage(), limits: { fileSize: 50000000 } }).single('file'));
 
 app.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
 	return res.send(
@@ -54,6 +57,7 @@ app.use(function errorHandler(
 	res: ExResponse,
 	next: NextFunction
 ): ExResponse | void {
+	console.log(err);
 	if (err instanceof ValidateError) {
 		if (req.path === '/oauth/authorize') {
 			return res.status(400).json({

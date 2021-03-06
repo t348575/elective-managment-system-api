@@ -5,7 +5,7 @@ export type ConfigModel = {
 	publicKey: string;
 	serverAddress: string;
 	mailHost: string;
-	mailUser: string;
+	mailUsername: string;
 	mailPassword: string;
 	mailName: string;
 }

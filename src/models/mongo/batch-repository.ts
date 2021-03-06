@@ -14,7 +14,7 @@ export interface IBatchModel {
     batchString: string;
 }
 
-export class BatchFormatter extends BaseFormatter implements  IBatchModel {
+export class BatchFormatter extends BaseFormatter implements IBatchModel {
     year: number;
     numYears: number;
     degree: string;

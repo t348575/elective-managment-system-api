@@ -5,8 +5,8 @@ import {Document, Schema} from 'mongoose';
 import {BaseRepository} from '../shared/base-repository';
 import {BaseFormatter} from '../../util/base-formatter';
 import mongoose from 'mongoose';
-import {IBatchModel} from "./batch-repository";
-import {IElectiveModel} from "./elective-repository";
+import {BatchFormatter, IBatchModel} from './batch-repository';
+import {ElectiveFormatter, IElectiveModel} from './elective-repository';
 import {scopes} from '../types';
 import {ApiError} from '../../shared/error-handler';
 import constants from '../../constants';
@@ -34,6 +34,14 @@ export class UserFormatter extends BaseFormatter implements IUserModel {
 	constructor(args: any) {
 		super();
 		this.format(args);
+		if (this.batch) {
+			this.batch = new BatchFormatter(args.batch);
+		}
+		if (this.electives) {
+			for (const [i, v] of args.electives.entries()) {
+				this.electives[i] = new ElectiveFormatter(v);
+			}
+		}
 	}
 }
 
@@ -63,12 +71,6 @@ export function getSafeUserOmit(role: scopes) {
 			return safeAdminRemover
 		}
 	}
-}
-
-export type UploadUser = {
-	admin: ''
-} | {
-
 }
 
 @ProvideSingleton(UserRepository)
@@ -101,7 +103,7 @@ export class UserRepository extends BaseRepository<IUserModel> {
 			case 'teacher':
 			case 'student': {
 				// @ts-ignore
-				const document: Document = await this.documentModel.findOne({ _id: mongoose.Types.ObjectId(id) }).populate('batches').populate('electives');
+				const document: Document = await this.documentModel.findOne({ _id: mongoose.Types.ObjectId(id) }).populate('batch').populate('electives');
 				if (!document) throw new ApiError(constants.errorTypes.notFound);
 				return new this.formatter(document);
 			}

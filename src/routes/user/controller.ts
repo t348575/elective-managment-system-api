@@ -20,7 +20,7 @@ import {ProvideSingleton} from '../../shared/provide-singleton';
 import {inject} from 'inversify';
 import {adminOnly, jwtToken, scopeArray} from '../../models/types';
 import {remove} from '../../util/base-formatter';
-import {getSafeUserOmit, IUserModel, SafeUser} from '../../models/mongo/user-repository';
+import {getSafeUserOmit, IUserModel, SafeUser, UserFormatter} from '../../models/mongo/user-repository';
 import {ApiError, ErrorType} from '../../shared/error-handler';
 import {Readable} from 'stream';
 
@@ -81,7 +81,7 @@ export class UsersController extends Controller {
 		@Request() request: ExRequest
 	): Promise<CreateUserResponse> {
 		return new Promise<CreateUserResponse>((resolve, reject) => {
-			try { 
+			try {
 				if (request.file === undefined) {
 					reject(new ApiError({ name: 'form_error', statusCode: 401, message: 'Not a valid multipart form' }));
 				}

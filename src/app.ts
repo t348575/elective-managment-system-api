@@ -11,6 +11,10 @@ import {ApiError, ErrorHandler, OAuthError} from './shared/error-handler';
 import cors from 'cors';
 import * as fs from 'fs';
 import multer from 'multer';
+import axios from 'axios';
+import './models/types';
+import './routes/private-injector-init';
+import https from 'https';
 export const app = express();
 app.use(cors())
 app.use(morgan(function (tokens, req, res) {
@@ -44,6 +48,10 @@ app.use('/swagger', (req, res) => {
 app.use(express.static(path.resolve(__dirname, './../resources/public')));
 
 RegisterRoutes(app);
+
+axios.get('https://localhost:3000/private-init', {httpsAgent: new https.Agent({rejectUnauthorized: false})}).then().catch(err => {
+	throw err
+});
 
 app.use(function notFoundHandler(_req, res: ExResponse) {
 	res.status(404).send({

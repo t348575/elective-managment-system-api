@@ -13,7 +13,7 @@ export abstract class BaseFormatter {
 			}
 		});
 		if (args._id) {
-			this.id = args._id;
+			this.id = args._id.toString();
 			delete this._id;
 		}
 	}

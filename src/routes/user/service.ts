@@ -1,5 +1,5 @@
 import {ProvideSingleton} from '../../shared/provide-singleton';
-import { inject } from 'inversify';
+import {inject, injectable} from 'inversify';
 import {IUserModel, UserFormatter, UserRepository} from '../../models/mongo/user-repository';
 import {BaseService} from '../../models/shared/base-service';
 import mongoose from 'mongoose';

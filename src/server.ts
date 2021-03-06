@@ -19,10 +19,8 @@ const server = https.createServer({
 process.on('SIGINT', shutdown);
 function shutdown() {
 	console.log('Graceful shutdown...');
-	server.close(function () {
-		console.log('Closed app');
-		process.exit(0);
-	});
+	console.log('Closed app');
+	process.exit(0);
 }
 
 server.listen(port, () =>

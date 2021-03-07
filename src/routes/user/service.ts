@@ -12,7 +12,7 @@ import * as path from 'path';
 import cryptoRandomString from 'crypto-random-string';
 import {Logger} from '../../shared/logger';
 import constants from '../../constants';
-import {CreateUserCSV} from './controller';
+import {CreateUser, CreateUserCSV} from './controller';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
 
@@ -48,6 +48,7 @@ export class UsersService extends BaseService<IUserModel> {
 						checkString(v, 'name') &&
 						(
 							v['role'] === 'teacher' ||
+							v['role'] === 'admin' ||
 							(
 								v['role'] === 'student' &&
 								isBatchString(v['batch'])
@@ -132,5 +133,10 @@ export class UsersService extends BaseService<IUserModel> {
 			}
 		}
 		return obj['username'];
+	}
+
+	public async updatePass(id: string, password: string) {
+		// @ts-ignore
+		return this.repository.update(id, { password });
 	}
 }

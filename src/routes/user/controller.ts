@@ -23,14 +23,31 @@ import {remove} from '../../util/base-formatter';
 import {getSafeUserOmit, IUserModel, SafeUser, UserFormatter} from '../../models/mongo/user-repository';
 import {ApiError, ErrorType} from '../../shared/error-handler';
 import {Readable} from 'stream';
+import * as argon2 from 'argon2';
+import {getArgonHash} from '../../util/general-util';
 
 export interface CreateUserCSV {
-	defaultRollNoAsEmail: boolean
+	defaultRollNoAsEmail: boolean;
+}
+
+export interface CreateUser {
+	users: IUserModel[];
+	defaultRollNoAsEmail: boolean;
 }
 
 interface CreateUserResponse {
 	status: boolean;
 	failed: any[];
+}
+
+interface UpdatePasswordRequest {
+	oldPassword: string;
+	newPassword: string;
+}
+
+interface UpdatePasswordResponse {
+	status: boolean;
+	message ?: string;
 }
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
@@ -68,14 +85,26 @@ export class UsersController extends Controller {
 		return accessToken.scope;
 	}
 
-	/*@Post('create')
+	@Post('create')
 	@Security('jwt', adminOnly)
+	@Response<ErrorType>(500, 'Unknown server error')
+	@Response<CreateUserResponse>(200, 'Success')
 	public async create(
-		@Request() request: ExRequest
+		@Body() options: CreateUser
 	): Promise<CreateUserResponse> {
-		// @ts-ignore
-		const accessToken = request.user as jwtToken;
-	}*/
+		return new Promise<CreateUserResponse>(async (resolve, reject) => {
+			try {
+				if (options.users.length > 0) {
+					resolve({ status: true, failed: await this.service.createUsers(options.users, { defaultRollNoAsEmail: options.defaultRollNoAsEmail }) });
+				}
+				else {
+					reject(new ApiError({ name: 'empty_array', statusCode: 401, message: 'Empty users array provided' }));
+				}
+			} catch (err) {
+				reject(new ApiError({ name: 'unknown_error', statusCode: 500, message: err?.message }));
+			}
+		});
+	}
 
 	@Post('create-csv')
 	@Security('jwt', adminOnly)
@@ -106,6 +135,46 @@ export class UsersController extends Controller {
 					}
 				}
 			} catch (err) {
+				reject(new ApiError({ name: 'unknown_error', statusCode: 500, message: err?.message }));
+			}
+		});
+	}
+
+	@Put('changePassword')
+	@Security('jwt', scopeArray)
+	@Response<ErrorType>(500, 'Unknown server error')
+	@Response<UpdatePasswordResponse>(200, 'Success')
+	public changePassword(
+		@Body() options: UpdatePasswordRequest,
+		@Request() request: ExRequest
+	): Promise<UpdatePasswordResponse> {
+		// @ts-ignore
+		const accessToken = request.user as jwtToken;
+		return new Promise<UpdatePasswordResponse>((resolve, reject) => {
+			try {
+				this.service.getById(accessToken.id)
+				.then(user => {
+					argon2.verify(user.password, options.oldPassword)
+					.then(async (oldPassStatus) => {
+						if (oldPassStatus) {
+							try {
+								const newPass = await getArgonHash(options.newPassword);
+								await this.service.updatePass(accessToken.id, newPass);
+								resolve({ status: true, message: 'success' });
+							}
+							catch (err) {
+								reject(new ApiError({ name: 'unknown_error', statusCode: 500, message: err?.message }))
+							}
+						}
+						else {
+							resolve({ status: false, message: 'old_pass_mismatch' })
+						}
+					})
+					.catch(err => resolve({ status: false, message: 'old_pass_mismatch' }));
+				})
+				.catch(err => reject(new ApiError({ name: 'unknown_error', statusCode: 500, message: err?.message })));
+			}
+			catch (err) {
 				reject(new ApiError({ name: 'unknown_error', statusCode: 500, message: err?.message }));
 			}
 		});

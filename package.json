@@ -10,7 +10,7 @@
 		"start:dev": "concurrently \"yarn build:tsoa && ts-node-dev --respawn ./src/server.ts --rs --watch 'src' --debug\" \"nodemon\"",
 		"start:prod": "yarn node ./build/src/server.js",
 		"build:routes": "tsoa routes",
-		"build:swagger": "tsoa spec",
+		"build:swagger": "tsoa spec --host \"amrita-elective.tk\"",
 		"build:tsoa": "yarn clean && yarn build:routes && yarn build:swagger && yarn copy",
 		"build:prod": "yarn build:routes && yarn build:swagger && tsc && yarn copy",
 		"build:prod:jenkins": "yarn build:routes && yarn build:swagger && tsc",

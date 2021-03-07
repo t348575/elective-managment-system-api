@@ -32,7 +32,7 @@ export type jwtToken = {
 
 export type electiveAttributes = {key: string; value: string;}[];
 
-export interface DefaultSuccess {
-	status: true;
+export interface DefaultResponse {
+	status: boolean;
 	message?: string;
 }

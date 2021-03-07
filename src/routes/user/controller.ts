@@ -18,10 +18,10 @@ import csv from 'csvtojson';
 import {UsersService} from './service';
 import {ProvideSingleton} from '../../shared/provide-singleton';
 import {inject} from 'inversify';
-import {jwtToken} from '../../models/types';
+import {DefaultResponse, jwtToken} from '../../models/types';
 import {remove} from '../../util/base-formatter';
 import {getSafeUserOmit, IUserModel, SafeUser, UserFormatter} from '../../models/mongo/user-repository';
-import {ApiError, ErrorType} from '../../shared/error-handler';
+import {ApiError, ErrorType, UnknownApiError} from '../../shared/error-handler';
 import {Readable} from 'stream';
 import * as argon2 from 'argon2';
 import {getArgonHash} from '../../util/general-util';
@@ -45,9 +45,9 @@ interface UpdatePasswordRequest {
 	newPassword: string;
 }
 
-interface UpdatePasswordResponse {
-	status: boolean;
-	message ?: string;
+export interface ResetPasswordRequest {
+	password: string;
+	code: string;
 }
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
@@ -87,6 +87,7 @@ export class UsersController extends Controller {
 
 	@Post('create')
 	@Security('jwt', adminOnly)
+	@Response<ErrorType>(401, 'ValidationError')
 	@Response<ErrorType>(500, 'Unknown server error')
 	@Response<CreateUserResponse>(200, 'Success')
 	public async create(
@@ -101,14 +102,14 @@ export class UsersController extends Controller {
 					reject(new ApiError({ name: 'empty_array', statusCode: 401, message: 'Empty users array provided' }));
 				}
 			} catch (err) {
-				reject(new ApiError({ name: 'unknown_error', statusCode: 500, message: err?.message }));
+				reject(UnknownApiError(err));
 			}
 		});
 	}
 
 	@Post('create-csv')
 	@Security('jwt', adminOnly)
-	@Response<ErrorType>(401, 'Form validation failed')
+	@Response<ErrorType>(401, 'ValidationError')
 	@Response<ErrorType>(500, 'Unknown server error')
 	@Response<CreateUserResponse>(200, 'Success')
 	public createCSV(
@@ -135,22 +136,23 @@ export class UsersController extends Controller {
 					}
 				}
 			} catch (err) {
-				reject(new ApiError({ name: 'unknown_error', statusCode: 500, message: err?.message }));
+				reject(UnknownApiError(err));
 			}
 		});
 	}
 
 	@Put('changePassword')
 	@Security('jwt', scopeArray)
+	@Response<ErrorType>(401, 'ValidationError')
 	@Response<ErrorType>(500, 'Unknown server error')
-	@Response<UpdatePasswordResponse>(200, 'Success')
+	@Response<DefaultResponse>(200, 'Success')
 	public changePassword(
 		@Body() options: UpdatePasswordRequest,
 		@Request() request: ExRequest
-	): Promise<UpdatePasswordResponse> {
+	): Promise<DefaultResponse> {
 		// @ts-ignore
 		const accessToken = request.user as jwtToken;
-		return new Promise<UpdatePasswordResponse>((resolve, reject) => {
+		return new Promise<DefaultResponse>((resolve, reject) => {
 			try {
 				this.service.getById(accessToken.id)
 				.then(user => {
@@ -163,7 +165,7 @@ export class UsersController extends Controller {
 								resolve({ status: true, message: 'success' });
 							}
 							catch (err) {
-								reject(new ApiError({ name: 'unknown_error', statusCode: 500, message: err?.message }))
+								reject(UnknownApiError(err));
 							}
 						}
 						else {
@@ -172,11 +174,57 @@ export class UsersController extends Controller {
 					})
 					.catch(err => resolve({ status: false, message: 'old_pass_mismatch' }));
 				})
-				.catch(err => reject(new ApiError({ name: 'unknown_error', statusCode: 500, message: err?.message })));
+				.catch(err => reject(UnknownApiError(err)));
 			}
 			catch (err) {
-				reject(new ApiError({ name: 'unknown_error', statusCode: 500, message: err?.message }));
+				reject(UnknownApiError(err));
 			}
 		});
+	}
+
+	@Put('requestReset')
+	@Response<ErrorType>(401, 'ValidationError')
+	@Response<ErrorType>(500, 'Unknown server error')
+	@Response<DefaultResponse>(200, 'Success')
+	public async requestReset(
+		@Body() user: {user: string}
+	) {
+		return this.service.requestReset(user.user);
+	}
+
+	@Get('validReset')
+	@Response<ErrorType>(401, 'ValidationError')
+	@Response<ErrorType>(500, 'Unknown server error')
+	@Response<DefaultResponse>(200, 'Success')
+	public async validReset(
+		@Query() code: string
+	) {
+		try {
+			const exists = await this.service.validReset(code);
+			if (exists) {
+				return { status: true, message: 'exists' };
+			}
+			else {
+				return { status: false, message: 'no_exist'};
+			}
+		}
+		catch(err) {
+			if (err.statusCode === 404) {
+				return { status: false, message: 'no_exist'};
+			}
+			else {
+				throw UnknownApiError(err);
+			}
+		}
+	}
+
+	@Put('resetPassword')
+	@Response<ErrorType>(401, 'ValidationError')
+	@Response<ErrorType>(500, 'Unknown server error')
+	@Response<DefaultResponse>(200, 'Success')
+	public async resetPass(
+		@Body() options: ResetPasswordRequest
+	) {
+		return this.service.resetPassword(options);
 	}
 }

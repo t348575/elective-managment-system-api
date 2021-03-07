@@ -22,6 +22,10 @@ export class ApiError extends Error implements ErrorType {
 	}
 }
 
+export function UnknownApiError(err: any): ApiError {
+	return new ApiError({ name: 'unknown_error', statusCode: 500, message: err?.message });
+}
+
 export class OAuthError extends Error implements ErrorType {
 	public statusCode = 400;
 	public error_description = '';

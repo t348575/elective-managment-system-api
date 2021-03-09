@@ -50,7 +50,7 @@ export class AuthController extends Controller {
 		if (username && password && codeChallenge) {
 			return this.service.authorize(username, password, codeChallenge, state, redirectUri, clientId, scope, (<any>request).res as ExResponse);
 		}
-		else if (idToken && codeChallenge) {
+		else if (idToken && codeChallenge && idToken.length > 0) {
 			return this.service.autoLogin(idToken, codeChallenge, state, redirectUri, clientId, scope, (<any>request).res as ExResponse);
 		}
 		else {

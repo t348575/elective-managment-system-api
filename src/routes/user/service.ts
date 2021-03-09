@@ -169,7 +169,7 @@ export class UsersService extends BaseService<IUserModel> {
 							username: user.username,
 							expireAt: expireAt.toLocaleString(),
 							url: `${constants.baseUrl}/resetPassword?code=${code}`
-						}], 'Reset password - Amrita EMS', this.resetPasswordTemplate).then().catch(err => Logger.error(err));
+						}], 'Reset password - Amrita EMS', this.resetPasswordTemplate).then(res => Logger.log(res)).catch(err => Logger.error(err));
 						resolve({ status: true, message: 'Reset initiated!' });
 					}
 					catch (err) {

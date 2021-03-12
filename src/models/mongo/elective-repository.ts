@@ -36,9 +36,10 @@ export class ElectiveFormatter extends BaseFormatter implements IElectiveModel {
         this.format(args);
     }
 }
+
 @ProvideSingleton(ElectiveRepository)
 export class ElectiveRepository extends BaseRepository<IElectiveModel> {
-    protected modelName: string = 'electives';
+    protected modelName: string  = 'electives';
     protected schema: Schema = new Schema({
         name: { type: String, required: true },
         description: { type: String, required: true },

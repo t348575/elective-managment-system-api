@@ -34,7 +34,7 @@ export class UserFormatter extends BaseFormatter implements IUserModel {
 	constructor(args: any) {
 		super();
 		this.format(args);
-		if (this.batch) {
+		if (this.batch && typeof args.batch !== 'string') {
 			this.batch = new BatchFormatter(args.batch);
 		}
 		if (this.electives) {

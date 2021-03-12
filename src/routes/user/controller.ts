@@ -35,7 +35,7 @@ export interface CreateUser {
 	defaultRollNoAsEmail: boolean;
 }
 
-interface CreateUserResponse {
+interface SuccessUserResponse {
 	status: boolean;
 	failed: any[];
 }
@@ -89,11 +89,11 @@ export class UsersController extends Controller {
 	@Security('jwt', adminOnly)
 	@Response<ErrorType>(401, 'ValidationError')
 	@Response<ErrorType>(500, 'Unknown server error')
-	@Response<CreateUserResponse>(200, 'Success')
+	@Response<SuccessUserResponse>(200, 'Success')
 	public async create(
 		@Body() options: CreateUser
-	): Promise<CreateUserResponse> {
-		return new Promise<CreateUserResponse>(async (resolve, reject) => {
+	): Promise<SuccessUserResponse> {
+		return new Promise<SuccessUserResponse>(async (resolve, reject) => {
 			try {
 				if (options.users.length > 0) {
 					resolve({ status: true, failed: await this.service.createUsers(options.users, { defaultRollNoAsEmail: options.defaultRollNoAsEmail }) });
@@ -111,12 +111,12 @@ export class UsersController extends Controller {
 	@Security('jwt', adminOnly)
 	@Response<ErrorType>(401, 'ValidationError')
 	@Response<ErrorType>(500, 'Unknown server error')
-	@Response<CreateUserResponse>(200, 'Success')
+	@Response<SuccessUserResponse>(200, 'Success')
 	public createCSV(
 		@Body() options: CreateUserCSV,
 		@Request() request: ExRequest
-	): Promise<CreateUserResponse> {
-		return new Promise<CreateUserResponse>((resolve, reject) => {
+	): Promise<SuccessUserResponse> {
+		return new Promise<SuccessUserResponse>((resolve, reject) => {
 			try {
 				if (request.file === undefined) {
 					reject(new ApiError({ name: 'form_error', statusCode: 401, message: 'Not a valid multipart form' }));
@@ -140,6 +140,13 @@ export class UsersController extends Controller {
 			}
 		});
 	}
+
+	/*@Post('update')
+	@Security('jwt', adminOnly)
+	@Response<ErrorType>(401, 'ValidationError')
+	@Response<ErrorType>(500, 'Unknown server error')
+	@Response<SuccessUserResponse>(200, 'Success')
+	public updateUser*/
 
 	@Put('changePassword')
 	@Security('jwt', scopeArray)

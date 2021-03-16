@@ -50,6 +50,10 @@ app.use(express.static(path.resolve(__dirname, './../resources/public')));
 
 RegisterRoutes(app);
 
+app.get('/*', (req, res) => {
+	res.sendFile(path.resolve(__dirname, './../resources/public/index.html'));
+});
+
 axios.get('https://localhost:3000/private-init', {httpsAgent: new https.Agent({rejectUnauthorized: false})}).then().catch(err => {
 	throw err
 });

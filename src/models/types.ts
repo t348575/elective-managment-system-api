@@ -36,3 +36,8 @@ export interface DefaultResponse {
 	status: boolean;
 	message?: string;
 }
+
+export interface DefaultActionResponse {
+	status: boolean;
+	failed: any[];
+}

@@ -6,10 +6,10 @@ import {BaseRepository} from '../shared/base-repository';
 import {BaseFormatter} from '../../util/base-formatter';
 import mongoose from 'mongoose';
 import {BatchFormatter, IBatchModel} from './batch-repository';
-import {ElectiveFormatter, IElectiveModel} from './elective-repository';
 import {scopes} from '../types';
 import {ApiError} from '../../shared/error-handler';
 import constants from '../../constants';
+import {ClassFormatter, IClassModel} from './class-repository';
 
 export interface IUserModel {
 	id?: string;
@@ -19,7 +19,7 @@ export interface IUserModel {
 	rollNo: string;
 	role: 'admin' | 'teacher' | 'student';
 	batch ?: IBatchModel;
-	electives ?: IElectiveModel[];
+	classes ?: IClassModel[];
 }
 
 export class UserFormatter extends BaseFormatter implements IUserModel {
@@ -29,7 +29,7 @@ export class UserFormatter extends BaseFormatter implements IUserModel {
 	role: 'admin' | 'teacher' | 'student';
 	rollNo: string;
 	batch ?: IBatchModel;
-	electives ?: IElectiveModel[];
+	classes ?: IClassModel[];
 	id: string;
 	constructor(args: any) {
 		super();
@@ -37,9 +37,9 @@ export class UserFormatter extends BaseFormatter implements IUserModel {
 		if (this.batch && typeof args.batch !== 'string') {
 			this.batch = new BatchFormatter(args.batch);
 		}
-		if (this.electives) {
-			for (const [i, v] of args.electives.entries()) {
-				this.electives[i] = new ElectiveFormatter(v);
+		if (this.classes) {
+			for (const [i, v] of args.classes.entries()) {
+				this.classes[i] = new ClassFormatter(v);
 			}
 		}
 	}
@@ -51,11 +51,11 @@ export interface SafeUser {
 	role: 'admin' | 'teacher' | 'student';
 	rollNo: string;
 	batch ?: IBatchModel;
-	electives ?: IElectiveModel[];
+	classes ?: IClassModel[];
 	id: string;
 }
 
-const safeAdminRemover = ['password', 'electives'];
+const safeAdminRemover = ['password'];
 const safeTeacherRemover = ['password'];
 const safeStudentRemover = ['password'];
 
@@ -83,7 +83,7 @@ export class UserRepository extends BaseRepository<IUserModel> {
 		role: { type: String, required: true, enum: ['admin', 'teacher', 'student'] },
 		rollNo: { type: String, required: true },
 		batch: { type : mongoose.Schema.Types.ObjectId, ref: 'batches' },
-		electives: [{ type: mongoose.Schema.Types.ObjectId, ref: 'electives' }]
+		classes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'classes' }]
 	}, { collection: this.modelName });
 
 	protected formatter = UserFormatter;
@@ -92,7 +92,7 @@ export class UserRepository extends BaseRepository<IUserModel> {
 		super.init();
 	}
 
-	public async getPopulated(id: string, role: scopes) {
+	public async getPopulated(id: string, role: scopes | 'any') {
 		switch (role) {
 			case 'admin': {
 				// @ts-ignore
@@ -100,10 +100,11 @@ export class UserRepository extends BaseRepository<IUserModel> {
 				if (!document) throw new ApiError(constants.errorTypes.notFound);
 				return new this.formatter(document);
 			}
+			case 'any':
 			case 'teacher':
 			case 'student': {
 				// @ts-ignore
-				const document: Document = await this.documentModel.findOne({ _id: mongoose.Types.ObjectId(id) }).populate('batch').populate('electives');
+				const document: Document = await this.documentModel.findOne({ _id: mongoose.Types.ObjectId(id) }).populate('batch').populate('classes');
 				if (!document) throw new ApiError(constants.errorTypes.notFound);
 				return new this.formatter(document);
 			}

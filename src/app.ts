@@ -14,6 +14,7 @@ import multer from 'multer';
 import axios from 'axios';
 import './models/types';
 import './routes/private-injector-init';
+import './routes/electives/controller'
 import https from 'https';
 export const app = express();
 app.use(cors())

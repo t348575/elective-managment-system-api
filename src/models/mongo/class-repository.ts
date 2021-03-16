@@ -31,7 +31,7 @@ export class ClassFormatter extends BaseFormatter implements IClassModel {
 
 @ProvideSingleton(ClassRepository)
 export class ClassRepository extends BaseRepository<IClassModel> {
-    protected modelName: string  = 'class';
+    protected modelName: string  = 'classes';
     protected schema: Schema = new Schema({
         elective: { type : mongoose.Schema.Types.ObjectId, ref: 'electives' },
         batch: { type : mongoose.Schema.Types.ObjectId, ref: 'batches' },

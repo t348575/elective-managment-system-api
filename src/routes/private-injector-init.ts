@@ -5,6 +5,7 @@ import {ElectiveRepository} from '../models/mongo/elective-repository';
 import {UserRepository} from '../models/mongo/user-repository';
 import {Controller, Get, Hidden, Route, Tags} from 'tsoa';
 import {PasswordResetRepository} from '../models/mongo/password-reset-repository';
+import {ClassRepository} from '../models/mongo/class-repository';
 
 @Hidden()
 @Route('private-init')
@@ -14,7 +15,8 @@ export class PrivateInjectorInit extends Controller {
         @inject(BatchRepository) batchRepository: BatchRepository,
         @inject(ElectiveRepository) electiveRepository: ElectiveRepository,
         @inject(UserRepository) userRepository: UserRepository,
-        @inject(PasswordResetRepository) passwordResetRepository: PasswordResetRepository
+        @inject(PasswordResetRepository) passwordResetRepository: PasswordResetRepository,
+        @inject(ClassRepository) classRepository: ClassRepository
     ) {
         super();
     }

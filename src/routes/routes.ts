@@ -8,6 +8,8 @@ import { UsersController } from './user/controller';
 import { AuthController } from './oauth/controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { PrivateInjectorInit } from './private-injector-init';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { ElectivesController } from './electives/controller';
 import { expressAuthentication } from './../shared/authentication-module';
 import { iocContainer } from './../ioc';
 import { IocContainer, IocContainerFactory } from '@tsoa/runtime';
@@ -24,7 +26,7 @@ const models: TsoaRoute.Models = {
             "numYears": {"dataType":"double","required":true},
             "degree": {"dataType":"string","required":true},
             "course": {"dataType":"string","required":true},
-            "batchString": {"dataType":"string","required":true},
+            "batchString": {"dataType":"string","required":true,"validators":{"pattern":{"value":"^\\d{4}-\\d-[a-zA-Z]{4,5}-[a-zA-Z]{3,4}$"}}},
         },
         "additionalProperties": false,
     },
@@ -32,6 +34,33 @@ const models: TsoaRoute.Models = {
     "electiveAttributes": {
         "dataType": "refAlias",
         "type": {"dataType":"array","array":{"dataType":"nestedObjectLiteral","nestedProperties":{"value":{"dataType":"string","required":true},"key":{"dataType":"string","required":true}}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IClassModel": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string"},
+            "batch": {"ref":"IBatchModel","required":true},
+            "elective": {"ref":"IElectiveModel","required":true},
+            "students": {"dataType":"array","array":{"ref":"IUserModel"},"required":true},
+            "teacher": {"ref":"IUserModel","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IUserModel": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string"},
+            "name": {"dataType":"string","required":true},
+            "username": {"dataType":"string","required":true},
+            "password": {"dataType":"string","required":true},
+            "rollNo": {"dataType":"string","required":true},
+            "role": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["admin"]},{"dataType":"enum","enums":["teacher"]},{"dataType":"enum","enums":["student"]}],"required":true},
+            "batch": {"ref":"IBatchModel"},
+            "classes": {"dataType":"array","array":{"ref":"IClassModel"}},
+        },
+        "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IElectiveModel": {
@@ -50,21 +79,6 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "IUserModel": {
-        "dataType": "refObject",
-        "properties": {
-            "id": {"dataType":"string"},
-            "name": {"dataType":"string","required":true},
-            "username": {"dataType":"string","required":true},
-            "password": {"dataType":"string","required":true},
-            "rollNo": {"dataType":"string","required":true},
-            "role": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["admin"]},{"dataType":"enum","enums":["teacher"]},{"dataType":"enum","enums":["student"]}],"required":true},
-            "batch": {"ref":"IBatchModel"},
-            "electives": {"dataType":"array","array":{"ref":"IElectiveModel"}},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "SafeUser": {
         "dataType": "refObject",
         "properties": {
@@ -73,7 +87,7 @@ const models: TsoaRoute.Models = {
             "role": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["admin"]},{"dataType":"enum","enums":["teacher"]},{"dataType":"enum","enums":["student"]}],"required":true},
             "rollNo": {"dataType":"string","required":true},
             "batch": {"ref":"IBatchModel"},
-            "electives": {"dataType":"array","array":{"ref":"IElectiveModel"}},
+            "classes": {"dataType":"array","array":{"ref":"IClassModel"}},
             "id": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
@@ -84,7 +98,7 @@ const models: TsoaRoute.Models = {
         "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["teacher"]},{"dataType":"enum","enums":["admin"]},{"dataType":"enum","enums":["student"]}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "SuccessUserResponse": {
+    "DefaultActionResponse": {
         "dataType": "refObject",
         "properties": {
             "status": {"dataType":"boolean","required":true},
@@ -117,6 +131,17 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "defaultRollNoAsEmail": {"dataType":"boolean","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "UpdateUser": {
+        "dataType": "refObject",
+        "properties": {
+            "name": {"dataType":"string"},
+            "password": {"dataType":"string"},
+            "rollNo": {"dataType":"string","required":true},
+            "batch": {"dataType":"string","validators":{"pattern":{"value":"^\\d{4}-\\d-[a-zA-Z]{4,5}-[a-zA-Z]{3,4}$"}}},
         },
         "additionalProperties": false,
     },
@@ -181,6 +206,21 @@ const models: TsoaRoute.Models = {
     "refreshToken": {
         "dataType": "refAlias",
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"refresh_token":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "AddElectives": {
+        "dataType": "refObject",
+        "properties": {
+            "name": {"dataType":"string","required":true},
+            "description": {"dataType":"string","required":true},
+            "courseCode": {"dataType":"string","required":true},
+            "version": {"dataType":"double","default":"1"},
+            "strength": {"dataType":"double","required":true},
+            "attributes": {"ref":"electiveAttributes","required":true},
+            "batches": {"dataType":"array","array":{"dataType":"string"},"validators":{"pattern":{"value":"^\\d{4}-\\d-[a-zA-Z]{4,5}-[a-zA-Z]{3,4}$"}}},
+            "teachers": {"dataType":"array","array":{"dataType":"string"}},
+        },
+        "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
@@ -303,6 +343,90 @@ export function RegisterRoutes(app: express.Router) {
 
 
             const promise = controller.createCSV.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.put('/users/update',
+            authenticateMiddleware([{"jwt":["admin"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    options: {"in":"body","name":"options","required":true,"dataType":"array","array":{"ref":"UpdateUser"}},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<UsersController>(UsersController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.updateUser.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.delete('/users/delete',
+            authenticateMiddleware([{"jwt":["admin"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    users: {"in":"body","name":"users","required":true,"dataType":"array","array":{"dataType":"string"}},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<UsersController>(UsersController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.delete.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/users/user-by-roll-no',
+            authenticateMiddleware([{"jwt":["admin"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    rollNo: {"in":"query","name":"rollNo","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<UsersController>(UsersController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.getUserByRollNo.apply(controller, validatedArgs as any);
             promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -589,6 +713,62 @@ export function RegisterRoutes(app: express.Router) {
 
 
             const promise = controller.init.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/electives/add',
+            authenticateMiddleware([{"jwt":["admin"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    options: {"in":"body","name":"options","required":true,"dataType":"array","array":{"ref":"AddElectives"}},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<ElectivesController>(ElectivesController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.addElectives.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/electives/add-csv',
+            authenticateMiddleware([{"jwt":["admin"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    request: {"in":"request","name":"request","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<ElectivesController>(ElectivesController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.addElectivesCSV.apply(controller, validatedArgs as any);
             promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

@@ -62,6 +62,10 @@ export abstract class BaseRepository<EntityType> implements IBaseRepository<Enti
 			.map(item => new this.formatter(item));
 	}
 
+	public async findAndUpdate(query: any, model: EntityType): Promise<void> {
+		await this.documentModel.findOneAndUpdate(this.cleanWhereQuery(query), this.cleanToSave(model))
+	}
+
 	public async findOne<T>(query: any): Promise<EntityType> {
 		// @ts-ignore
 		const document: Document = await this.documentModel.findOne(query);

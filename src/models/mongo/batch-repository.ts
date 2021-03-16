@@ -11,6 +11,11 @@ export interface IBatchModel {
     numYears: number;
     degree: string;
     course: string;
+    /**
+     * Batch string
+     * @pattern ^\d{4}-\d-[a-zA-Z]{4,5}-[a-zA-Z]{3,4}$
+     * @example "2018-4-BTECH-CSE"
+     */
     batchString: string;
 }
 

@@ -12,7 +12,7 @@ import * as path from 'path';
 import cryptoRandomString from 'crypto-random-string';
 import {Logger} from '../../shared/logger';
 import constants from '../../constants';
-import {CreateUser, CreateUserCSV, ResetPasswordRequest} from './controller';
+import {CreateUser, CreateUserCSV, ResetPasswordRequest, UpdateUser} from './controller';
 import {PasswordResetFormatter, PasswordResetRepository} from '../../models/mongo/password-reset-repository';
 import {ApiError, UnknownApiError} from '../../shared/error-handler';
 
@@ -95,51 +95,6 @@ export class UsersService extends BaseService<IUserModel> {
 		});
 	}
 
-	private async createHelper(userCreationParams: IUserModel): Promise<IUserModel> {
-		let id = undefined;
-		if (userCreationParams.batch) {
-			// @ts-ignore
-			const batch = batchStringToModel(userCreationParams.batch);
-			try {
-				await this.batchRepo.create({
-					year: batch.year,
-					numYears: batch.numYears,
-					degree: batch.degree,
-					course: batch.course,
-					batchString: batch.batchString
-				});
-			}
-			catch (err) {}
-			// @ts-ignore
-			id = (await this.batchRepo.findOne({ batchString: batch.batchString })).id.toString();
-		}
-		const newUser = new UserFormatter({
-			name: userCreationParams.name,
-			username: userCreationParams.username,
-			password: await getArgonHash(userCreationParams.password),
-			role: userCreationParams.role,
-			rollNo: userCreationParams.rollNo,
-			batch: id
-		});
-		return this.repository.create(newUser);
-	}
-
-	private async sendCreateEmails(users: IUserModel[]) {
-		return this.mailer.replaceAndSendEmail(users.map(e => `${e.name} <${e.username}>`), users.map(e => ({ name: e.name, password: e.password })), 'Welcome {{name}} to Amrita EMS!', this.createUserTemplate);
-	}
-
-	private static getEmail(obj: IUserModel, rollNoAsEmail: boolean): string {
-		if (rollNoAsEmail) {
-			if (checkString(obj, 'username')) {
-				return obj['username'];
-			}
-			else {
-				return obj['rollNo'] + '@' + (obj['role'] === 'student' ? constants.emailSuffix.student : constants.emailSuffix.teacher);
-			}
-		}
-		return obj['username'];
-	}
-
 	public async updatePass(id: string, password: string) {
 		// @ts-ignore
 		return this.repository.update(id, { password });
@@ -208,5 +163,99 @@ export class UsersService extends BaseService<IUserModel> {
 				reject(UnknownApiError(err));
 			}
 		});
+	}
+
+	public updateUser(options: UpdateUser[]) {
+		return new Promise<any[]>(async (resolve, reject) => {
+			try {
+				const invalid: any[] = [];
+				for (const v of options) {
+					try {
+						if (checkString(v, 'password')) {
+							// @ts-ignore
+							v.password = await getArgonHash(v.password);
+						}
+						// @ts-ignore
+						await this.repository.findAndUpdate({ rollNo: v.rollNo }, v);
+					}
+					catch (err) {
+						invalid.push(v);
+					}
+				}
+				resolve(invalid);
+			} catch (err) {
+				reject(err);
+			}
+		});
+	}
+
+	public async getByRollNo(rollNo: string) {
+		// @ts-ignore
+		return this.repository.getPopulated((await this.repository.findOne({ rollNo })).id, 'any');
+	}
+
+	public deleteUsers(users: string[]): Promise<string[]> {
+		return new Promise<string[]>(async (resolve, reject) => {
+			const failed = [];
+			try {
+				for (const v of users) {
+					try {
+						await this.repository.delete(v);
+					}
+					catch (err) {
+						failed.push(v);
+					}
+				}
+			}
+			catch(err) {
+				return reject(err);
+			}
+			return resolve(failed);
+		});
+	}
+
+	private async createHelper(userCreationParams: IUserModel): Promise<IUserModel> {
+		let id = undefined;
+		if (userCreationParams.batch) {
+			// @ts-ignore
+			const batch = batchStringToModel(userCreationParams.batch);
+			try {
+				await this.batchRepo.create({
+					year: batch.year,
+					numYears: batch.numYears,
+					degree: batch.degree,
+					course: batch.course,
+					batchString: batch.batchString
+				});
+			}
+			catch (err) {}
+			// @ts-ignore
+			id = (await this.batchRepo.findOne({ batchString: batch.batchString })).id.toString();
+		}
+		const newUser = new UserFormatter({
+			name: userCreationParams.name,
+			username: userCreationParams.username,
+			password: await getArgonHash(userCreationParams.password),
+			role: userCreationParams.role,
+			rollNo: userCreationParams.rollNo,
+			batch: id
+		});
+		return this.repository.create(newUser);
+	}
+
+	private async sendCreateEmails(users: IUserModel[]) {
+		return this.mailer.replaceAndSendEmail(users.map(e => `${e.name} <${e.username}>`), users.map(e => ({ name: e.name, password: e.password })), 'Welcome {{name}} to Amrita EMS!', this.createUserTemplate);
+	}
+
+	private static getEmail(obj: IUserModel, rollNoAsEmail: boolean): string {
+		if (rollNoAsEmail) {
+			if (checkString(obj, 'username')) {
+				return obj['username'];
+			}
+			else {
+				return obj['rollNo'] + '@' + (obj['role'] === 'student' ? constants.emailSuffix.student : constants.emailSuffix.teacher);
+			}
+		}
+		return obj['username'];
 	}
 }

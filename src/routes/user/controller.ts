@@ -11,6 +11,7 @@ import {
 	Response,
 	Put,
 	Request,
+	Delete,
 	Tags
 } from 'tsoa';
 import express, {Request as ExRequest, Response as ExResponse} from 'express';
@@ -18,7 +19,7 @@ import csv from 'csvtojson';
 import {UsersService} from './service';
 import {ProvideSingleton} from '../../shared/provide-singleton';
 import {inject} from 'inversify';
-import {DefaultResponse, jwtToken} from '../../models/types';
+import {DefaultActionResponse, DefaultResponse, jwtToken} from '../../models/types';
 import {remove} from '../../util/base-formatter';
 import {getSafeUserOmit, IUserModel, SafeUser, UserFormatter} from '../../models/mongo/user-repository';
 import {ApiError, ErrorType, UnknownApiError} from '../../shared/error-handler';
@@ -35,9 +36,16 @@ export interface CreateUser {
 	defaultRollNoAsEmail: boolean;
 }
 
-interface SuccessUserResponse {
-	status: boolean;
-	failed: any[];
+export interface UpdateUser {
+	name ?: string;
+	password ?: string;
+	rollNo: string;
+	/**
+	 * Batch string
+	 * @pattern ^\d{4}-\d-[a-zA-Z]{4,5}-[a-zA-Z]{3,4}$
+	 * @example "2018-4-BTECH-CSE"
+	 */
+	batch ?: string;
 }
 
 interface UpdatePasswordRequest {
@@ -89,11 +97,11 @@ export class UsersController extends Controller {
 	@Security('jwt', adminOnly)
 	@Response<ErrorType>(401, 'ValidationError')
 	@Response<ErrorType>(500, 'Unknown server error')
-	@Response<SuccessUserResponse>(200, 'Success')
+	@Response<DefaultActionResponse>(200, 'Success')
 	public async create(
 		@Body() options: CreateUser
-	): Promise<SuccessUserResponse> {
-		return new Promise<SuccessUserResponse>(async (resolve, reject) => {
+	): Promise<DefaultActionResponse> {
+		return new Promise<DefaultActionResponse>(async (resolve, reject) => {
 			try {
 				if (options.users.length > 0) {
 					resolve({ status: true, failed: await this.service.createUsers(options.users, { defaultRollNoAsEmail: options.defaultRollNoAsEmail }) });
@@ -111,12 +119,12 @@ export class UsersController extends Controller {
 	@Security('jwt', adminOnly)
 	@Response<ErrorType>(401, 'ValidationError')
 	@Response<ErrorType>(500, 'Unknown server error')
-	@Response<SuccessUserResponse>(200, 'Success')
+	@Response<DefaultActionResponse>(200, 'Success')
 	public createCSV(
 		@Body() options: CreateUserCSV,
 		@Request() request: ExRequest
-	): Promise<SuccessUserResponse> {
-		return new Promise<SuccessUserResponse>((resolve, reject) => {
+	): Promise<DefaultActionResponse> {
+		return new Promise<DefaultActionResponse>((resolve, reject) => {
 			try {
 				if (request.file === undefined) {
 					reject(new ApiError({ name: 'form_error', statusCode: 401, message: 'Not a valid multipart form' }));
@@ -141,12 +149,52 @@ export class UsersController extends Controller {
 		});
 	}
 
-	/*@Post('update')
+	@Put('update')
 	@Security('jwt', adminOnly)
 	@Response<ErrorType>(401, 'ValidationError')
 	@Response<ErrorType>(500, 'Unknown server error')
-	@Response<SuccessUserResponse>(200, 'Success')
-	public updateUser*/
+	@Response<DefaultActionResponse>(200, 'Success')
+	public updateUser(
+		@Body() options: UpdateUser[]
+	) {
+		return new Promise<DefaultActionResponse>(async (resolve, reject) => {
+			try {
+				resolve({ status: true, failed: await this.service.updateUser(options) });
+			}
+			catch (err) {
+				reject(UnknownApiError(err));
+			}
+		});
+	}
+
+	@Delete('delete')
+	@Security('jwt', adminOnly)
+	@Response<ErrorType>(401, 'ValidationError')
+	@Response<ErrorType>(500, 'Unknown server error')
+	@Response<DefaultActionResponse>(200, 'Success')
+	public delete(
+		@Body() users: string[]
+	) {
+		return new Promise<DefaultActionResponse>(async (resolve, reject) => {
+			try {
+				resolve({ status: true, failed: await this.service.deleteUsers(users) });
+			}
+			catch (err) {
+				reject(UnknownApiError(err));
+			}
+		});
+	}
+
+	@Get('user-by-roll-no')
+	@Security('jwt', adminOnly)
+	@Response<ErrorType>(401, 'ValidationError')
+	@Response<ErrorType>(500, 'Unknown server error')
+	@Response<DefaultActionResponse>(200, 'Success')
+	public async getUserByRollNo(
+		@Query('rollNo') rollNo: string
+	) {
+		return remove<IUserModel, SafeUser>(await this.service.getByRollNo(rollNo), ['password']);
+	}
 
 	@Put('changePassword')
 	@Security('jwt', scopeArray)

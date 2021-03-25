@@ -100,7 +100,30 @@ export function urlSafe(str: string) {
 	str = str.replace(/=/g, '');
 	return str;
 }
-
+export function checkNumber(body: any, prop: string, parse = false) {
+	try {
+		if (body.hasOwnProperty(prop)) {
+			if (parse) {
+				try {
+					const num = parseInt(body[prop]);
+					return num && !isNaN(num);
+				}
+				catch (err) {
+					return false;
+				}
+			}
+			else {
+				return typeof body[prop] === 'number' && !isNaN(body[prop]);
+			}
+		}
+		else {
+			return false;
+		}
+	}
+	catch(err) {
+		return false;
+	}
+}
 export function checkString(body: any, prop: string, limit ?: string[], nonZero = true): boolean {
 	try {
 		if (body.hasOwnProperty(prop) && typeof body[prop] === 'string') {

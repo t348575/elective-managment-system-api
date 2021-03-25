@@ -21,7 +21,7 @@ export interface AddElectives {
     /**
      * @default 1
      */
-    version ?: number;
+    version: number;
     strength: number;
     attributes: electiveAttributes;
     /**
@@ -29,8 +29,8 @@ export interface AddElectives {
      * @pattern ^\d{4}-\d-[a-zA-Z]{4,5}-[a-zA-Z]{3,4}$
      * @example "2018-4-BTECH-CSE"
      */
-    batches ?: string[];
-    teachers ?: string[];
+    batches: string[];
+    teachers: string[];
 }
 
 @Tags('electives')
@@ -78,9 +78,9 @@ export class ElectivesController extends Controller {
                         inputStream.push(request.file.buffer);
                         inputStream.push(null);
                         csv().fromStream(inputStream)
-                        .then(async (obj) => {
-                            resolve({ status: true, failed: await this.service.addElectives(obj) });
-                        });
+                            .then(async (obj) => {
+                                resolve({ status: true, failed: await this.service.addElectives(obj) });
+                            });
                     }
                     else {
                         reject(new ApiError({ name: 'file_type', statusCode: 402, message: 'Improper file type'}))

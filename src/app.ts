@@ -16,8 +16,16 @@ import './models/types';
 import './routes/private-injector-init';
 import './routes/electives/controller'
 import https from 'https';
+import helmet from 'helmet';
+
 export const app = express();
+
+// TODO: remove in production
 app.use(cors())
+
+// TODO: enable in production
+// app.use(helmet());
+
 app.use(morgan(function (tokens, req, res) {
 	return [
 		tokens.method(req, res),
@@ -44,7 +52,7 @@ app.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
 
 app.use('/swagger', (req, res) => {
 	return res.send(fs.readFileSync(path.join(__dirname, 'swagger.json')))
-})
+});
 
 app.use(express.static(path.resolve(__dirname, './../resources/public')));
 

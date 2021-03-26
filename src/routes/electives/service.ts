@@ -9,8 +9,7 @@ import {checkNumber, checkString, cleanQuery} from '../../util/general-util';
 import {electiveAttributes} from '../../models/types';
 import {BaseService} from '../../models/shared/base-service';
 import {PaginationModel} from '../../models/shared/pagination-model';
-
-
+import mongoose from 'mongoose';
 
 @ProvideSingleton(ElectivesService)
 export class ElectivesService extends BaseService<IElectiveModel> {
@@ -109,7 +108,6 @@ export class ElectivesService extends BaseService<IElectiveModel> {
                         }
                     }
                     catch (err) {
-                        console.log(err);
                         invalid.push(v);
                     }
                 }
@@ -126,7 +124,7 @@ export class ElectivesService extends BaseService<IElectiveModel> {
         limit: number,
         fields: string,
         sort: string,
-        query: string
+        query: any
     ): Promise<PaginationModel<ElectiveFormatter>> {
         const skip: number = (Math.max(1, page) - 1) * limit;
         let [count, docs] = await Promise.all([

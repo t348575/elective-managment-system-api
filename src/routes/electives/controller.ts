@@ -2,7 +2,7 @@ import {Body, Controller, Get, Post, Put, Query, Request, Response, Route, Secur
 import {ProvideSingleton} from '../../shared/provide-singleton';
 import {inject} from 'inversify';
 import {ElectivesService} from './service';
-import {DefaultActionResponse, electiveAttributes} from '../../models/types';
+import {DefaultActionResponse, electiveAttributes, jwtToken} from '../../models/types';
 import {ApiError, ErrorType, UnknownApiError} from '../../shared/error-handler';
 import {Request as ExRequest} from 'express';
 import {Readable} from 'stream';
@@ -13,6 +13,8 @@ import {ElectiveFormatter, IElectiveModel} from '../../models/mongo/elective-rep
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
 
 const adminOnly: string[] = ['admin'];
+
+const studentOnly: string[] = ['student'];
 
 const teacherOrStudent: string[] = ['student', 'teacher'];
 
@@ -56,6 +58,10 @@ export class ElectivesController extends Controller {
     ) {
         return new Promise<DefaultActionResponse>(async (resolve, reject) => {
             try {
+                for (const [i, v] of options.entries()) {
+                    // @ts-ignore
+                    options[i].attributes = ElectivesController.getAttributesAsCSV(v.attributes);
+                }
                 resolve({ status: true, failed: await this.service.addElectives(options) });
             } catch (err) {
                 reject(UnknownApiError(err));
@@ -113,7 +119,6 @@ export class ElectivesController extends Controller {
         @Query() name ?: string
 
     ): Promise<PaginationModel<IElectiveModel>> {
-        let query = '';
         const queryObj = {};
         if (name || courseCode) {
             if (name) {
@@ -124,8 +129,15 @@ export class ElectivesController extends Controller {
                 // @ts-ignore
                 queryObj.courseCode = courseCode;
             }
-            query = JSON.stringify(queryObj);
         }
-        return this.service.getPaginated(pageNumber, limit, fields || '', sortBy || '{"name":"asc"}', query);
+        return this.service.getPaginated(pageNumber, limit, fields || '', sortBy || '{"name":"asc"}', queryObj);
+    }
+
+    private static getAttributesAsCSV(attributes: electiveAttributes): string {
+        let str = '';
+        for (const v of attributes) {
+            str += `${v.key},${v.value}`;
+        }
+        return str;
     }
 }

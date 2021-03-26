@@ -56,7 +56,8 @@ export class ElectivesService extends BaseService<IElectiveModel> {
             // @ts-ignore
             batches: batchIds,
             // @ts-ignore
-            teachers: teacherIds
+            teachers: teacherIds,
+            active: false
         });
     }
 

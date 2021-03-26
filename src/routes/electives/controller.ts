@@ -24,9 +24,6 @@ export interface AddElectives {
     name: string;
     description: string;
     courseCode: string;
-    /**
-     * @default 1
-     */
     version: number;
     strength: number;
     attributes: electiveAttributes;
@@ -61,6 +58,10 @@ export class ElectivesController extends Controller {
                 for (const [i, v] of options.entries()) {
                     // @ts-ignore
                     options[i].attributes = ElectivesController.getAttributesAsCSV(v.attributes);
+                    // @ts-ignore
+                    options[i].batches = v.batches.join(',');
+                    // @ts-ignore
+                    options[i].teachers = v.teachers.join(',');
                 }
                 resolve({ status: true, failed: await this.service.addElectives(options) });
             } catch (err) {
@@ -136,8 +137,9 @@ export class ElectivesController extends Controller {
     private static getAttributesAsCSV(attributes: electiveAttributes): string {
         let str = '';
         for (const v of attributes) {
-            str += `${v.key},${v.value}`;
+            str += `${v.key},${v.value},`;
         }
+        str = str.slice(0, -1);
         return str;
     }
 }

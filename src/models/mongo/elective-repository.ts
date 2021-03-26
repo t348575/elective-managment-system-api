@@ -1,13 +1,14 @@
 import {electiveAttributes} from "../types";
-import {IBatchModel} from "./batch-repository";
-import {IUserModel} from "./user-repository";
-import {BaseFormatter} from "../../util/base-formatter";
+import {BatchFormatter, IBatchModel} from './batch-repository';
+import {IUserModel, SafeUser, UserFormatter} from './user-repository';
+import {BaseFormatter, remove} from '../../util/base-formatter';
 import {BaseRepository} from "../shared/base-repository";
 import {Schema} from "mongoose";
 import * as mongoose from 'mongoose';
 import {inject} from "inversify";
 import {MongoConnector} from "../../shared/mongo-connector";
 import {ProvideSingleton} from '../../shared/provide-singleton';
+import {cleanQuery} from '../../util/general-util';
 
 export interface IElectiveModel {
     id ?: string;
@@ -34,6 +35,31 @@ export class ElectiveFormatter extends BaseFormatter implements IElectiveModel {
     constructor(args: any) {
         super();
         this.format(args);
+        if (this.batches) {
+            for (const [i, v] of args.batches.entries()) {
+                if (typeof v === 'object') {
+                    this.batches[i] = new BatchFormatter(v);
+                }
+            }
+        }
+        if (this.teachers) {
+            for (const [i, v] of args.teachers.entries()) {
+                if (typeof v === 'object') {
+                    // @ts-ignore
+                    this.teachers[i] = remove<IUserModel, SafeUser>(new UserFormatter(v), ['password']);
+                }
+            }
+        }
+        if (this.attributes) {
+            for (const [i, v] of args.attributes.entries()) {
+                if (args.attributes[i]._id) {
+                    // @ts-ignore
+                    this.attributes[i].id = args.attributes[i]._id.toString();
+                    // @ts-ignore
+                    delete this.attributes[i]._id;
+                }
+            }
+        }
     }
 }
 
@@ -45,7 +71,7 @@ export class ElectiveRepository extends BaseRepository<IElectiveModel> {
         description: { type: String, required: true },
         courseCode: { type: String, required: true },
         version: { type: Number, required: true },
-        strength: { type: String, required: true },
+        strength: { type: Number, required: true },
         attributes: [{
             key: { type: String, required: true },
             value: { type: String, required: true }
@@ -58,5 +84,24 @@ export class ElectiveRepository extends BaseRepository<IElectiveModel> {
     constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
         super();
         super.init();
+    }
+
+    public async findAndPopulate(
+        skip: number = 0,
+        limit: number = 250,
+        sort: string,
+        query: any
+    ): Promise<ElectiveFormatter[]> {
+        const sortObject = cleanQuery(sort, this.sortQueryFormatter);
+        return (
+            await this.documentModel
+            .find(this.cleanWhereQuery(query))
+            .sort(Object.keys(sortObject).map(key => [key, sortObject[key]]))
+            .skip(skip)
+            .limit(limit)
+            .populate('batches')
+            .populate('teachers')
+        )
+        .map(item => new this.formatter(item));
     }
 }

@@ -3,6 +3,7 @@ import { decorate, injectable } from 'inversify';
 import {ApiError} from '../../shared/error-handler';
 import constants from '../../constants';
 import {PaginationModel} from './pagination-model';
+import {ElectiveFormatter} from '../mongo/elective-repository';
 
 export abstract class BaseService<EntityModel> {
 	// @ts-ignore
@@ -18,7 +19,7 @@ export abstract class BaseService<EntityModel> {
 		fields: string,
 		sort: string,
 		query: string
-	): Promise<PaginationModel> {
+	): Promise<PaginationModel<EntityModel>> {
 		const skip: number = (Math.max(1, page) - 1) * limit;
 		let [count, docs] = await Promise.all([
 			this.repository.count(query),
@@ -31,7 +32,7 @@ export abstract class BaseService<EntityModel> {
 			fieldArray.forEach(f => attrs[f] = d[f]);
 			return attrs;
 		});
-		return new PaginationModel({
+		return new PaginationModel<EntityModel>({
 			count,
 			page,
 			limit,

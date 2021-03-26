@@ -105,7 +105,7 @@ export function checkNumber(body: any, prop: string, parse = false) {
 		if (body.hasOwnProperty(prop)) {
 			if (parse) {
 				try {
-					const num = parseInt(body[prop]);
+					const num = parseInt(body[prop], 10);
 					return num && !isNaN(num);
 				}
 				catch (err) {

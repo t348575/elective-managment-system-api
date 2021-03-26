@@ -13,10 +13,15 @@ import * as fs from 'fs';
 import multer from 'multer';
 import axios from 'axios';
 import './models/types';
-import './routes/private-injector-init';
-import './routes/electives/controller'
 import https from 'https';
 import helmet from 'helmet';
+
+// routes
+
+import './routes/private-injector-init';
+import './routes/oauth/controller';
+import './routes/user/controller';
+import './routes/electives/controller';
 
 export const app = express();
 

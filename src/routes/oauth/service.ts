@@ -1,6 +1,6 @@
 import {inject} from 'inversify';
 import * as argon2 from 'argon2';
-import {IUserModel, UserRepository} from '../../models/mongo/user-repository';
+import {IUserModel, UserFormatter, UserRepository} from '../../models/mongo/user-repository';
 import express, {Request as ExRequest, Response as ExResponse} from 'express';
 import {ProvideSingleton} from '../../shared/provide-singleton';
 import {IAuthTokenRequest} from '../../models/basic/auth';

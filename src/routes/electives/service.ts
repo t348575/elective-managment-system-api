@@ -1,17 +1,19 @@
 import {ProvideSingleton} from '../../shared/provide-singleton';
 import {BaseRepository} from '../../models/shared/base-repository';
 import {AddElectives} from './controller';
-import {ElectiveRepository, IElectiveModel} from '../../models/mongo/elective-repository';
+import {ElectiveFormatter, ElectiveRepository, IElectiveModel} from '../../models/mongo/elective-repository';
 import {inject} from 'inversify';
 import {BatchRepository, batchStringToModel} from '../../models/mongo/batch-repository';
 import {UserRepository} from '../../models/mongo/user-repository';
-import {checkNumber, checkString} from '../../util/general-util';
+import {checkNumber, checkString, cleanQuery} from '../../util/general-util';
 import {electiveAttributes} from '../../models/types';
+import {BaseService} from '../../models/shared/base-service';
+import {PaginationModel} from '../../models/shared/pagination-model';
 
 
 
 @ProvideSingleton(ElectivesService)
-export class ElectivesService extends BaseRepository<IElectiveModel> {
+export class ElectivesService extends BaseService<IElectiveModel> {
 
     constructor(
         @inject(ElectiveRepository) protected repository: ElectiveRepository,
@@ -45,7 +47,7 @@ export class ElectivesService extends BaseRepository<IElectiveModel> {
             // @ts-ignore
             teacherIds.push((await this.userRepository.findOne({ role: 'teacher', rollNo: v })).id.toString());
         }
-        return this.repository.create({
+        await this.repository.create({
             name: elective.name,
             description: elective.description,
             courseCode: elective.courseCode,
@@ -94,8 +96,8 @@ export class ElectivesService extends BaseRepository<IElectiveModel> {
                                     name: v.name,
                                     description: v.description,
                                     courseCode: v.courseCode,
-                                    version: v.version,
-                                    strength: v.strength,
+                                    version: parseInt(v.version, 10),
+                                    strength: parseInt(v.strength, 10),
                                     attributes: parsedAttributes,
                                     batches,
                                     teachers
@@ -107,6 +109,7 @@ export class ElectivesService extends BaseRepository<IElectiveModel> {
                         }
                     }
                     catch (err) {
+                        console.log(err);
                         invalid.push(v);
                     }
                 }
@@ -115,6 +118,34 @@ export class ElectivesService extends BaseRepository<IElectiveModel> {
             catch (err) {
                 reject(err);
             }
+        });
+    }
+
+    public async getPaginated(
+        page: number,
+        limit: number,
+        fields: string,
+        sort: string,
+        query: string
+    ): Promise<PaginationModel<ElectiveFormatter>> {
+        const skip: number = (Math.max(1, page) - 1) * limit;
+        let [count, docs] = await Promise.all([
+            this.repository.count(query),
+            this.repository.findAndPopulate(skip, limit, sort, query)
+        ]);
+        const fieldArray = (fields || '').split(',').map(field => field.trim()).filter(Boolean);
+        if (fieldArray.length) docs = docs.map((d: { [x: string]: any; }) => {
+            const attrs: any = {};
+            // @ts-ignore
+            fieldArray.forEach(f => attrs[f] = d[f]);
+            return attrs;
+        });
+        return new PaginationModel<ElectiveFormatter>({
+            count,
+            page,
+            limit,
+            docs,
+            totalPages: Math.ceil(count / limit),
         });
     }
 }

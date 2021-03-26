@@ -59,7 +59,7 @@ export abstract class BaseRepository<EntityType> implements IBaseRepository<Enti
 				.skip(skip)
 				.limit(limit)
 		)
-			.map(item => new this.formatter(item));
+		.map(item => new this.formatter(item));
 	}
 
 	public async findAndUpdate(query: any, model: EntityType): Promise<void> {

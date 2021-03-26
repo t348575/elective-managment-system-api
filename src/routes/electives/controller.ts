@@ -1,4 +1,4 @@
-import {Body, Controller, Post, Put, Request, Response, Route, Security, Tags} from 'tsoa';
+import {Body, Controller, Get, Post, Put, Query, Request, Response, Route, Security, Tags} from 'tsoa';
 import {ProvideSingleton} from '../../shared/provide-singleton';
 import {inject} from 'inversify';
 import {ElectivesService} from './service';
@@ -7,12 +7,16 @@ import {ApiError, ErrorType, UnknownApiError} from '../../shared/error-handler';
 import {Request as ExRequest} from 'express';
 import {Readable} from 'stream';
 import csv from 'csvtojson';
+import {PaginationModel} from '../../models/shared/pagination-model';
+import {ElectiveFormatter, IElectiveModel} from '../../models/mongo/elective-repository';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
 
 const adminOnly: string[] = ['admin'];
 
 const teacherOrStudent: string[] = ['student', 'teacher'];
+
+const teacherOrAdmin: string[] = ['admin', 'teacher'];
 
 export interface AddElectives {
     name: string;
@@ -90,5 +94,38 @@ export class ElectivesController extends Controller {
                 reject(UnknownApiError(err));
             }
         });
+    }
+
+
+    /**
+     * @param fields csv of fields from return schema eg: name,description,courseCode
+     */
+    @Get('')
+    @Security('jwt', teacherOrAdmin)
+    @Response<ErrorType>(401, 'ValidationError')
+    @Response<ErrorType>(500, 'Unknown server error')
+    public async getElectives(
+        @Query() pageNumber: number,
+        @Query() limit: number,
+        @Query() fields ?: string,
+        @Query() sortBy ?: string,
+        @Query() courseCode ?: string,
+        @Query() name ?: string
+
+    ): Promise<PaginationModel<IElectiveModel>> {
+        let query = '';
+        const queryObj = {};
+        if (name || courseCode) {
+            if (name) {
+                // @ts-ignore
+                queryObj.name = name;
+            }
+            if (courseCode) {
+                // @ts-ignore
+                queryObj.courseCode = courseCode;
+            }
+            query = JSON.stringify(queryObj);
+        }
+        return this.service.getPaginated(pageNumber, limit, fields || '', sortBy || '{"name":"asc"}', query);
     }
 }

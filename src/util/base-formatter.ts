@@ -1,8 +1,8 @@
 import {ImmutabilityHelper} from './immutability-helper';
 
 export abstract class BaseFormatter {
-	public id: string | undefined;
-	public _id: string | undefined;
+	public id: string;
+	public _id: string;
 
 	protected format(args: any = {}): void {
 		if (typeof args.toJSON === 'function') args = args.toJSON();
@@ -14,6 +14,7 @@ export abstract class BaseFormatter {
 		});
 		if (args._id) {
 			this.id = args._id.toString();
+			// @ts-ignore
 			delete this._id;
 		}
 	}

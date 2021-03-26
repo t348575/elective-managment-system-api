@@ -6,12 +6,12 @@ export interface IPaginationModel {
 	docs: any[];
 }
 
-export class PaginationModel implements IPaginationModel {
+export class PaginationModel<Entity> implements IPaginationModel {
 	count: number;
 	page: number;
 	limit: number;
 	totalPages: number;
-	docs: any[];
+	docs: Entity[];
 
 	constructor(args: IPaginationModel) {
 		Object.assign(this, args);

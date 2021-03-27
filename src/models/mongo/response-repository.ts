@@ -47,6 +47,14 @@ export class ResponseFormatter extends BaseFormatter implements IResponseModel {
                 this.user = new UserFormatter(args.user);
             }
         }
+        if (this.form) {
+            if (args.form instanceof mongoose.Types.ObjectId) {
+                this.form = args.form.toString();
+            }
+            else if (typeof args.form === 'object') {
+                this.form = new FormFormatter(args.form);
+            }
+        }
     }
 }
 

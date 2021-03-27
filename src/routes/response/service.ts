@@ -39,8 +39,9 @@ export class ResponseService extends BaseService<IResponseModel> {
                 });
                 const idx = form.findIndex(e => e.id === options.id);
                 if (idx > -1) {
-                    for (const v of form[idx].electives) {
-                        if (options.electives.indexOf(<string>v.id) === -1) {
+                    const validElectives = form[idx].electives.map(v => v.id);
+                    for (const v of options.electives) {
+                        if (validElectives.indexOf(v) === -1) {
                             throw new ApiError({
                                 statusCode: 401,
                                 name: 'elective_no_exist',

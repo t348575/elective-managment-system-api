@@ -25,7 +25,12 @@ export class ClassFormatter extends BaseFormatter implements IClassModel {
     id: string;
     constructor(args: any) {
         super();
-        this.format(args);
+        if (!(args instanceof mongoose.Types.ObjectId)) {
+            this.format(args);
+        }
+        else {
+            this.id = args.toString();
+        }
     }
 }
 

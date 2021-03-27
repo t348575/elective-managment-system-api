@@ -4,6 +4,7 @@ import {Schema} from "mongoose";
 import {MongoConnector} from "../../shared/mongo-connector";
 import {inject} from "inversify";
 import {ProvideSingleton} from '../../shared/provide-singleton';
+import mongoose from 'mongoose';
 
 export interface IBatchModel {
     id ?: string;
@@ -28,7 +29,12 @@ export class BatchFormatter extends BaseFormatter implements IBatchModel {
     id: string;
     constructor(args: any) {
         super();
-        this.format(args);
+        if (!(args instanceof mongoose.Types.ObjectId)) {
+            this.format(args);
+        }
+        else {
+            this.id = args.toString();
+        }
     }
 }
 

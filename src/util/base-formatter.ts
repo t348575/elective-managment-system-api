@@ -10,6 +10,10 @@ export abstract class BaseFormatter {
 			if (args[key] !== undefined) {
 				// @ts-ignore
 				this[key] = ImmutabilityHelper.copy(args[key]);
+				if (args[key] instanceof Date) {
+					// @ts-ignore
+					this[key] = args[key];
+				}
 			}
 		});
 		if (args._id) {

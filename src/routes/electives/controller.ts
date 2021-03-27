@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Post, Put, Query, Request, Response, Route, Security, Tags} from 'tsoa';
+import {Body, Controller, Delete, Get, Post, Put, Query, Request, Response, Route, Security, Tags} from 'tsoa';
 import {ProvideSingleton} from '../../shared/provide-singleton';
 import {inject} from 'inversify';
 import {ElectivesService} from './service';
@@ -34,6 +34,23 @@ export interface AddElectives {
      */
     batches: string[];
     teachers: string[];
+}
+
+export interface UpdateElectiveOptions {
+    id: string;
+    name?: string;
+    description?: string;
+    courseCode?: string;
+    version?: number;
+    strength?: number;
+    attributes?: electiveAttributes;
+    /**
+     * Batch string
+     * @pattern ^\d{4}-\d-[a-zA-Z]{4,5}-[a-zA-Z]{3,4}$
+     * @example "2018-4-BTECH-CSE"
+     */
+    batches?: string[];
+    teachers?: string[];
 }
 
 @Tags('electives')
@@ -131,7 +148,32 @@ export class ElectivesController extends Controller {
                 queryObj.courseCode = courseCode;
             }
         }
-        return this.service.getPaginated(pageNumber, limit, fields || '', sortBy || '{"name":"asc"}', queryObj);
+        return this.service.getPaginated<IElectiveModel>(pageNumber, limit, fields || '', sortBy || '{"name":"asc"}', queryObj);
+    }
+
+    @Post('')
+    @Security('jwt', teacherOrAdmin)
+    @Response<ErrorType>(401, 'ValidationError')
+    @Response<ErrorType>(500, 'Unknown server error')
+    public async updateElective(
+        @Body() options: UpdateElectiveOptions
+    ) {
+        // @ts-ignore
+        options._id = options.id;
+        // @ts-ignore
+        delete options.id;
+        // @ts-ignore
+        return this.service.update(options.id, options);
+    }
+
+    @Delete('')
+    @Security('jwt', adminOnly)
+    @Response<ErrorType>(401, 'ValidationError')
+    @Response<ErrorType>(500, 'Unknown server error')
+    public async deleteElective(
+        @Query() id: string
+    ) {
+        return this.service.delete(id);
     }
 
     private static getAttributesAsCSV(attributes: electiveAttributes): string {

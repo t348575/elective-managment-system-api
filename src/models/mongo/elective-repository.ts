@@ -4,7 +4,7 @@ import {IUserModel, SafeUser, UserFormatter} from './user-repository';
 import {BaseFormatter, remove} from '../../util/base-formatter';
 import {BaseRepository} from "../shared/base-repository";
 import {Schema} from "mongoose";
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import {inject} from "inversify";
 import {MongoConnector} from "../../shared/mongo-connector";
 import {ProvideSingleton} from '../../shared/provide-singleton';
@@ -17,6 +17,7 @@ export interface IElectiveModel {
     courseCode: string;
     version: number;
     strength: number;
+    active: boolean;
     attributes: electiveAttributes;
     batches: IBatchModel[];
     teachers: IUserModel[];
@@ -28,23 +29,35 @@ export class ElectiveFormatter extends BaseFormatter implements IElectiveModel {
     courseCode: string;
     version: number;
     strength: number;
+    active: boolean;
     attributes: electiveAttributes;
     batches: IBatchModel[];
     teachers: IUserModel[];
     id: string;
     constructor(args: any) {
         super();
-        this.format(args);
+        if (!(args instanceof mongoose.Types.ObjectId)) {
+            this.format(args);
+        }
+        else {
+            this.id = args.toString();
+        }
         if (this.batches) {
             for (const [i, v] of args.batches.entries()) {
-                if (typeof v === 'object') {
+                if (v instanceof mongoose.Types.ObjectId) {
+                    this.batches[i] = v.toString();
+                }
+                else if (typeof v === 'object') {
                     this.batches[i] = new BatchFormatter(v);
                 }
             }
         }
         if (this.teachers) {
             for (const [i, v] of args.teachers.entries()) {
-                if (typeof v === 'object') {
+                if (v instanceof mongoose.Types.ObjectId) {
+                    this.teachers[i] = v.toString();
+                }
+                else if (typeof v === 'object') {
                     // @ts-ignore
                     this.teachers[i] = remove<IUserModel, SafeUser>(new UserFormatter(v), ['password']);
                 }
@@ -72,6 +85,7 @@ export class ElectiveRepository extends BaseRepository<IElectiveModel> {
         courseCode: { type: String, required: true },
         version: { type: Number, required: true },
         strength: { type: Number, required: true },
+        active: { type: Boolean, required: true },
         attributes: [{
             key: { type: String, required: true },
             value: { type: String, required: true }

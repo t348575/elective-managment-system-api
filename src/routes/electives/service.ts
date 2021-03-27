@@ -44,7 +44,7 @@ export class ElectivesService extends BaseService<IElectiveModel> {
         // @ts-ignore
         for (const v of elective.teachers) {
             // @ts-ignore
-            teacherIds.push((await this.userRepository.findOne({ role: 'teacher', rollNo: v })).id.toString());
+            teacherIds.push((await this.userRepository.findOne({ role: 'teacher', rollNo: v.toLowerCase() })).id.toString());
         }
         await this.repository.create({
             name: elective.name,
@@ -120,13 +120,13 @@ export class ElectivesService extends BaseService<IElectiveModel> {
         });
     }
 
-    public async getPaginated(
+    public async getPaginated<Entity>(
         page: number,
         limit: number,
         fields: string,
         sort: string,
         query: any
-    ): Promise<PaginationModel<ElectiveFormatter>> {
+    ): Promise<PaginationModel<Entity>> {
         const skip: number = (Math.max(1, page) - 1) * limit;
         let [count, docs] = await Promise.all([
             this.repository.count(query),
@@ -139,7 +139,7 @@ export class ElectivesService extends BaseService<IElectiveModel> {
             fieldArray.forEach(f => attrs[f] = d[f]);
             return attrs;
         });
-        return new PaginationModel<ElectiveFormatter>({
+        return new PaginationModel<Entity>({
             count,
             page,
             limit,

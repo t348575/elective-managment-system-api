@@ -10,6 +10,10 @@ import { ElectivesController } from './electives/controller';
 import { AuthController } from './oauth/controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { UsersController } from './user/controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { FormsController } from './forms/controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { ResponseController } from './response/controller';
 import { expressAuthentication } from './../shared/authentication-module';
 import { iocContainer } from './../ioc';
 import { IocContainer, IocContainerFactory } from '@tsoa/runtime';
@@ -49,7 +53,7 @@ const models: TsoaRoute.Models = {
             "name": {"dataType":"string","required":true},
             "description": {"dataType":"string","required":true},
             "courseCode": {"dataType":"string","required":true},
-            "version": {"dataType":"double","default":"1","required":true},
+            "version": {"dataType":"double","required":true},
             "strength": {"dataType":"double","required":true},
             "attributes": {"ref":"electiveAttributes","required":true},
             "batches": {"dataType":"array","array":{"dataType":"string"},"required":true,"validators":{"pattern":{"value":"^\\d{4}-\\d-[a-zA-Z]{4,5}-[a-zA-Z]{3,4}$"}}},
@@ -80,6 +84,7 @@ const models: TsoaRoute.Models = {
             "courseCode": {"dataType":"string","required":true},
             "version": {"dataType":"double","required":true},
             "strength": {"dataType":"double","required":true},
+            "active": {"dataType":"boolean","required":true},
             "attributes": {"ref":"electiveAttributes","required":true},
             "batches": {"dataType":"array","array":{"ref":"IBatchModel"},"required":true},
             "teachers": {"dataType":"array","array":{"ref":"IUserModel"},"required":true},
@@ -122,6 +127,22 @@ const models: TsoaRoute.Models = {
             "limit": {"dataType":"double","required":true},
             "totalPages": {"dataType":"double","required":true},
             "docs": {"dataType":"array","array":{"ref":"IElectiveModel"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "UpdateElectiveOptions": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "name": {"dataType":"string"},
+            "description": {"dataType":"string"},
+            "courseCode": {"dataType":"string"},
+            "version": {"dataType":"double"},
+            "strength": {"dataType":"double"},
+            "attributes": {"ref":"electiveAttributes"},
+            "batches": {"dataType":"array","array":{"dataType":"string"},"validators":{"pattern":{"value":"^\\d{4}-\\d-[a-zA-Z]{4,5}-[a-zA-Z]{3,4}$"}}},
+            "teachers": {"dataType":"array","array":{"dataType":"string"}},
         },
         "additionalProperties": false,
     },
@@ -235,6 +256,73 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IFormModel": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string"},
+            "start": {"dataType":"datetime","required":true},
+            "end": {"dataType":"datetime","required":true},
+            "num": {"dataType":"double","required":true},
+            "electives": {"dataType":"array","array":{"ref":"IElectiveModel"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CreateFormOptions": {
+        "dataType": "refObject",
+        "properties": {
+            "start": {"dataType":"string","required":true},
+            "end": {"dataType":"string","required":true},
+            "numElectives": {"dataType":"double","required":true},
+            "electives": {"dataType":"array","array":{"dataType":"string"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PaginationModel_any_": {
+        "dataType": "refObject",
+        "properties": {
+            "count": {"dataType":"double","required":true},
+            "page": {"dataType":"double","required":true},
+            "limit": {"dataType":"double","required":true},
+            "totalPages": {"dataType":"double","required":true},
+            "docs": {"dataType":"array","array":{"dataType":"any"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "UpdateFormOptions": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "start": {"dataType":"string"},
+            "end": {"dataType":"string"},
+            "num": {"dataType":"double"},
+            "electives": {"dataType":"array","array":{"dataType":"string"}},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IResponseModel": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string"},
+            "user": {"ref":"IUserModel","required":true},
+            "responses": {"dataType":"array","array":{"ref":"IElectiveModel"},"required":true},
+            "form": {"ref":"IFormModel","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "FormResponseOptions": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "electives": {"dataType":"array","array":{"dataType":"string"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
 const validationService = new ValidationService(models);
 
@@ -300,6 +388,7 @@ export function RegisterRoutes(app: express.Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.post('/electives/add-csv',
+            authenticateMiddleware([{"jwt":["admin"]}]),
             function (request: any, response: any, next: any) {
             const args = {
                     request: {"in":"request","name":"request","required":true,"dataType":"object"},
@@ -356,6 +445,62 @@ export function RegisterRoutes(app: express.Router) {
 
 
             const promise = controller.getElectives.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/electives',
+            authenticateMiddleware([{"jwt":["admin","teacher"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    options: {"in":"body","name":"options","required":true,"ref":"UpdateElectiveOptions"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<ElectivesController>(ElectivesController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.updateElective.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.delete('/electives',
+            authenticateMiddleware([{"jwt":["admin"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    id: {"in":"query","name":"id","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<ElectivesController>(ElectivesController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.deleteElective.apply(controller, validatedArgs as any);
             promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -813,6 +958,203 @@ export function RegisterRoutes(app: express.Router) {
 
 
             const promise = controller.resetPass.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.put('/forms/create-form',
+            authenticateMiddleware([{"jwt":["admin"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    options: {"in":"body","name":"options","required":true,"ref":"CreateFormOptions"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<FormsController>(FormsController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.createForm.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/forms/batches',
+            authenticateMiddleware([{"jwt":["admin"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<FormsController>(FormsController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.getBatches.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/forms/active-forms',
+            authenticateMiddleware([{"jwt":["teacher","admin","student"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    request: {"in":"request","name":"request","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<FormsController>(FormsController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.activeForms.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/forms',
+            authenticateMiddleware([{"jwt":["admin"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    pageNumber: {"in":"query","name":"pageNumber","required":true,"dataType":"double"},
+                    limit: {"in":"query","name":"limit","required":true,"dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<FormsController>(FormsController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.allForms.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/forms',
+            authenticateMiddleware([{"jwt":["admin"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    options: {"in":"body","name":"options","required":true,"ref":"UpdateFormOptions"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<FormsController>(FormsController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.updateForm.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.delete('/forms',
+            authenticateMiddleware([{"jwt":["admin"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    id: {"in":"query","name":"id","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<FormsController>(FormsController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.deleteForm.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.put('/form-response',
+            authenticateMiddleware([{"jwt":["student"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    options: {"in":"body","name":"options","required":true,"ref":"FormResponseOptions"},
+                    request: {"in":"request","name":"request","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<ResponseController>(ResponseController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.formResponse.apply(controller, validatedArgs as any);
             promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

@@ -6,7 +6,7 @@ import {UserRepository} from '../../models/mongo/user-repository';
 import {FormResponseOptions} from './controller';
 import {jwtToken, scopes} from '../../models/types';
 import {FormsRepository} from '../../models/mongo/form-repository';
-import {ErrorType} from '../../shared/error-handler';
+import {ApiError, ErrorType} from '../../shared/error-handler';
 import {PaginationModel} from '../../models/shared/pagination-model';
 import mongoose from 'mongoose';
 
@@ -23,11 +23,11 @@ export class ResponseService extends BaseService<IResponseModel> {
     public async respondToForm(options: FormResponseOptions, token: jwtToken) {
         try {
             if (await this.responseExists(token.id, options.id)) {
-                return <ErrorType> {
+                throw new ApiError({
                     statusCode: 401,
                     name: 'response_registered',
                     message: 'A response has already been submitted for the selected form'
-                }
+                });
             }
             else {
                 const user = await this.userRepository.getById(token.id);
@@ -39,31 +39,45 @@ export class ResponseService extends BaseService<IResponseModel> {
                 });
                 const idx = form.findIndex(e => e.id === options.id);
                 if (idx > -1) {
+                    for (const v of form[idx].electives) {
+                        if (options.electives.indexOf(<string>v.id) === -1) {
+                            throw new ApiError({
+                                statusCode: 401,
+                                name: 'elective_no_exist',
+                                message: 'Elective given does not exist'
+                            });
+                        }
+                    }
                     return this.repository.create({
                         // @ts-ignore
                         form: form[idx].id,
                         // @ts-ignore
-                        responses: form[idx].electives.map(e => e.id),
+                        responses: options.electives,
                         // @ts-ignore
                         user: user.id,
                         time: new Date()
                     });
                 }
                 else {
-                    return <ErrorType>{
+                    throw new ApiError({
                         statusCode: 401,
                         name: 'form_expired',
                         message: 'Requested form is no longer valid'
-                    };
+                    });
                 }
             }
         }
         catch(err) {
-            return <ErrorType>{
-                statusCode: 404,
-                name: 'form_not_found',
-                message: 'Requested form does not exist'
-            };
+            if (err instanceof ApiError) {
+                throw err;
+            }
+            else {
+                return <ErrorType>{
+                    statusCode: 404,
+                    name: 'form_not_found',
+                    message: 'Requested form does not exist'
+                };
+            }
         }
     }
 

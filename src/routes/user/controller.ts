@@ -36,7 +36,7 @@ export interface CreateUserCSV {
 export interface CreateUser {
 	users: {
 		name: string;
-		username: string;
+		username ?: string;
 		rollNo: string;
 		role: 'admin' | 'teacher' | 'student';
 		batch ?: string;

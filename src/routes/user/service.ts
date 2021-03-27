@@ -72,7 +72,7 @@ export class UsersService extends BaseService<IUserModel> {
 								name: v['name'],
 								username: UsersService.getEmail(v as IUserModel, options.defaultRollNoAsEmail),
 								password: cryptoRandomString({ length: 8, type: 'url-safe' }),
-								rollNo: v['rollNo'],
+								rollNo: v['rollNo'].toLowerCase(),
 								role: v['role'],
 								batch: v['batch']
 							};
@@ -253,7 +253,7 @@ export class UsersService extends BaseService<IUserModel> {
 				return obj['username'];
 			}
 			else {
-				return obj['rollNo'] + '@' + (obj['role'] === 'student' ? constants.emailSuffix.student : constants.emailSuffix.teacher);
+				return obj['rollNo'].toLowerCase() + '@' + (obj['role'] === 'student' ? constants.emailSuffix.student : constants.emailSuffix.teacher);
 			}
 		}
 		return obj['username'];

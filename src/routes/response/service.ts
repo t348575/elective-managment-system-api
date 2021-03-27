@@ -20,9 +20,9 @@ export class ResponseService extends BaseService<IResponseModel> {
         super();
     }
 
-    public async respondToForm(options: FormResponseOptions, user: jwtToken) {
+    public async respondToForm(options: FormResponseOptions, token: jwtToken) {
         try {
-            if (await this.responseExists(user.id, options.id)) {
+            if (await this.responseExists(token.id, options.id)) {
                 return <ErrorType> {
                     statusCode: 401,
                     name: 'response_registered',
@@ -30,6 +30,7 @@ export class ResponseService extends BaseService<IResponseModel> {
                 }
             }
             else {
+                const user = await this.userRepository.getById(token.id);
                 const form = (await this.formsRepository.findActive({ end: { '$gte': new Date() }}))
                 .filter(e => {
                     // @ts-ignore
@@ -37,7 +38,7 @@ export class ResponseService extends BaseService<IResponseModel> {
                     return e.electives.length > 0;
                 });
                 const idx = form.findIndex(e => e.id === options.id);
-                if (idx) {
+                if (idx > -1) {
                     return this.repository.create({
                         // @ts-ignore
                         form: form[idx].id,

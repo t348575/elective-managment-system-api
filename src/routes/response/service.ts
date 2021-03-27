@@ -8,6 +8,7 @@ import {jwtToken, scopes} from '../../models/types';
 import {FormsRepository} from '../../models/mongo/form-repository';
 import {ErrorType} from '../../shared/error-handler';
 import {PaginationModel} from '../../models/shared/pagination-model';
+import mongoose from 'mongoose';
 
 @ProvideSingleton(ResponseService)
 export class ResponseService extends BaseService<IResponseModel> {
@@ -21,7 +22,14 @@ export class ResponseService extends BaseService<IResponseModel> {
 
     public async respondToForm(options: FormResponseOptions, user: jwtToken) {
         try {
-            if (await this.responseExists(user.id)) {
+            if (await this.responseExists(user.id, options.id)) {
+                return <ErrorType> {
+                    statusCode: 401,
+                    name: 'response_registered',
+                    message: 'A response has already been submitted for the selected form'
+                }
+            }
+            else {
                 const form = (await this.formsRepository.findActive({ end: { '$gte': new Date() }}))
                 .filter(e => {
                     // @ts-ignore
@@ -48,13 +56,6 @@ export class ResponseService extends BaseService<IResponseModel> {
                     };
                 }
             }
-            else {
-                return <ErrorType> {
-                    statusCode: 401,
-                    name: 'response_registered',
-                    message: 'A response has already been submitted for the selected form'
-                }
-            }
         }
         catch(err) {
             return <ErrorType>{
@@ -65,9 +66,9 @@ export class ResponseService extends BaseService<IResponseModel> {
         }
     }
 
-    private async responseExists(id: string): Promise<boolean> {
+    private async responseExists(userId: string, formId: string): Promise<boolean> {
         try {
-            const user = await this.getById(id);
+            const user = await this.repository.findOne({ user: mongoose.Types.ObjectId(userId), form: mongoose.Types.ObjectId(formId) });
             return user !== null && user !== undefined;
         }
         catch(err) {

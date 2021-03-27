@@ -18,7 +18,7 @@ export abstract class BaseService<EntityModel> {
 		limit: number,
 		fields: string,
 		sort: string,
-		query: string
+		query: any
 	): Promise<PaginationModel<EntityModel>> {
 		const skip: number = (Math.max(1, page) - 1) * limit;
 		let [count, docs] = await Promise.all([

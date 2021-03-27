@@ -22,7 +22,12 @@ export class PasswordResetFormatter extends BaseFormatter implements IPasswordRe
     expireAt: Date;
     constructor(args: any) {
         super();
-        this.format(args);
+        if (!(args instanceof mongoose.Types.ObjectId)) {
+            this.format(args);
+        }
+        else {
+            this.id = args.toString();
+        }
         if (this.user) {
             this.user = args.user.toString();
         }

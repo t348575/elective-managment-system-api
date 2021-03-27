@@ -22,6 +22,8 @@ import './routes/private-injector-init';
 import './routes/oauth/controller';
 import './routes/user/controller';
 import './routes/electives/controller';
+import './routes/forms/controller';
+import './routes/response/controller';
 
 export const app = express();
 

@@ -33,13 +33,20 @@ export class UserFormatter extends BaseFormatter implements IUserModel {
 	id: string;
 	constructor(args: any) {
 		super();
-		this.format(args);
+		if (!(args instanceof mongoose.Types.ObjectId)) {
+			this.format(args);
+		}
 		if (this.batch && typeof args.batch !== 'string') {
 			this.batch = new BatchFormatter(args.batch);
 		}
 		if (this.classes) {
 			for (const [i, v] of args.classes.entries()) {
-				this.classes[i] = new ClassFormatter(v);
+				if (v instanceof mongoose.Types.ObjectId) {
+					this.classes[i] = v.toString();
+				}
+				else if (typeof v === 'object') {
+					this.classes[i] = new ClassFormatter(v);
+				}
 			}
 		}
 	}

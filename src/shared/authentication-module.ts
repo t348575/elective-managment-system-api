@@ -121,6 +121,26 @@ export function expressAuthentication(
 				});
 			});
 		}
+		case 'any': {
+			const token = req.headers.authorization?.split(' ')[1];
+			return new Promise((resolve, reject) => {
+				if (!token) {
+					return reject(new OAuthError({ name: 'invalid_request', error_description: 'Authorization missing' }));
+				}
+				decipherJWT(token, 'accessToken')
+				.then(async (accessToken) => {
+					if (await redis.exists(`accessToken::${accessToken.id}::${accessToken.exp}`)) {
+						resolve(accessToken);
+					}
+					else {
+						reject(new OAuthError({ name: 'access_denied', error_description: 'Token does not exist' }));
+					}
+				})
+				.catch(err => {
+					reject(new OAuthError({ name: 'invalid_request', error_description: 'Invalid token'}))
+				});
+			});
+		}
 		default: {
 			return Promise.reject(new ApiError(constants.errorTypes.auth));
 		}

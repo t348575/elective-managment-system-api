@@ -24,6 +24,7 @@ import './routes/user/controller';
 import './routes/electives/controller';
 import './routes/forms/controller';
 import './routes/response/controller';
+import './routes/download/controller';
 
 export const app = express();
 

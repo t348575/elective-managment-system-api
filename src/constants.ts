@@ -25,6 +25,9 @@ export default {
 		userCreation: '/../../../resources/assets/user-creation.html',
 		passReset: '/../../../resources/assets/pass-reset.html'
 	},
+	directories: {
+		csvTemporary: '/../../../resources/csvTemp'
+	},
 	errorTypes: {
 		db: { statusCode: 500, name: 'Internal Server Error', message: 'database error' },
 		validation: { statusCode: 400, name: 'Bad Request', message: 'validation error' },

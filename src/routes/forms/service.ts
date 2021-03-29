@@ -9,6 +9,14 @@ import {ErrorType, UnknownApiError} from '../../shared/error-handler';
 import {UserRepository} from '../../models/mongo/user-repository';
 import {scopes} from '../../models/types';
 import {PaginationModel} from '../../models/shared/pagination-model';
+import {ResponseRepository} from '../../models/mongo/response-repository';
+import mongoose from 'mongoose';
+
+export interface AssignedElective {
+    rollNo: string;
+    batch: string;
+    electives: string[];
+}
 
 @ProvideSingleton(FormsService)
 export class FormsService extends BaseService<IFormModel> {
@@ -16,7 +24,8 @@ export class FormsService extends BaseService<IFormModel> {
         @inject(FormsRepository) protected repository: FormsRepository,
         @inject(BatchRepository) protected batchRepository: BatchRepository,
         @inject(ElectiveRepository) protected electionRepository: ElectiveRepository,
-        @inject(UserRepository) protected userRepository: UserRepository
+        @inject(UserRepository) protected userRepository: UserRepository,
+        @inject(ResponseRepository) protected responseRepository: ResponseRepository
     ) {
         super();
     }
@@ -119,5 +128,9 @@ export class FormsService extends BaseService<IFormModel> {
             docs,
             totalPages: Math.ceil(count / limit),
         });
+    }
+
+    public async generateList(id: string, format: 'json' | 'csv', closeForm: boolean = false) {
+        return this.responseRepository.find(0, undefined, '', { form: mongoose.Types.ObjectId(id) });
     }
 }

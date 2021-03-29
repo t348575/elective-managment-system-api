@@ -26,13 +26,21 @@ import {ApiError, ErrorType, UnknownApiError} from '../../shared/error-handler';
 import {Readable} from 'stream';
 import * as argon2 from 'argon2';
 import {getArgonHash} from '../../util/general-util';
+import {IBatchModel} from '../../models/mongo/batch-repository';
+import {IClassModel} from '../../models/mongo/class-repository';
 
 export interface CreateUserCSV {
 	defaultRollNoAsEmail: boolean;
 }
 
 export interface CreateUser {
-	users: IUserModel[];
+	users: {
+		name: string;
+		username ?: string;
+		rollNo: string;
+		role: 'admin' | 'teacher' | 'student';
+		batch ?: string;
+	}[];
 	defaultRollNoAsEmail: boolean;
 }
 

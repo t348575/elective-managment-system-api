@@ -9,6 +9,7 @@ import {MongoConnector} from '../../shared/mongo-connector';
 export interface INotificationModel {
     id ?: string;
     user: IUserModel;
+    device: string;
     sub: {
         endpoint: string;
         expirationTime: null;
@@ -22,6 +23,7 @@ export interface INotificationModel {
 export class NotificationFormatter extends BaseFormatter implements INotificationModel {
     sub: { endpoint: string; expirationTime: null; keys: { p256dh: string; auth: string } };
     user: IUserModel;
+    device: string;
     id: string;
     constructor(args: any) {
         super();
@@ -35,14 +37,15 @@ export class NotificationRepository extends BaseRepository<INotificationModel> {
 	protected schema: Schema = new Schema({
         sub: {
             endpoint: { type: String, required: true },
-            expirationTime: { type: null, required: true },
+            expirationTime: { type: Number, required: false, nullable: true },
             keys: {
                 p256dh: { type: String, required: true },
                 auth: { type: String, required: true }
             }
         },
-        user: { type : mongoose.Schema.Types.ObjectId, ref: 'batches' }
-	}, { collection: this.modelName });
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'batches' },
+        device: { type: String, required: true }
+	}, { collection: this.modelName, timestamps: true });
 
 	protected formatter = NotificationFormatter;
 	constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {

@@ -7,6 +7,7 @@ import constants from '../../constants';
 import {decorate, injectable} from 'inversify';
 import {IBaseRepository} from './ibase-repository';
 import mongoose from 'mongoose';
+import * as stream from 'stream';
 
 export abstract class BaseRepository<EntityType> implements IBaseRepository<EntityType> {
 	protected dbConnection: MongoConnector;
@@ -60,6 +61,21 @@ export abstract class BaseRepository<EntityType> implements IBaseRepository<Enti
 				.limit(limit)
 		)
 		.map(item => new this.formatter(item));
+	}
+
+	public findToStream(
+		sort: string,
+		query: any,
+		pipeCsv: any,
+		pipeRes: any
+	): void {
+		const sortObject = cleanQuery(sort, this.sortQueryFormatter);
+		this.documentModel.find(this.cleanWhereQuery(query))
+		.sort(Object.keys(sortObject).map(key => [key, sortObject[key]]))
+		.populate('responses').populate({
+			path: 'user',
+			populate: ['batch']
+		}).cursor().pipe(pipeCsv).pipe(pipeRes);
 	}
 
 	public async findAndUpdate(query: any, model: EntityType): Promise<void> {

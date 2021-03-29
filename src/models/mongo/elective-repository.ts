@@ -17,7 +17,6 @@ export interface IElectiveModel {
     courseCode: string;
     version: number;
     strength: number;
-    active: boolean;
     attributes: electiveAttributes;
     batches: IBatchModel[];
     teachers: IUserModel[];
@@ -29,7 +28,6 @@ export class ElectiveFormatter extends BaseFormatter implements IElectiveModel {
     courseCode: string;
     version: number;
     strength: number;
-    active: boolean;
     attributes: electiveAttributes;
     batches: IBatchModel[];
     teachers: IUserModel[];
@@ -85,7 +83,6 @@ export class ElectiveRepository extends BaseRepository<IElectiveModel> {
         courseCode: { type: String, required: true },
         version: { type: Number, required: true },
         strength: { type: Number, required: true },
-        active: { type: Boolean, required: true },
         attributes: [{
             key: { type: String, required: true },
             value: { type: String, required: true }

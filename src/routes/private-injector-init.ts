@@ -8,6 +8,7 @@ import {PasswordResetRepository} from '../models/mongo/password-reset-repository
 import {ClassRepository} from '../models/mongo/class-repository';
 import {FormsRepository} from '../models/mongo/form-repository';
 import {ResponseRepository} from '../models/mongo/response-repository';
+import {DownloadRespository} from '../models/mongo/download-repository';
 
 @Hidden()
 @Route('private-init')
@@ -20,7 +21,8 @@ export class PrivateInjectorInit extends Controller {
         @inject(PasswordResetRepository) passwordResetRepository: PasswordResetRepository,
         @inject(ClassRepository) classRepository: ClassRepository,
         @inject(FormsRepository) formRepository: FormsRepository,
-        @inject(ResponseRepository) responseRepository: ResponseRepository
+        @inject(ResponseRepository) responseRepository: ResponseRepository,
+        @inject(DownloadRespository) downloadRespository: DownloadRespository
     ) {
         super();
     }

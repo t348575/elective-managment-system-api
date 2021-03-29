@@ -53,6 +53,6 @@ export class ResponseController extends Controller {
         @Query() pageNumber: number,
         @Query() limit: number
     ) {
-        return this.service.getPaginated(pageNumber, limit, '', '{"time":"desc"}', {_id: id});
+        return this.service.getPaginated(pageNumber, limit, '', '{"time":"desc"}', {form: id});
     }
 }

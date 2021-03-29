@@ -6,8 +6,9 @@ import {UserRepository} from '../../models/mongo/user-repository';
 import {FormResponseOptions} from './controller';
 import {jwtToken, scopes} from '../../models/types';
 import {FormsRepository} from '../../models/mongo/form-repository';
-import {ErrorType} from '../../shared/error-handler';
+import {ApiError, ErrorType} from '../../shared/error-handler';
 import {PaginationModel} from '../../models/shared/pagination-model';
+import mongoose from 'mongoose';
 
 @ProvideSingleton(ResponseService)
 export class ResponseService extends BaseService<IResponseModel> {
@@ -19,9 +20,17 @@ export class ResponseService extends BaseService<IResponseModel> {
         super();
     }
 
-    public async respondToForm(options: FormResponseOptions, user: jwtToken) {
+    public async respondToForm(options: FormResponseOptions, token: jwtToken) {
         try {
-            if (await this.responseExists(user.id)) {
+            if (await this.responseExists(token.id, options.id)) {
+                throw new ApiError({
+                    statusCode: 401,
+                    name: 'response_registered',
+                    message: 'A response has already been submitted for the selected form'
+                });
+            }
+            else {
+                const user = await this.userRepository.getById(token.id);
                 const form = (await this.formsRepository.findActive({ end: { '$gte': new Date() }}))
                 .filter(e => {
                     // @ts-ignore
@@ -29,45 +38,53 @@ export class ResponseService extends BaseService<IResponseModel> {
                     return e.electives.length > 0;
                 });
                 const idx = form.findIndex(e => e.id === options.id);
-                if (idx) {
+                if (idx > -1) {
+                    const validElectives = form[idx].electives.map(v => v.id);
+                    for (const v of options.electives) {
+                        if (validElectives.indexOf(v) === -1) {
+                            throw new ApiError({
+                                statusCode: 401,
+                                name: 'elective_no_exist',
+                                message: 'Elective given does not exist'
+                            });
+                        }
+                    }
                     return this.repository.create({
                         // @ts-ignore
                         form: form[idx].id,
                         // @ts-ignore
-                        responses: form[idx].electives.map(e => e.id),
+                        responses: options.electives,
                         // @ts-ignore
                         user: user.id,
                         time: new Date()
                     });
                 }
                 else {
-                    return <ErrorType>{
+                    throw new ApiError({
                         statusCode: 401,
                         name: 'form_expired',
                         message: 'Requested form is no longer valid'
-                    };
-                }
-            }
-            else {
-                return <ErrorType> {
-                    statusCode: 401,
-                    name: 'response_registered',
-                    message: 'A response has already been submitted for the selected form'
+                    });
                 }
             }
         }
         catch(err) {
-            return <ErrorType>{
-                statusCode: 404,
-                name: 'form_not_found',
-                message: 'Requested form does not exist'
-            };
+            if (err instanceof ApiError) {
+                throw err;
+            }
+            else {
+                return <ErrorType>{
+                    statusCode: 404,
+                    name: 'form_not_found',
+                    message: 'Requested form does not exist'
+                };
+            }
         }
     }
 
-    private async responseExists(id: string): Promise<boolean> {
+    private async responseExists(userId: string, formId: string): Promise<boolean> {
         try {
-            const user = await this.getById(id);
+            const user = await this.repository.findOne({ user: mongoose.Types.ObjectId(userId), form: mongoose.Types.ObjectId(formId) });
             return user !== null && user !== undefined;
         }
         catch(err) {

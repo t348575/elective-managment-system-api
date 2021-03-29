@@ -43,8 +43,19 @@ export class ResponseFormatter extends BaseFormatter implements IResponseModel {
             }
         }
         if (this.user) {
-            if (typeof args.user === 'object') {
+            if (args.user instanceof mongoose.Types.ObjectId) {
+                this.user = args.user.toString();
+            }
+            else if (typeof args.user === 'object') {
                 this.user = new UserFormatter(args.user);
+            }
+        }
+        if (this.form) {
+            if (args.form instanceof mongoose.Types.ObjectId) {
+                this.form = args.form.toString();
+            }
+            else if (typeof args.form === 'object') {
+                this.form = new FormFormatter(args.form);
             }
         }
     }
@@ -56,6 +67,7 @@ export class ResponseRepository extends BaseRepository<IResponseModel> {
     protected schema: Schema = new Schema({
         form: { type: mongoose.Schema.Types.ObjectId, ref: 'forms' },
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
+        time: { type: Date, required: true },
         responses: [{ type : mongoose.Schema.Types.ObjectId, ref: 'electives' }]
     }, { collection: this.modelName });
 

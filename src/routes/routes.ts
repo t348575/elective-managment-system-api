@@ -204,7 +204,7 @@ const models: TsoaRoute.Models = {
     "CreateUser": {
         "dataType": "refObject",
         "properties": {
-            "users": {"dataType":"array","array":{"ref":"IUserModel"},"required":true},
+            "users": {"dataType":"array","array":{"dataType":"nestedObjectLiteral","nestedProperties":{"batch":{"dataType":"string"},"role":{"dataType":"union","subSchemas":[{"dataType":"enum","enums":["admin"]},{"dataType":"enum","enums":["teacher"]},{"dataType":"enum","enums":["student"]}],"required":true},"rollNo":{"dataType":"string","required":true},"username":{"dataType":"string"},"name":{"dataType":"string","required":true}}},"required":true},
             "defaultRollNoAsEmail": {"dataType":"boolean","required":true},
         },
         "additionalProperties": false,
@@ -291,6 +291,18 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IResponseModel": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string"},
+            "user": {"ref":"IUserModel","required":true},
+            "responses": {"dataType":"array","array":{"ref":"IElectiveModel"},"required":true},
+            "form": {"ref":"IFormModel","required":true},
+            "time": {"dataType":"datetime","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "UpdateFormOptions": {
         "dataType": "refObject",
         "properties": {
@@ -299,17 +311,6 @@ const models: TsoaRoute.Models = {
             "end": {"dataType":"string"},
             "num": {"dataType":"double"},
             "electives": {"dataType":"array","array":{"dataType":"string"}},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "IResponseModel": {
-        "dataType": "refObject",
-        "properties": {
-            "id": {"dataType":"string"},
-            "user": {"ref":"IUserModel","required":true},
-            "responses": {"dataType":"array","array":{"ref":"IElectiveModel"},"required":true},
-            "form": {"ref":"IFormModel","required":true},
         },
         "additionalProperties": false,
     },
@@ -1073,6 +1074,36 @@ export function RegisterRoutes(app: express.Router) {
             promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/forms/generate-elective-list',
+            authenticateMiddleware([{"jwt":["admin","teacher"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    id: {"in":"query","name":"id","required":true,"dataType":"string"},
+                    format: {"in":"query","name":"format","required":true,"dataType":"union","subSchemas":[{"dataType":"enum","enums":["json"]},{"dataType":"enum","enums":["csv"]}]},
+                    closeForm: {"default":false,"in":"query","name":"closeForm","dataType":"boolean"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<FormsController>(FormsController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.generateList.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.post('/forms',
             authenticateMiddleware([{"jwt":["admin"]}]),
             function (request: any, response: any, next: any) {
@@ -1155,6 +1186,36 @@ export function RegisterRoutes(app: express.Router) {
 
 
             const promise = controller.formResponse.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/form-response',
+            authenticateMiddleware([{"jwt":["admin","teacher"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    id: {"in":"query","name":"id","required":true,"dataType":"string"},
+                    pageNumber: {"in":"query","name":"pageNumber","required":true,"dataType":"double"},
+                    limit: {"in":"query","name":"limit","required":true,"dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<ResponseController>(ResponseController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.getResponses.apply(controller, validatedArgs as any);
             promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

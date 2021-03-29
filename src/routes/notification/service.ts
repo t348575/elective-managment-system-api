@@ -12,29 +12,42 @@ export class NotificationService extends BaseService<INotificationModel> {
         @inject(NotificationRepository) protected repository: NotificationRepository
     ) {
         super();
-        webPush.setVapidDetails(constants.mailAccess.username, constants.vapidKeys.publicKey, constants.vapidKeys.privateKey);
+        webPush.setVapidDetails('mailto:' + constants.mailAccess.username, constants.vapidKeys.publicKey, constants.vapidKeys.privateKey);
     }
 
     public async subscribe(options: SubscribeOptions, userId: string) {
-        const previous = await this.repository.findOne({ user: userId, endpoint: options.endpoint });
-        if (previous) {
-            return {
-                status: true
+        try {
+            const previous = await this.repository.findOne({ user: userId, device: options.name });
+            if (previous) {
+                return {
+                    status: true
+                }
+            }
+            else {
+                await NotificationService.initialNotification(options.sub);
+                return this.repository.create({
+                    // @ts-ignore
+                    user: userId,
+                    // @ts-ignore
+                    sub: options.sub,
+                    device: options.name
+                });
             }
         }
-        else {
-            await NotificationService.initialNotification(options);
+        catch(err) {
+            await NotificationService.initialNotification(options.sub);
             return this.repository.create({
                 // @ts-ignore
                 user: userId,
                 // @ts-ignore
-                sub: options
+                sub: options.sub,
+                device: options.name
             });
         }
     }
 
     public async unsubscribe(options: SubscribeOptions, userId: string) {
-        const previous = await this.repository.findOne({ user: userId, endpoint: options.endpoint });
+        const previous = await this.repository.findOne({ user: userId, endpoint: options.sub.endpoint });
         if (previous) {
             return {
                 status: true
@@ -50,13 +63,26 @@ export class NotificationService extends BaseService<INotificationModel> {
         }
     }
 
-    private static async initialNotification(sub: SubscribeOptions) {
+    public async notifyAll() {
+        const ids = await this.repository.find(0, undefined, '', '');
+        setTimeout(() => {
+            for (const v of ids) {
+                try {
+                    NotificationService.initialNotification(v.sub).then().catch();
+                }
+                catch (err) {}
+            }
+        }, 10000)
+    }
+
+    private static async initialNotification(sub: { endpoint: string; expirationTime: number | null; keys: { p256dh: string; auth: string } }) {
         const notificationPayload = {
             notification: {
                 title: 'Welcome to Amrita EMS!',
                 body: 'Thank you for enabling notifications',
+                vibrate: [100, 50, 100],
                 actions: [{
-                    action: 'explore',
+                    action: 'home',
                     title: 'Go to site'
                 }]
             }

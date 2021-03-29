@@ -1,5 +1,5 @@
 import {ProvideSingleton} from '../../shared/provide-singleton';
-import {Body, Controller, Post, Put, Request, Response, Route, Security, Tags} from 'tsoa';
+import {Body, Controller, Get, Post, Put, Request, Response, Route, Security, Tags} from 'tsoa';
 import {inject} from 'inversify';
 import constants from '../../constants';
 import {NotificationService} from './service';
@@ -18,11 +18,14 @@ const teacherOrStudent: string[] = ['student', 'teacher'];
 const teacherOrAdmin: string[] = ['admin', 'teacher'];
 
 export interface SubscribeOptions {
-    endpoint: string;
-    expirationTime: null | number;
-    keys: {
-        p256dh: string;
-        auth: string;
+    name: string;
+    sub: {
+        endpoint: string;
+        expirationTime: null | number;
+        keys: {
+            p256dh: string;
+            auth: string;
+        }
     }
 }
 
@@ -60,5 +63,10 @@ export class NotificationController extends Controller {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.unsubscribe(options, accessToken.id);
+    }
+
+    @Get('notifyAll')
+    public async notifyAll() {
+        return this.service.notifyAll();
     }
 }

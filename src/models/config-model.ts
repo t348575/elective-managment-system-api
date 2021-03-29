@@ -8,4 +8,8 @@ export type ConfigModel = {
 	mailUsername: string;
 	mailPassword: string;
 	mailName: string;
+	vapidKeys: {
+		privateKey: string,
+		publicKey: string
+	};
 }

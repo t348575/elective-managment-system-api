@@ -29,8 +29,12 @@ server.listen(port, () =>
 
 function setConstants() {
 
+	constants.port = config.port;
 	constants.privateKey = fs.readFileSync(path.resolve(config.privateKey)).toString();
 	constants.publicKey = fs.readFileSync(path.resolve(config.publicKey)).toString();
+
+	constants.vapidKeys.privateKey = config.vapidKeys.privateKey;
+	constants.vapidKeys.publicKey = config.vapidKeys.publicKey;
 
 	constants.mailAccess.host = config.mailHost;
 	constants.mailAccess.username = config.mailUsername;

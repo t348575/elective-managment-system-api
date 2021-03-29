@@ -30,6 +30,8 @@ export class ResponseService extends BaseService<IResponseModel> {
                 });
             }
             else {
+                const s = new Set(options.electives);
+                options.electives = Array.from(s.values());
                 const user = await this.userRepository.getById(token.id);
                 const form = (await this.formsRepository.findActive({ end: { '$gte': new Date() }}))
                 .filter(e => {
@@ -49,6 +51,13 @@ export class ResponseService extends BaseService<IResponseModel> {
                             });
                         }
                     }
+                    if (options.electives.length !== form[idx].num) {
+                        throw new ApiError({
+                            statusCode: 401,
+                            name: 'elective_num_incorrect',
+                            message: 'Improper number of electives provided'
+                        });
+                    }
                     return this.repository.create({
                         // @ts-ignore
                         form: form[idx].id,
@@ -56,7 +65,8 @@ export class ResponseService extends BaseService<IResponseModel> {
                         responses: options.electives,
                         // @ts-ignore
                         user: user.id,
-                        time: new Date()
+                        // @ts-ignore
+                        time: new Date().toISOString()
                     });
                 }
                 else {

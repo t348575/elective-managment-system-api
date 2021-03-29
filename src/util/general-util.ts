@@ -7,6 +7,7 @@ import {IUserModel} from '../models/mongo/user-repository';
 import constants from '../constants';
 import {VerifyErrors} from 'jsonwebtoken';
 import {jwtSubjects, jwtToken, scopes} from '../models/types';
+import {unlink} from 'fs';
 export const safeParse = (str: string, fallback: any = undefined) => {
 	try {
 		return JSON.parse(str);
@@ -146,4 +147,11 @@ export function checkString(body: any, prop: string, limit ?: string[], nonZero 
 
 export async function getArgonHash(str: string) {
 	return argon2.hash(str);
+}
+
+export function removeTempFile(file: string) {
+	try {
+		unlink(file, (err) => {});
+	}
+	catch (err) {}
 }

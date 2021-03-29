@@ -10,6 +10,7 @@ import {MongoConnector} from '../../shared/mongo-connector';
 import {ApiError} from '../../shared/error-handler';
 import constants from '../../constants';
 import {cleanQuery} from '../../util/general-util';
+import {truncate} from 'fs';
 
 export interface IFormModel {
     id ?: string;
@@ -17,6 +18,7 @@ export interface IFormModel {
     end: Date;
     num: number;
     electives: IElectiveModel[];
+    active: boolean;
 }
 
 export class FormFormatter extends BaseFormatter implements IFormModel {
@@ -25,7 +27,7 @@ export class FormFormatter extends BaseFormatter implements IFormModel {
     num: number;
     start: Date;
     id: string;
-
+    active: boolean;
     constructor(args: any) {
         super();
         if (!(args instanceof mongoose.Types.ObjectId)) {
@@ -55,6 +57,7 @@ export class FormsRepository extends BaseRepository<IFormModel> {
         start: { type: Date, required: true },
         end: { type: Date, required: true },
         num: { type: Number, required: true },
+        active: { type: Boolean, required: true },
         electives: [{ type : mongoose.Schema.Types.ObjectId, ref: 'electives' }]
     }, { collection: this.modelName });
 

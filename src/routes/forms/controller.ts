@@ -3,9 +3,8 @@ import {ProvideSingleton} from '../../shared/provide-singleton';
 import {inject} from 'inversify';
 import {FormsService} from './service';
 import {ErrorType} from '../../shared/error-handler';
-import {Request as ExRequest} from 'express';
+import {Request as ExRequest, Response as ExResponse} from 'express';
 import {jwtToken} from '../../models/types';
-import {FormFormatter, IFormModel} from '../../models/mongo/form-repository';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
 
@@ -33,6 +32,12 @@ export interface UpdateFormOptions {
     end ?: string;
     num ?: number;
     electives ?: string[];
+}
+
+export interface GenerateListResponse {
+    status: boolean;
+    downloadUri: string;
+    failed: string[];
 }
 
 @Tags('forms')
@@ -92,10 +97,12 @@ export class FormsController extends Controller {
     @Response<ErrorType>(500, 'Unknown server error')
     public async generateList(
         @Query() id: string,
-        @Query() format: 'json' | 'csv',
-        @Query() closeForm: boolean = false
-    ) {
-        return this.service.generateList(id, format, closeForm);
+        @Query() closeForm: boolean = false,
+        @Request() request: ExRequest
+    ): Promise<GenerateListResponse> {
+        // @ts-ignore
+        const accessToken = request.user as jwtToken;
+        return this.service.generateList(id, closeForm, accessToken.id);
     }
 
     @Post('')

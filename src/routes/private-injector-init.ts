@@ -9,6 +9,7 @@ import {ClassRepository} from '../models/mongo/class-repository';
 import {FormsRepository} from '../models/mongo/form-repository';
 import {ResponseRepository} from '../models/mongo/response-repository';
 import {DownloadRespository} from '../models/mongo/download-repository';
+import {NotificationRepository} from '../models/mongo/notification-repository';
 
 @Hidden()
 @Route('private-init')
@@ -22,7 +23,8 @@ export class PrivateInjectorInit extends Controller {
         @inject(ClassRepository) classRepository: ClassRepository,
         @inject(FormsRepository) formRepository: FormsRepository,
         @inject(ResponseRepository) responseRepository: ResponseRepository,
-        @inject(DownloadRespository) downloadRespository: DownloadRespository
+        @inject(DownloadRespository) downloadRespository: DownloadRespository,
+        @inject(NotificationRepository) notificationsRepository: NotificationRepository,
     ) {
         super();
     }

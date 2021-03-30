@@ -1,4 +1,5 @@
 export default {
+	port: 3000,
 	privateKey: '',
 	publicKey: '',
 	environment: 'debug',
@@ -20,6 +21,10 @@ export default {
 		username: '',
 		password: '',
 		name: ''
+	},
+	vapidKeys: {
+		privateKey: '',
+		publicKey: ''
 	},
 	emailTemplates: {
 		userCreation: '/../../../resources/assets/user-creation.html',

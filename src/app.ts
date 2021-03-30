@@ -25,6 +25,7 @@ import './routes/electives/controller';
 import './routes/forms/controller';
 import './routes/response/controller';
 import './routes/download/controller';
+import './routes/notification/controller';
 
 export const app = express();
 
@@ -70,8 +71,8 @@ app.get('/*', (req, res) => {
 	res.sendFile(path.resolve(__dirname, './../resources/public/index.html'));
 });
 
-axios.get('https://localhost:3000/private-init', {httpsAgent: new https.Agent({rejectUnauthorized: false})}).then().catch(err => {
-	throw err
+axios.get(`https://localhost:3000/private-init`, {httpsAgent: new https.Agent({rejectUnauthorized: false})}).then().catch(err => {
+	throw err;
 });
 
 app.use(function notFoundHandler(_req, res: ExResponse) {

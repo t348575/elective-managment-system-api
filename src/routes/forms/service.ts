@@ -11,6 +11,7 @@ import {scopes} from '../../models/types';
 import {PaginationModel} from '../../models/shared/pagination-model';
 import {ResponseRepository} from '../../models/mongo/response-repository';
 import mongoose from 'mongoose';
+import {NotificationService} from '../notification/service';
 
 export interface AssignedElective {
     rollNo: string;
@@ -25,7 +26,8 @@ export class FormsService extends BaseService<IFormModel> {
         @inject(BatchRepository) protected batchRepository: BatchRepository,
         @inject(ElectiveRepository) protected electionRepository: ElectiveRepository,
         @inject(UserRepository) protected userRepository: UserRepository,
-        @inject(ResponseRepository) protected responseRepository: ResponseRepository
+        @inject(ResponseRepository) protected responseRepository: ResponseRepository,
+        @inject(NotificationService) protected notificationService: NotificationService
     ) {
         super();
     }
@@ -33,6 +35,7 @@ export class FormsService extends BaseService<IFormModel> {
     public async createForm(options: CreateFormOptions) {
         try {
             const now = new Date();
+            const batches = [];
             now.setMinutes(now.getMinutes() - 5);
             if (new Date(options.start).getTime() <= now.getTime()) {
                 return <ErrorType>{
@@ -49,7 +52,20 @@ export class FormsService extends BaseService<IFormModel> {
                 };
             }
             for (const v of options.electives) {
-                if (await this.electionRepository.findOne({ _id: v }) === undefined) {
+                try {
+                    const ele = await this.electionRepository.findOne({ _id: v });
+                    if (ele === undefined) {
+                        return <ErrorType>{
+                            statusCode: 400,
+                            name: 'elective_not_found',
+                            message: v
+                        };
+                    }
+                    for (const k of ele.batches) {
+                        batches.push(k);
+                    }
+                }
+                catch(err) {
                     return <ErrorType>{
                         statusCode: 400,
                         name: 'elective_not_found',
@@ -57,18 +73,34 @@ export class FormsService extends BaseService<IFormModel> {
                     };
                 }
             }
-            return this.repository.create({
+            const createdElective = await this.repository.create({
                 // @ts-ignore
                 start: options.start,
                 // @ts-ignore
                 end: options.end,
                 // @ts-ignore
                 electives: options.electives,
-                num: options.numElectives
+                num: options.numElectives,
+                active: true
             });
+            const s = new Set(batches);
+            // @ts-ignore
+            this.notificationService.notifyBatches(Array.from(s.values()), {
+                notification: {
+                    title: 'New form available!',
+                    body: `Fill new electives form before ${new Date(options.end).toLocaleString()}`,
+                    vibrate: [100, 50, 100],
+                    requireInteraction: true,
+                    actions: [{
+                        action: `electives/${createdElective.id}`,
+                        title: 'Go to form'
+                    }]
+                }
+            }).then().catch();
+            return createdElective;
         }
         catch(err) {
-            return UnknownApiError(err);
+            throw UnknownApiError(err);
         }
     }
 

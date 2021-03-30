@@ -155,3 +155,26 @@ export function removeTempFile(file: string) {
 	}
 	catch (err) {}
 }
+
+export function chunkArray(arr: any[], n: number) {
+	if (n < 2) {
+		return [arr];
+	}
+	const len = arr.length;
+	let out = [];
+	let i = 0;
+	let size;
+	if (len % n === 0) {
+		size = Math.floor(len / n);
+		while (i < len) {
+			out.push(arr.slice(i, i += size));
+		}
+	}
+	else {
+		while (i < len) {
+			size = Math.ceil((len - i) / n--);
+			out.push(arr.slice(i, i += size));
+		}
+	}
+	return out;
+}

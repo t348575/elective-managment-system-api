@@ -117,4 +117,18 @@ export class UserRepository extends BaseRepository<IUserModel> {
 			}
 		}
 	}
+
+	public async addClassToStudents(students: string[], classId: string) {
+		const session = await this.documentModel.startSession();
+		await session.withTransaction(async () => {
+			for (const v of students) {
+				await this.documentModel.findByIdAndUpdate(v, {
+					'$push': {
+						classes: classId
+					}
+				});
+			}
+		});
+		await session.endSession();
+	}
 }

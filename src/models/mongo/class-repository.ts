@@ -1,5 +1,5 @@
 import {IBatchModel} from './batch-repository';
-import {IUserModel} from './user-repository';
+import {IUserModel, UserRepository} from './user-repository';
 import {BaseFormatter} from '../../util/base-formatter';
 import {ProvideSingleton} from '../../shared/provide-singleton';
 import {BaseRepository} from '../shared/base-repository';
@@ -45,8 +45,21 @@ export class ClassRepository extends BaseRepository<IClassModel> {
     }, { collection: this.modelName });
 
     protected formatter = ClassFormatter;
-    constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
+    constructor(
+        @inject(MongoConnector) protected dbConnection: MongoConnector
+    ) {
         super();
         super.init();
+    }
+
+    public async addClass(classObj: IClassModel): Promise<string> {
+        let classId: IClassModel;
+        const session = await this.documentModel.startSession();
+        await session.withTransaction(async () => {
+            classId = await this.create(classObj);
+        });
+        await session.endSession();
+        // @ts-ignore
+        return classId.id;
     }
 }

@@ -12,8 +12,8 @@ export default {
 	},
 	jwtExpiry: {
 		oneTimeAuthCodeExpiry: 60,
-		refreshExpiry: 900,
-		accessExpiry: 900,
+		refreshExpiry: 86400,
+		accessExpiry: 86400,
 		idExpiry: 86400
 	},
 	mailAccess: {

@@ -24,7 +24,7 @@ export class PrivateInjectorInit extends Controller {
         @inject(FormsRepository) formRepository: FormsRepository,
         @inject(ResponseRepository) responseRepository: ResponseRepository,
         @inject(DownloadRespository) downloadRespository: DownloadRespository,
-        @inject(NotificationRepository) notificationsRepository: NotificationRepository,
+        @inject(NotificationRepository) notificationsRepository: NotificationRepository
     ) {
         super();
     }

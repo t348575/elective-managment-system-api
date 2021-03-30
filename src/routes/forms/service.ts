@@ -21,6 +21,7 @@ import {checkNumber} from '../../util/general-util';
 import {DownloadService} from '../download/service';
 import {NotificationService} from '../notification/service';
 import {Parser} from 'json2csv';
+import {ClassService} from '../classes/service';
 
 export interface AssignedElective {
     rollNo: string;
@@ -37,7 +38,8 @@ export class FormsService extends BaseService<IFormModel> {
         @inject(UserRepository) protected userRepository: UserRepository,
         @inject(ResponseRepository) protected responseRepository: ResponseRepository,
         @inject(DownloadService) protected downloadService: DownloadService,
-        @inject(NotificationService) protected notificationService: NotificationService
+        @inject(NotificationService) protected notificationService: NotificationService,
+        @inject(ClassService) protected classService: ClassService
     ) {
         super();
     }
@@ -327,6 +329,7 @@ export class FormsService extends BaseService<IFormModel> {
             }
         }
         const unresponsive = (await this.getUnresponsive(successful, Array.from(uniqueBatches.values()))).map(e => e.rollNo);
+        await this.classService.createClass(electiveCountMap, form);
         return {
             failed,
             successful,

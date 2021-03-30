@@ -26,6 +26,7 @@ import './routes/forms/controller';
 import './routes/response/controller';
 import './routes/download/controller';
 import './routes/notification/controller';
+import './routes/classes/controller';
 
 export const app = express();
 

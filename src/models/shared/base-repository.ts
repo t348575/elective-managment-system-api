@@ -63,21 +63,6 @@ export abstract class BaseRepository<EntityType> implements IBaseRepository<Enti
 		.map(item => new this.formatter(item));
 	}
 
-	public findToStream(
-		sort: string,
-		query: any,
-		pipeCsv: any,
-		pipeRes: any
-	): void {
-		const sortObject = cleanQuery(sort, this.sortQueryFormatter);
-		this.documentModel.find(this.cleanWhereQuery(query))
-		.sort(Object.keys(sortObject).map(key => [key, sortObject[key]]))
-		.populate('responses').populate({
-			path: 'user',
-			populate: ['batch']
-		}).cursor().pipe(pipeCsv).pipe(pipeRes);
-	}
-
 	public async findAndUpdate(query: any, model: EntityType): Promise<void> {
 		await this.documentModel.findOneAndUpdate(this.cleanWhereQuery(query), this.cleanToSave(model))
 	}

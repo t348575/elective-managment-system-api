@@ -5,6 +5,8 @@ import {BaseRepository} from '../shared/base-repository';
 import mongoose, {Schema} from 'mongoose';
 import {inject} from 'inversify';
 import {MongoConnector} from '../../shared/mongo-connector';
+import {cleanQuery} from '../../util/general-util';
+import {ElectiveFormatter} from './elective-repository';
 
 export interface INotificationModel {
     id ?: string;
@@ -52,4 +54,30 @@ export class NotificationRepository extends BaseRepository<INotificationModel> {
 		super();
 		super.init();
 	}
+
+    public async findAndPopulate(
+        id: string
+    ): Promise<NotificationFormatter[]> {
+        return (
+            await this.documentModel.aggregate([
+                {
+                    '$lookup': {
+                        'from': 'users',
+                        'localField': 'user',
+                        'foreignField': '_id',
+                        'as': 'user'
+                    }
+                }, {
+                    '$unwind': {
+                        'path': '$user'
+                    }
+                }, {
+                    '$match': {
+                        'user.batch': mongoose.Types.ObjectId(id)
+                    }
+                }
+            ]).exec()
+        )
+        .map((item: any) => new this.formatter(item));
+    }
 }

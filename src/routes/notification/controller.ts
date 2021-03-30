@@ -1,5 +1,5 @@
 import {ProvideSingleton} from '../../shared/provide-singleton';
-import {Body, Controller, Get, Post, Put, Request, Response, Route, Security, Tags} from 'tsoa';
+import {Body, Controller, Get, Post, Put, Query, Request, Response, Route, Security, Tags} from 'tsoa';
 import {inject} from 'inversify';
 import constants from '../../constants';
 import {NotificationService} from './service';
@@ -63,10 +63,5 @@ export class NotificationController extends Controller {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.unsubscribe(options, accessToken.id);
-    }
-
-    @Get('notifyAll')
-    public async notifyAll() {
-        return this.service.notifyAll();
     }
 }

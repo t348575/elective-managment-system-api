@@ -5,11 +5,14 @@ import {inject} from 'inversify';
 import {SubscribeOptions} from './controller';
 import constants from '../../constants';
 import * as webPush from 'web-push';
+import {ApiError} from '../../shared/error-handler';
+import {BatchRepository} from '../../models/mongo/batch-repository';
 
 @ProvideSingleton(NotificationService)
 export class NotificationService extends BaseService<INotificationModel> {
     constructor(
-        @inject(NotificationRepository) protected repository: NotificationRepository
+        @inject(NotificationRepository) protected repository: NotificationRepository,
+        @inject(BatchRepository) private batchRepository: BatchRepository
     ) {
         super();
         webPush.setVapidDetails('mailto:' + constants.mailAccess.username, constants.vapidKeys.publicKey, constants.vapidKeys.privateKey);
@@ -47,32 +50,77 @@ export class NotificationService extends BaseService<INotificationModel> {
     }
 
     public async unsubscribe(options: SubscribeOptions, userId: string) {
-        const previous = await this.repository.findOne({ user: userId, endpoint: options.sub.endpoint });
-        if (previous) {
-            return {
-                status: true
+        try {
+            const previous = await this.repository.findOne({ user: userId, device: options.name });
+            if (previous) {
+                // @ts-ignore
+                await this.repository.delete(previous.id);
+                return {
+                    status: true
+                }
             }
         }
-        else {
-            return this.repository.create({
-                // @ts-ignore
-                user: userId,
-                // @ts-ignore
-                sub: options
-            });
+        catch(err) {
+            throw new ApiError(constants.errorTypes.notFound);
+        }
+    }
+
+    public async notifyUsers(userIds: string[], notificationPayload: { notification: any }) {
+        for (const user of userIds) {
+            try {
+                const ids = await this.repository.find(0, undefined, '', { user: user });
+                for (const v of ids) {
+                    try {
+                        webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then().catch();
+                    }
+                    catch (err) {
+                        try {
+                            // @ts-ignore
+                            await this.repository.delete(v.id);
+                        }
+                        catch(err) {}
+                    }
+                }
+            }
+            catch(err) {}
+        }
+    }
+
+    public async notifyBatches(batchStrings: string[], notificationPayload: { notification: any }) {
+        for (const batches of batchStrings) {
+            try {
+                const ids = await this.repository.findAndPopulate(batches);
+                for (const v of ids) {
+                    try {
+                        webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then().catch();
+                    }
+                    catch (err) {
+                        try {
+                            // @ts-ignore
+                            await this.repository.delete(v.id);
+                        }
+                        catch(err) {}
+                    }
+                }
+            }
+            catch(err) {}
         }
     }
 
     public async notifyAll() {
         const ids = await this.repository.find(0, undefined, '', '');
-        setTimeout(() => {
-            for (const v of ids) {
-                try {
-                    NotificationService.initialNotification(v.sub).then().catch();
-                }
-                catch (err) {}
+        for (const v of ids) {
+            try {
+                NotificationService.initialNotification(v.sub).then().catch();
             }
-        }, 10000)
+            catch (err) {
+                try {
+                    // @ts-ignore
+                    await this.repository.delete(v.id);
+                }
+                catch(err) {}
+            }
+        }
     }
 
     private static async initialNotification(sub: { endpoint: string; expirationTime: number | null; keys: { p256dh: string; auth: string } }) {
@@ -89,4 +137,5 @@ export class NotificationService extends BaseService<INotificationModel> {
         };
         return webPush.sendNotification(sub, JSON.stringify(notificationPayload));
     }
+
 }

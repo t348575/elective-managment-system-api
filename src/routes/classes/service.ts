@@ -19,18 +19,20 @@ export class ClassService extends BaseService<IClassModel> {
         for (const elective of form.electives) {
             for (const batch of elective.batches) {
                 // @ts-ignore
-                const students = chunkArray(electiveMap.get(batch.batchString + elective.courseCode + elective.version)
-                .users.map(e => e.id), elective.teachers.length);
-                for (const [i, chunk] of students.entries()) {
-                    const classId = await this.repository.addClass({
-                        // @ts-ignore
-                        elective: elective.id,
-                        // @ts-ignore
-                        batch: batch.id,
-                        students: chunk,
-                        teacher: elective.teachers[i]
-                    });
-                    await this.userRepository.addClassToStudents(chunk, classId);
+                const studentArr = electiveMap.get(batch.batchString + elective.courseCode + elective.version).users.map(e => e.id);
+                if (studentArr.length > 0) {
+                    const students = chunkArray(studentArr, elective.teachers.length);
+                    for (const [i, chunk] of students.entries()) {
+                        const classId = await this.repository.addClass({
+                            // @ts-ignore
+                            elective: elective.id,
+                            // @ts-ignore
+                            batch: batch.id,
+                            students: chunk,
+                            teacher: elective.teachers[i]
+                        });
+                        await this.userRepository.addClassToStudents(chunk, classId);
+                    }
                 }
             }
         }

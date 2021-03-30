@@ -1,16 +1,24 @@
 import {ProvideSingleton} from '../../shared/provide-singleton';
-import {FormsRepository, IFormModel} from '../../models/mongo/form-repository';
+import {FormFormatter, FormsRepository, IFormModel} from '../../models/mongo/form-repository';
 import {BaseService} from '../../models/shared/base-service';
 import {inject} from 'inversify';
 import {BatchRepository} from '../../models/mongo/batch-repository';
-import {CreateFormOptions, UpdateFormOptions} from './controller';
-import {ElectiveRepository} from '../../models/mongo/elective-repository';
+import {CreateFormOptions, GenerateListResponse, UpdateFormOptions} from './controller';
+import {ElectiveFormatter, ElectiveRepository, IElectiveModel} from '../../models/mongo/elective-repository';
 import {ErrorType, UnknownApiError} from '../../shared/error-handler';
 import {UserRepository} from '../../models/mongo/user-repository';
 import {scopes} from '../../models/types';
 import {PaginationModel} from '../../models/shared/pagination-model';
 import {ResponseRepository} from '../../models/mongo/response-repository';
 import mongoose from 'mongoose';
+import {Request as ExRequest, Response as ExResponse} from 'express';
+import {createWriteStream, unlink} from 'fs';
+import * as path from 'path';
+import {randomBytes} from 'crypto';
+import constants from '../../constants';
+import * as csv from '@fast-csv/format';
+import {checkNumber} from '../../util/general-util';
+import {DownloadService} from '../download/service';
 import {NotificationService} from '../notification/service';
 
 export interface AssignedElective {
@@ -27,6 +35,7 @@ export class FormsService extends BaseService<IFormModel> {
         @inject(ElectiveRepository) protected electionRepository: ElectiveRepository,
         @inject(UserRepository) protected userRepository: UserRepository,
         @inject(ResponseRepository) protected responseRepository: ResponseRepository,
+        @inject(DownloadService) protected downloadService: DownloadService,
         @inject(NotificationService) protected notificationService: NotificationService
     ) {
         super();
@@ -112,7 +121,7 @@ export class FormsService extends BaseService<IFormModel> {
         switch (scope) {
             case 'student': {
                 const user = await this.userRepository.getPopulated(id, 'student');
-                return (await this.repository.findActive({ end: { '$gte': new Date() }}))
+                return (await this.repository.findActive({ end: { '$gte': new Date() }, active: true }))
                 .filter(e => {
                     // @ts-ignore
                     e.electives = e.electives.filter(v => v.batches.indexOf(user.batch?.id) > -1);
@@ -120,7 +129,7 @@ export class FormsService extends BaseService<IFormModel> {
                 });
             }
             case 'admin': {
-                return this.repository.findActive({ end: { '$gte': new Date() }});
+                return this.repository.findActive({ end: { '$gte': new Date() }, active: true});
             }
         }
     }
@@ -162,7 +171,73 @@ export class FormsService extends BaseService<IFormModel> {
         });
     }
 
-    public async generateList(id: string, format: 'json' | 'csv', closeForm: boolean = false) {
-        return this.responseRepository.find(0, undefined, '', { form: mongoose.Types.ObjectId(id) });
+    public generateList(id: string, closeForm: boolean, userId: string): Promise<GenerateListResponse> {
+        return new Promise<GenerateListResponse>(async (resolve, reject) => {
+            const form: IFormModel = (await this.repository.findAndPopulate(0, undefined, '', {_id: id}))[0];
+            const name = randomBytes(8).toString('hex');
+            const filePath = path.join(__dirname, constants.directories.csvTemporary, `${name}.csv`);
+            const file = createWriteStream(filePath, { encoding: 'utf8', flags: 'a' });
+            const electiveCountMap = new Map<string, number>();
+            const failed: string[] = [];
+            for (const elective of form.electives) {
+                for (const batch of elective.batches) {
+                    electiveCountMap.set(batch.batchString + elective.courseCode + elective.version, 0);
+                }
+            }
+            const selectElective = (rollNo: string, batch: string, responses: IElectiveModel[]): {elective: string, version: number} => {
+                for (const ele of responses) {
+                    const selection = electiveCountMap.get(batch + ele.courseCode + ele.version);
+                    if (selection !== undefined && selection !== null && selection < ele.strength) {
+                        electiveCountMap.set(batch + ele.courseCode + ele.version, selection + 1);
+                        return {
+                            elective: ele.courseCode,
+                            version: ele.version
+                        };
+                    }
+                }
+                failed.push(rollNo);
+                return {
+                    elective: '',
+                    version: 0
+                };
+            };
+            const transformer = (doc: any) => {
+                return {
+                    rollNo: doc.user.rollNo,
+                    ...selectElective(doc.user.rollNo, doc.user.batch.batchString, doc.responses),
+                    batch: doc.user.batch.batchString
+                }
+            };
+            const csvStream = csv.format({ headers: true }).transform(transformer);
+            this.responseRepository.findToStream('{"time":"desc"}', { form: mongoose.Types.ObjectId(id) }, csvStream, file);
+            file.on('close', () => {
+                (async() => {
+                    if (closeForm) {
+                        // @ts-ignore
+                        this.repository.update(id, {
+                            end: form.end,
+                            start: form.start,
+                            // @ts-ignore
+                            electives: form.electives.map(e => e.id),
+                            active: false
+                        }).then().catch();
+                    }
+                    try {
+                        const link = await this.downloadService.addTemporaryUserLink([userId], filePath);
+                        resolve({
+                            status: failed.length === 0,
+                            downloadUri: `${constants.baseUrl}/downloads/temp?file=${link}`,
+                            failed
+                        });
+                    }
+                    catch(err) {
+                        reject(err);
+                    }
+                })();
+            });
+            file.on('error', (err) => {
+                reject(err);
+            });
+        });
     }
 }

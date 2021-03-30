@@ -105,6 +105,16 @@ export class FormsController extends Controller {
         return this.service.generateList(id, closeForm, accessToken.id);
     }
 
+    @Post('create-classes')
+    @Security('jwt', adminOnly)
+    @Response<ErrorType>(401, 'ValidationError')
+    @Response<ErrorType>(500, 'Unknown server error')
+    public async createClass(
+        @Query() formId: string
+    ) {
+        return this.service.createClass(formId);
+    }
+
     @Post('')
     @Security('jwt', adminOnly)
     @Response<ErrorType>(401, 'ValidationError')

@@ -90,9 +90,27 @@ export class ResponseRepository extends BaseRepository<IResponseModel> {
             .sort(Object.keys(sortObject).map(key => [key, sortObject[key]]))
             .skip(skip)
             .limit(limit)
-            .populate('user')
+            .populate({
+                path: 'user',
+                populate: ['batch']
+            })
             .populate('responses')
         )
         .map(item => new this.formatter(item));
+    }
+
+    public findToStream(
+        sort: string,
+        query: any,
+        pipeCsv: any,
+        pipeRes: any
+    ): void {
+        const sortObject = cleanQuery(sort, this.sortQueryFormatter);
+        this.documentModel.find(this.cleanWhereQuery(query))
+        .sort(Object.keys(sortObject).map(key => [key, sortObject[key]]))
+        .populate('responses').populate({
+            path: 'user',
+            populate: ['batch']
+        }).cursor().pipe(pipeCsv).pipe(pipeRes);
     }
 }

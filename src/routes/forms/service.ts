@@ -6,7 +6,7 @@ import {BatchRepository} from '../../models/mongo/batch-repository';
 import {CreateFormOptions, GenerateListResponse, UpdateFormOptions} from './controller';
 import {ElectiveFormatter, ElectiveRepository, IElectiveModel} from '../../models/mongo/elective-repository';
 import {ErrorType, UnknownApiError} from '../../shared/error-handler';
-import {UserRepository} from '../../models/mongo/user-repository';
+import {IUserModel, UserRepository} from '../../models/mongo/user-repository';
 import {scopes} from '../../models/types';
 import {PaginationModel} from '../../models/shared/pagination-model';
 import {ResponseRepository} from '../../models/mongo/response-repository';
@@ -20,6 +20,7 @@ import * as csv from '@fast-csv/format';
 import {checkNumber} from '../../util/general-util';
 import {DownloadService} from '../download/service';
 import {NotificationService} from '../notification/service';
+import {Parser} from 'json2csv';
 
 export interface AssignedElective {
     rollNo: string;
@@ -179,9 +180,13 @@ export class FormsService extends BaseService<IFormModel> {
             const file = createWriteStream(filePath, { encoding: 'utf8', flags: 'a' });
             const electiveCountMap = new Map<string, number>();
             const failed: string[] = [];
+            const successful: string[] = [];
+            const uniqueBatches = new Set<string>();
             for (const elective of form.electives) {
                 for (const batch of elective.batches) {
                     electiveCountMap.set(batch.batchString + elective.courseCode + elective.version, 0);
+                    // @ts-ignore
+                    uniqueBatches.add(batch.id);
                 }
             }
             const selectElective = (rollNo: string, batch: string, responses: IElectiveModel[]): {elective: string, version: number} => {
@@ -189,6 +194,7 @@ export class FormsService extends BaseService<IFormModel> {
                     const selection = electiveCountMap.get(batch + ele.courseCode + ele.version);
                     if (selection !== undefined && selection !== null && selection < ele.strength) {
                         electiveCountMap.set(batch + ele.courseCode + ele.version, selection + 1);
+                        successful.push(rollNo);
                         return {
                             elective: ele.courseCode,
                             version: ele.version
@@ -209,7 +215,7 @@ export class FormsService extends BaseService<IFormModel> {
                 }
             };
             const csvStream = csv.format({ headers: true }).transform(transformer);
-            this.responseRepository.findToStream('{"time":"desc"}', { form: mongoose.Types.ObjectId(id) }, csvStream, file);
+            this.responseRepository.findToStream('{"time":"asc"}', { form: mongoose.Types.ObjectId(id) }, csvStream, file);
             file.on('close', () => {
                 (async() => {
                     if (closeForm) {
@@ -222,6 +228,46 @@ export class FormsService extends BaseService<IFormModel> {
                             active: false
                         }).then().catch();
                     }
+                    const parser = new Parser({
+                        fields: ['rollNo']
+                    });
+                    await new Promise<null>(async (resolveSuccessful) => {
+                        try {
+                            const notFilled = (await this.getUnresponsive(successful, Array.from(uniqueBatches.values()))).map(e => e.rollNo);
+                            if (notFilled.length > 0) {
+                                const csv = parser.parse(notFilled.map(e => ({ rollNo: e })));
+                                const writeFailed = createWriteStream(filePath, { encoding: 'utf8', flags: 'a' });
+                                writeFailed.write('\n\nUnresponsive students:\n' + csv, (err) => {
+                                    writeFailed.close();
+                                    resolveSuccessful(null);
+                                });
+                            }
+                            else {
+                                resolveSuccessful(null);
+                            }
+                        }
+                        catch(err) {
+                            resolveSuccessful(null);
+                        }
+                    });
+                    await new Promise<null>(resolveFailed => {
+                        try {
+                            if (failed.length > 0) {
+                                const csv = parser.parse(failed.map(e => ({ rollNo: e })));
+                                const writeFailed = createWriteStream(filePath, { encoding: 'utf8', flags: 'a' });
+                                writeFailed.write('\n\nGeneration failed for students:\n' + csv, (err) => {
+                                    writeFailed.close();
+                                    resolveFailed(null);
+                                });
+                            }
+                            else {
+                                resolveFailed(null);
+                            }
+                        }
+                        catch(err) {
+                            resolveFailed(null);
+                        }
+                    })
                     try {
                         const link = await this.downloadService.addTemporaryUserLink([userId], filePath);
                         resolve({
@@ -239,5 +285,57 @@ export class FormsService extends BaseService<IFormModel> {
                 reject(err);
             });
         });
+    }
+
+    public async createClass(formId: string) {
+        const form: IFormModel = (await this.repository.findAndPopulate(0, undefined, '', {_id: formId}))[0];
+        const electiveCountMap = new Map<string, { count: number, users: IUserModel[] }>();
+        const failed: string[] = [];
+        const successful: string[] = [];
+        const uniqueBatches = new Set<string>();
+        for (const elective of form.electives) {
+            for (const batch of elective.batches) {
+                electiveCountMap.set(batch.batchString + elective.courseCode + elective.version, { users: [], count: 0 });
+                // @ts-ignore
+                uniqueBatches.add(batch.id);
+            }
+        }
+        const users = await this.responseRepository.findAndPopulate(0, undefined, '{"time":"asc"}', { form: mongoose.Types.ObjectId(formId) });
+        await this.repository.update(formId, {
+            end: form.end,
+            start: form.start,
+            // @ts-ignore
+            electives: form.electives.map(e => e.id),
+            active: false
+        });
+        for (const v of users) {
+            let status = false;
+            for (const ele of v.responses) {
+                const selection = electiveCountMap.get(v.user.batch?.batchString + ele.courseCode + ele.version);
+                if (selection !== undefined && selection !== null && selection.count < ele.strength) {
+                    // @ts-ignore
+                    electiveCountMap.get(v.user.batch?.batchString + ele.courseCode + ele.version).count++;
+                    // @ts-ignore
+                    electiveCountMap.get(v.user.batch?.batchString + ele.courseCode + ele.version).users.push(v.user);
+                    successful.push(v.user.rollNo);
+                    status = true;
+                    break;
+                }
+            }
+            if (!status) {
+                failed.push(v.user.rollNo);
+            }
+        }
+        const unresponsive = (await this.getUnresponsive(successful, Array.from(uniqueBatches.values()))).map(e => e.rollNo);
+        return {
+            failed,
+            successful,
+            unresponsive
+        };
+    }
+
+    private async getUnresponsive(responsive: string[], batches: string[]) {
+        const totalUsers = await this.userRepository.find(0, undefined, '', { batch: { '$in': batches }});
+        return totalUsers.filter(e => responsive.indexOf(e.rollNo) === -1);
     }
 }

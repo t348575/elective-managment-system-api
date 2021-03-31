@@ -3,7 +3,7 @@ import {Logger} from './logger';
 import constants from '../constants';
 import {ProvideSingleton} from './provide-singleton'
 
-if (constants.environment !== 'test') {
+if (constants.environment === 'debug') {
 	mongoose.set(constants.environment, Logger.shouldLog);
 }
 

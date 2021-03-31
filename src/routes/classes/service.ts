@@ -5,12 +5,14 @@ import {ProvideSingleton} from '../../shared/provide-singleton';
 import {IUserModel, UserRepository} from '../../models/mongo/user-repository';
 import {IFormModel} from '../../models/mongo/form-repository';
 import {chunkArray} from '../../util/general-util';
+import {NotificationService} from '../notification/service';
 
 @ProvideSingleton(ClassService)
 export class ClassService extends BaseService<IClassModel> {
     constructor(
         @inject(ClassRepository) protected repository: ClassRepository,
-        @inject(UserRepository) protected userRepository: UserRepository
+        @inject(UserRepository) protected userRepository: UserRepository,
+        @inject(NotificationService) protected notificationService: NotificationService
     ) {
         super();
     }
@@ -32,6 +34,18 @@ export class ClassService extends BaseService<IClassModel> {
                             teacher: elective.teachers[i]
                         });
                         await this.userRepository.addClassToStudents(chunk, classId);
+                        this.notificationService.notifyUsers(chunk, {
+                            notification: {
+                                title: 'You have been added to a new class!',
+                                body: `Joined: ${elective.name}`,
+                                vibrate: [100, 50, 100],
+                                requireInteraction: true,
+                                actions: [{
+                                    action: `classes/${classId}`,
+                                    title: 'Go to class'
+                                }]
+                            }
+                        }).then().catch();
                     }
                 }
             }

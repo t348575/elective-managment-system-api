@@ -48,15 +48,6 @@ export const cleanQuery = (
 		}, {});
 };
 
-export const parseMultiPartRequest = async (request: Request): Promise<void> => {
-	return new Promise<void>((resolve, reject) => {
-		// @ts-ignore
-		multer().any()(request, undefined, async (error: any) => {
-			if (error) reject(error);
-			resolve();
-		});
-	});
-};
 
 export function getJWT(user: IUserModel, state: string, expiresIn: number, subject: jwtSubjects, scope: scopes): Promise<{ jwt: string, expiry: number }> {
 	return new Promise<{ jwt: string, expiry: number }>((resolve, reject) => {
@@ -107,7 +98,7 @@ export function checkNumber(body: any, prop: string, parse = false) {
 			if (parse) {
 				try {
 					const num = parseInt(body[prop], 10);
-					return num && !isNaN(num);
+					return !!(num && !isNaN(num));
 				}
 				catch (err) {
 					return false;

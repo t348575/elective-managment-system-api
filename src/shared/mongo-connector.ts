@@ -2,7 +2,11 @@ import mongoose from 'mongoose';
 import {Logger} from './logger';
 import constants from '../constants';
 import {ProvideSingleton} from './provide-singleton'
-mongoose.set(constants.environment, Logger.shouldLog);
+
+if (constants.environment !== 'test') {
+	mongoose.set(constants.environment, Logger.shouldLog);
+}
+
 @ProvideSingleton(MongoConnector)
 export class MongoConnector {
 	public db: mongoose.Connection;

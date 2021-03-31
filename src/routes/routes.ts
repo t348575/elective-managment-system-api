@@ -11,9 +11,15 @@ import { AuthController } from './oauth/controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { UsersController } from './user/controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { NotificationController } from './notification/controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { FormsController } from './forms/controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { ResponseController } from './response/controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { DownloadController } from './download/controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { ClassController } from './classes/controller';
 import { expressAuthentication } from './../shared/authentication-module';
 import { iocContainer } from './../ioc';
 import { IocContainer, IocContainerFactory } from '@tsoa/runtime';
@@ -84,7 +90,6 @@ const models: TsoaRoute.Models = {
             "courseCode": {"dataType":"string","required":true},
             "version": {"dataType":"double","required":true},
             "strength": {"dataType":"double","required":true},
-            "active": {"dataType":"boolean","required":true},
             "attributes": {"ref":"electiveAttributes","required":true},
             "batches": {"dataType":"array","array":{"ref":"IBatchModel"},"required":true},
             "teachers": {"dataType":"array","array":{"ref":"IUserModel"},"required":true},
@@ -256,6 +261,26 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "INotificationModel": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string"},
+            "user": {"ref":"IUserModel","required":true},
+            "device": {"dataType":"string","required":true},
+            "sub": {"dataType":"nestedObjectLiteral","nestedProperties":{"keys":{"dataType":"nestedObjectLiteral","nestedProperties":{"auth":{"dataType":"string","required":true},"p256dh":{"dataType":"string","required":true}},"required":true},"expirationTime":{"dataType":"enum","enums":[null],"required":true},"endpoint":{"dataType":"string","required":true}},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SubscribeOptions": {
+        "dataType": "refObject",
+        "properties": {
+            "name": {"dataType":"string","required":true},
+            "sub": {"dataType":"nestedObjectLiteral","nestedProperties":{"keys":{"dataType":"nestedObjectLiteral","nestedProperties":{"auth":{"dataType":"string","required":true},"p256dh":{"dataType":"string","required":true}},"required":true},"expirationTime":{"dataType":"union","subSchemas":[{"dataType":"enum","enums":[null]},{"dataType":"double"}],"required":true},"endpoint":{"dataType":"string","required":true}},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IFormModel": {
         "dataType": "refObject",
         "properties": {
@@ -264,6 +289,7 @@ const models: TsoaRoute.Models = {
             "end": {"dataType":"datetime","required":true},
             "num": {"dataType":"double","required":true},
             "electives": {"dataType":"array","array":{"ref":"IElectiveModel"},"required":true},
+            "active": {"dataType":"boolean","required":true},
         },
         "additionalProperties": false,
     },
@@ -291,14 +317,12 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "IResponseModel": {
+    "GenerateListResponse": {
         "dataType": "refObject",
         "properties": {
-            "id": {"dataType":"string"},
-            "user": {"ref":"IUserModel","required":true},
-            "responses": {"dataType":"array","array":{"ref":"IElectiveModel"},"required":true},
-            "form": {"ref":"IFormModel","required":true},
-            "time": {"dataType":"datetime","required":true},
+            "status": {"dataType":"boolean","required":true},
+            "downloadUri": {"dataType":"string","required":true},
+            "failed": {"dataType":"array","array":{"dataType":"string"},"required":true},
         },
         "additionalProperties": false,
     },
@@ -311,6 +335,18 @@ const models: TsoaRoute.Models = {
             "end": {"dataType":"string"},
             "num": {"dataType":"double"},
             "electives": {"dataType":"array","array":{"dataType":"string"}},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IResponseModel": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string"},
+            "user": {"ref":"IUserModel","required":true},
+            "responses": {"dataType":"array","array":{"ref":"IElectiveModel"},"required":true},
+            "form": {"ref":"IFormModel","required":true},
+            "time": {"dataType":"datetime","required":true},
         },
         "additionalProperties": false,
     },
@@ -962,6 +998,64 @@ export function RegisterRoutes(app: express.Router) {
             promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.put('/notifications/subscribe',
+            authenticateMiddleware([{"jwt":["teacher","admin","student"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    options: {"in":"body","name":"options","required":true,"ref":"SubscribeOptions"},
+                    request: {"in":"request","name":"request","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<NotificationController>(NotificationController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.subscribe.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/notifications/unsubscribe',
+            authenticateMiddleware([{"jwt":["teacher","admin","student"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    options: {"in":"body","name":"options","required":true,"ref":"SubscribeOptions"},
+                    request: {"in":"request","name":"request","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<NotificationController>(NotificationController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.unsubscribe.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.put('/forms/create-form',
             authenticateMiddleware([{"jwt":["admin"]}]),
             function (request: any, response: any, next: any) {
@@ -1079,8 +1173,8 @@ export function RegisterRoutes(app: express.Router) {
             function (request: any, response: any, next: any) {
             const args = {
                     id: {"in":"query","name":"id","required":true,"dataType":"string"},
-                    format: {"in":"query","name":"format","required":true,"dataType":"union","subSchemas":[{"dataType":"enum","enums":["json"]},{"dataType":"enum","enums":["csv"]}]},
                     closeForm: {"default":false,"in":"query","name":"closeForm","dataType":"boolean"},
+                    request: {"in":"request","name":"request","required":true,"dataType":"object"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1101,6 +1195,34 @@ export function RegisterRoutes(app: express.Router) {
 
 
             const promise = controller.generateList.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/forms/create-classes',
+            authenticateMiddleware([{"jwt":["admin"]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    formId: {"in":"query","name":"formId","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<FormsController>(FormsController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.createClass.apply(controller, validatedArgs as any);
             promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1216,6 +1338,35 @@ export function RegisterRoutes(app: express.Router) {
 
 
             const promise = controller.getResponses.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/downloads/temp',
+            authenticateMiddleware([{"any":[]}]),
+            function (request: any, response: any, next: any) {
+            const args = {
+                    file: {"in":"query","name":"file","required":true,"dataType":"string"},
+                    request: {"in":"request","name":"request","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<DownloadController>(DownloadController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.temporaryDownload.apply(controller, validatedArgs as any);
             promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

@@ -15,37 +15,34 @@ import axios from 'axios';
 import './models/types';
 import https from 'https';
 import helmet from 'helmet';
+import constants from './constants';
 
 // routes
-
-import './routes/private-injector-init';
-import './routes/oauth/controller';
-import './routes/user/controller';
-import './routes/electives/controller';
-import './routes/forms/controller';
-import './routes/response/controller';
-import './routes/download/controller';
-import './routes/notification/controller';
-import './routes/classes/controller';
+import './routes/controller';
 
 export const app = express();
 
-// TODO: remove in production
-app.use(cors())
+if (constants.environment === 'debug') {
+	app.use(cors())
+}
 
-// TODO: enable in production
-// app.use(helmet());
+if (constants.environment === 'production') {
+	app.use(helmet());
+}
 
-app.use(morgan(function (tokens, req, res) {
-	return [
-		tokens.method(req, res),
-		tokens.url(req, res),
-		tokens.status(req, res),
-		tokens.res(req, res, 'content-length'), '-',
-		tokens['response-time'](req, res), 'ms',
-		new Date().toLocaleString()
-	].join(' ')
-}))
+if (constants.environment === 'debug') {
+	app.use(morgan(function (tokens, req, res) {
+		return [
+			tokens.method(req, res),
+			tokens.url(req, res),
+			tokens.status(req, res),
+			tokens.res(req, res, 'content-length'), '-',
+			tokens['response-time'](req, res), 'ms',
+			new Date().toLocaleString()
+		].join(' ')
+	}));
+}
+
 app.use(bodyParser.urlencoded({
 	extended: true,
 	limit: '55mb'
@@ -72,7 +69,7 @@ app.get('/*', (req, res) => {
 	res.sendFile(path.resolve(__dirname, './../resources/public/index.html'));
 });
 
-axios.get(`https://localhost:3000/private-init`, {httpsAgent: new https.Agent({rejectUnauthorized: false})}).then().catch(err => {
+axios.get(`http${constants.environment === 'test' ? '' : 's'}://localhost:3000/private-init`, {httpsAgent: new https.Agent({rejectUnauthorized: false})}).then().catch(err => {
 	throw err;
 });
 

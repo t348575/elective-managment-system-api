@@ -21,7 +21,7 @@ export class RedisConnector {
 		});
 	}
 	remove(key: string) {
-		this.db.del(key);
+		return this.db.del(key);
 	}
 	exists(key: string): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {

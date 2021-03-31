@@ -4,6 +4,7 @@ import constants from '../constants';
 import Mail, {Attachment} from 'nodemailer/lib/mailer';
 import {TransportOptions} from 'nodemailer';
 import {SentMessageInfo} from 'nodemailer/lib/smtp-transport';
+import {Logger} from './logger';
 
 @ProvideSingleton(MailService)
 export class MailService {
@@ -22,7 +23,7 @@ export class MailService {
             },
             sendingRate: 2
         } as TransportOptions);
-        console.log('Mail service initialized');
+        Logger.log('Mail service initialized');
     }
 
     async sendEmail(to: string | string[], subject: string, html: string, text ?: string, attachments ?: Attachment[]) {

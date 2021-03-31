@@ -1,30 +1,42 @@
 import * as path from 'path';
 import fs from 'fs';
 import https from 'https';
-import { app } from './app';
+import http from 'http';
 import {ConfigModel} from './models/config-model';
 import constants from './constants';
+import {Logger} from './shared/logger';
 const config: ConfigModel = JSON.parse(fs.readFileSync(path.join(__dirname, './../resources/config.json')).toString());
 const port = config.port || 8080;
-
 setConstants();
-
-const server = https.createServer({
-	// @ts-ignore
-	key: constants.privateKey,
-	// @ts-ignore
-	cert: constants.publicKey,
-}, app);
+Logger.init();
+import { app } from './app';
+let server: http.Server | https.Server;
+if (constants.environment === 'test') {
+	server = http.createServer({
+		// @ts-ignore
+		key: constants.privateKey,
+		// @ts-ignore
+		cert: constants.publicKey,
+	}, app);
+}
+else {
+	server = https.createServer({
+		// @ts-ignore
+		key: constants.privateKey,
+		// @ts-ignore
+		cert: constants.publicKey,
+	}, app);
+}
 
 process.on('SIGINT', shutdown);
 function shutdown() {
-	console.log('Graceful shutdown...');
-	console.log('Closed app');
+	Logger.log('Graceful shutdown...');
+	Logger.log('Closed app');
 	process.exit(0);
 }
 
 server.listen(port, () =>
-	console.log(`App listening at ${config.serverAddress}:${port}`)
+	Logger.log(`App listening at ${config.serverAddress}:${port}`)
 );
 
 function setConstants() {
@@ -41,4 +53,9 @@ function setConstants() {
 	constants.mailAccess.password = config.mailPassword;
 	constants.mailAccess.name = config.mailName;
 
+	// @ts-ignore
+	constants.environment = process.env.NODE_ENV;
+
 }
+
+export {server};

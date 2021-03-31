@@ -11,13 +11,15 @@ import constants from '../../constants';
 import {RedisConnector} from '../../shared/redis-connector';
 import {jwtToken, refreshTokenResponse, scopes, tokenResponse} from '../../models/types';
 import * as qs from 'querystring';
-import {Logger} from '../../shared/logger';
+import {TrackRepository} from '../../models/mongo/track-repository';
+
 @ProvideSingleton(AuthService)
 export class AuthService extends BaseService <IAuthTokenRequest> {
 
 	constructor(
 		@inject(UserRepository) protected repository: UserRepository,
-		@inject(RedisConnector) protected redis: RedisConnector
+		@inject(RedisConnector) protected redis: RedisConnector,
+		@inject(TrackRepository) protected trackRepository: TrackRepository
 	) {
 		super();
 	}
@@ -125,7 +127,7 @@ export class AuthService extends BaseService <IAuthTokenRequest> {
 		});
 	}
 
-	getToken(code: string, codeVerifier: string): Promise<tokenResponse> {
+	getToken(code: string, codeVerifier: string, req: ExRequest): Promise<tokenResponse> {
 		return new Promise<tokenResponse>((resolve, reject) => {
 			decipherJWT(code, 'oneTimeAuthCode')
 			.then((jwtObject: jwtToken) => {
@@ -139,6 +141,15 @@ export class AuthService extends BaseService <IAuthTokenRequest> {
 							if (code === storedCode && getSHA256(codeVerifier) === codeChallenge) {
 								this.generateTokens(jwtObject.id, jwtObject.stateSlice, jwtObject.scope)
 									.then(tokens => {
+										this.trackRepository.create({
+											device: AuthService.getDevice(req.useragent),
+											browser: req.useragent?.browser || 'unknown',
+											platform: req.useragent?.platform || 'unknown',
+											// @ts-ignore
+											ip: req.ip || (req.headers['x-forwarded-for'] || req.connection.remoteAddress),
+											// @ts-ignore
+											user: jwtObject.id
+										}).then().catch();
 										resolve({ ...tokens });
 									})
 									.catch(err => reject(new OAuthError({ name: 'server_error', error_description: err?.message })));
@@ -215,5 +226,18 @@ export class AuthService extends BaseService <IAuthTokenRequest> {
 			})
 			.catch(err => reject(err));
 		});
+	}
+
+	private static getDevice(agent: any): 'mobile' | 'desktop' | 'bot' | 'unknown' {
+		if (agent?.isMobile) {
+			return 'mobile';
+		}
+		if (agent?.isDesktop) {
+			return 'desktop';
+		}
+		if (agent?.isBot) {
+			return 'bot';
+		}
+		return 'unknown';
 	}
 }

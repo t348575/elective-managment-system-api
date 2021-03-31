@@ -84,8 +84,9 @@ export class AuthController extends Controller {
 	@Post('token')
 	public async token(
 		@Body() body: tokenBodyType,
+		@Request() request: ExRequest
 	) {
-		return this.service.getToken(body.code, body.code_verifier);
+		return this.service.getToken(body.code, body.code_verifier, request);
 	}
 
 	@Security('jwtRefresh', scopeArray)

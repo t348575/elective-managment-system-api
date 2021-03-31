@@ -16,11 +16,13 @@ import './models/types';
 import https from 'https';
 import helmet from 'helmet';
 import constants from './constants';
-
+import useragent from 'express-useragent';
 // routes
 import './routes/controller';
 
 export const app = express();
+
+app.set('trust proxy', true);
 
 if (constants.environment === 'debug') {
 	app.use(cors())
@@ -42,6 +44,8 @@ if (constants.environment === 'debug') {
 		].join(' ')
 	}));
 }
+
+app.use(useragent.express());
 
 app.use(bodyParser.urlencoded({
 	extended: true,

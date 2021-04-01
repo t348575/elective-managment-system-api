@@ -2,8 +2,7 @@ import { ElectiveFormatter, IElectiveModel } from './elective-repository';
 import { ProvideSingleton } from '../../shared/provide-singleton';
 import { BaseFormatter } from '../../util/base-formatter';
 import { BaseRepository } from '../shared/base-repository';
-import { Schema } from 'mongoose';
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { inject } from 'inversify';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { cleanQuery } from '../../util/general-util';
@@ -67,7 +66,7 @@ export class FormsRepository extends BaseRepository<IFormModel> {
         return (await this.documentModel.find(query).populate('electives')).map((item) => new this.formatter(item));
     }
 
-    public async findAndPopulate(skip = 0, limit = 250, sort: string, query: any): Promise<FormFormatter[]> {
+    public async findAndPopulate(sort: string, query: any, skip = 0, limit = 250): Promise<FormFormatter[]> {
         const sortObject = cleanQuery(sort, this.sortQueryFormatter);
         return (
             await this.documentModel

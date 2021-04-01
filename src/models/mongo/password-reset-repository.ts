@@ -1,10 +1,9 @@
 import { ProvideSingleton } from '../../shared/provide-singleton';
 import { BaseRepository } from '../shared/base-repository';
-import { Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { inject } from 'inversify';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { BaseFormatter } from '../../util/base-formatter';
-import mongoose from 'mongoose';
 
 export interface IPasswordResetModel {
     id?: string;

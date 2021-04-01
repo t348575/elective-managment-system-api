@@ -1,10 +1,9 @@
 import { BaseFormatter } from '../../util/base-formatter';
 import { BaseRepository } from '../shared/base-repository';
-import { Schema } from 'mongoose';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { inject } from 'inversify';
 import { ProvideSingleton } from '../../shared/provide-singleton';
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 export interface IBatchModel {
     id?: string;

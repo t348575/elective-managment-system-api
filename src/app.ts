@@ -74,11 +74,11 @@ app.use('/swagger', (req, res) => {
     return res.send(fs.readFileSync(path.join(__dirname, 'swagger.json')));
 });
 
-app.use(express.static(path.resolve(__dirname, './../resources/public')));
+app.use('/app', express.static(path.resolve(__dirname, './../resources/public')));
 
 RegisterRoutes(app);
 
-app.get('/*', (req, res) => {
+app.get('/app/*', (req, res) => {
     res.sendFile(path.resolve(__dirname, './../resources/public/index.html'));
 });
 

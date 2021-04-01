@@ -1,7 +1,7 @@
 import { electiveAttributes } from '../types';
 import { BatchFormatter, IBatchModel } from './batch-repository';
-import { IUserModel, SafeUser, UserFormatter } from './user-repository';
-import { BaseFormatter, remove } from '../../util/base-formatter';
+import { IUserModel, UserFormatter } from './user-repository';
+import { BaseFormatter } from '../../util/base-formatter';
 import { BaseRepository } from '../shared/base-repository';
 import mongoose, { Schema } from 'mongoose';
 import { inject } from 'inversify';
@@ -33,27 +33,25 @@ export class ElectiveFormatter extends BaseFormatter implements IElectiveModel {
     id: string;
     constructor(args: any) {
         super();
+        const items = {
+            batches: BatchFormatter,
+            teachers: UserFormatter
+        };
         if (!(args instanceof mongoose.Types.ObjectId)) {
             this.format(args);
         } else {
             this.id = args.toString();
         }
-        if (this.batches) {
-            for (const [i, v] of args.batches.entries()) {
-                if (v instanceof mongoose.Types.ObjectId) {
-                    this.batches[i] = v.toString();
-                } else if (typeof v === 'object') {
-                    this.batches[i] = new BatchFormatter(v);
-                }
-            }
-        }
-        if (this.teachers) {
-            for (const [i, v] of args.teachers.entries()) {
-                if (v instanceof mongoose.Types.ObjectId) {
-                    this.teachers[i] = v.toString();
-                } else if (typeof v === 'object') {
-                    // @ts-ignore
-                    this.teachers[i] = remove<IUserModel, SafeUser>(new UserFormatter(v), ['password']);
+        for (const v in items) {
+            if (args[v]) {
+                for (const [i, individualItem] of args[v].entries()) {
+                    if (individualItem instanceof mongoose.Types.ObjectId) {
+                        // @ts-ignore
+                        this[v][i] = v.toString();
+                    } else if (typeof v === 'object') {
+                        // @ts-ignore
+                        this[v][i] = new items[v](individualItem);
+                    }
                 }
             }
         }

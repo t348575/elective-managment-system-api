@@ -1,8 +1,8 @@
-import { IUserModel, SafeUser, UserFormatter } from './user-repository';
-import { BaseFormatter, remove } from '../../util/base-formatter';
+import { IUserModel, UserFormatter } from './user-repository';
+import { BaseFormatter } from '../../util/base-formatter';
 import mongoose, { Schema } from 'mongoose';
-import { IClassModel } from './class-repository';
-import { IBatchModel } from './batch-repository';
+import { ClassFormatter, IClassModel } from './class-repository';
+import { BatchFormatter, IBatchModel } from './batch-repository';
 import { scopes } from '../types';
 import { ProvideSingleton } from '../../shared/provide-singleton';
 import { BaseRepository } from '../shared/base-repository';
@@ -40,38 +40,26 @@ export class DownloadFormatter extends BaseFormatter implements IDownloadModel {
     fileId: string;
     constructor(args: any) {
         super();
+        const items = {
+            limitedTo: UserFormatter,
+            limitedToBatch: BatchFormatter,
+            limitedToClass: ClassFormatter
+        };
         if (!(args instanceof mongoose.Types.ObjectId)) {
             this.format(args);
         } else {
             this.id = args.toString();
         }
-        if (this.limitedTo) {
-            for (const [i, v] of args.limitedTo.entries()) {
-                if (v instanceof mongoose.Types.ObjectId) {
-                    this.limitedTo[i] = v.toString();
-                } else if (typeof v === 'object') {
-                    // @ts-ignore
-                    this.limitedTo[i] = remove<IUserModel, SafeUser>(new UserFormatter(v), ['password']);
-                }
-            }
-        }
-        if (this.limitedToBatch) {
-            for (const [i, v] of args.limitedToBatch.entries()) {
-                if (v instanceof mongoose.Types.ObjectId) {
-                    this.limitedToBatch[i] = v.toString();
-                } else if (typeof v === 'object') {
-                    // @ts-ignore
-                    this.limitedToBatch[i] = new BatchFormatter(v);
-                }
-            }
-        }
-        if (this.limitedToClass) {
-            for (const [i, v] of args.limitedToClass.entries()) {
-                if (v instanceof mongoose.Types.ObjectId) {
-                    this.limitedToClass[i] = v.toString();
-                } else if (typeof v === 'object') {
-                    // @ts-ignore
-                    this.limitedToClass[i] = new ClassFormatter(v);
+        for (const v in items) {
+            if (args[v]) {
+                for (const [i, individualItem] of args[v].entries()) {
+                    if (individualItem instanceof mongoose.Types.ObjectId) {
+                        // @ts-ignore
+                        this[v][i] = v.toString();
+                    } else if (typeof v === 'object') {
+                        // @ts-ignore
+                        this[v][i] = new items[v](individualItem);
+                    }
                 }
             }
         }

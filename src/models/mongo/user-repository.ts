@@ -133,6 +133,6 @@ export class UserRepository extends BaseRepository<IUserModel> {
                 });
             }
         });
-        await session.endSession();
+        session.endSession();
     }
 }

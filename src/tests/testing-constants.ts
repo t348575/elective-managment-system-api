@@ -15,13 +15,16 @@ export default {
     },
     electives: {
         addRoute:'/electives/add',
-        addcsvRoute:'/electives/add-csv',
+        postElectiveRoute:'/electives'
     },
     users: {
         name: 'Users',
         basicRoute: '/users/basic',
-        scopeRoute: '/users/scope'
+        scopeRoute: '/users/scope',
+        createRoute: '/users/create',
+        userByRollNoRoute:'/users/user-by-roll-no'
     },
+
 
     privateKey: '',
     publicKey: ''

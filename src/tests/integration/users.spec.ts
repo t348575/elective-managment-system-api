@@ -31,4 +31,31 @@ describe(testingConstants.users.name, () => {
             expect(res.body).to.equal(testingConstants.scope);
         });
     });
+    describe(testingConstants.users.createRoute,()=>{
+        let batch='asdasd';
+        let role='admin';
+        let rollNo='nlkjok';
+        let username='asdaadasd';
+        let name='blah';
+        let defaultRollNoAsEmail=true;
+        let users=[{batch,role,rollNo,username,name}]
+        it('creates user',async ()=>{
+            const res=await app
+                .post(testingConstants.users.createRoute)
+                .send({ users,defaultRollNoAsEmail})
+                .set('Authorization', integrationHelper.getBearer());
+            expect(res.status).to.equal(200);
+        })
+    })
+    describe(testingConstants.users.userByRollNoRoute,()=>{
+        it("returns user by roll no",async()=>{
+            const args={
+                rollNo:'cb.en.u4cse18105'
+            };
+            const res=await app.get(testingConstants.users.userByRollNoRoute).query(args)
+                .set('Authorization', integrationHelper.getBearer());
+            expect(res.status).to.equal(200);
+        })
+    })
+    
 });

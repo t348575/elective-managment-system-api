@@ -29,32 +29,6 @@ describe(testingConstants.oauth.name, () => {
             expect(res.body.failed).to.be.an('array');
         });
     });
-/*    describe(testingConstants.electives.postElectiveRoute,()=>{
-        let id='asdsa';
-        let name='Bobby';
-        let description='test a';
-        let courseCode='15csea';
-        let version=0;
-        let strength=0;
-        let attributes=[
-            {
-                value: 'asd',
-                key: 'dsa'
-            }];
-        let batches='2018-4-BTECH-CSE';
-        let teachers=['cb.en.u4cse18125']
-
-        it('it returns ok',async()=>{
-            await integrationHelper.login();
-            const res=await app.post(testingConstants.electives.postElectiveRoute).send(
-                {
-                    id,name,description,courseCode,version,strength,attributes,batches,teachers
-                }
-            ).set('Authorization', integrationHelper.getBearer());
-            expect(res.status).to.equal(200);
-        });
-    })*/
-
 });
 describe(testingConstants.electives.postElectiveRoute,()=>{
     let id='asdsa';

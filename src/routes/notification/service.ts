@@ -1,12 +1,12 @@
-import {ProvideSingleton} from '../../shared/provide-singleton';
-import {INotificationModel, NotificationRepository} from '../../models/mongo/notification-repository';
-import {BaseService} from '../../models/shared/base-service';
-import {inject} from 'inversify';
-import {SubscribeOptions} from './controller';
+import { ProvideSingleton } from '../../shared/provide-singleton';
+import { INotificationModel, NotificationRepository } from '../../models/mongo/notification-repository';
+import { BaseService } from '../../models/shared/base-service';
+import { inject } from 'inversify';
+import { SubscribeOptions } from './controller';
 import constants from '../../constants';
 import * as webPush from 'web-push';
-import {ApiError} from '../../shared/error-handler';
-import {BatchRepository} from '../../models/mongo/batch-repository';
+import { ApiError } from '../../shared/error-handler';
+import { BatchRepository } from '../../models/mongo/batch-repository';
 
 @ProvideSingleton(NotificationService)
 export class NotificationService extends BaseService<INotificationModel> {
@@ -15,7 +15,11 @@ export class NotificationService extends BaseService<INotificationModel> {
         @inject(BatchRepository) private batchRepository: BatchRepository
     ) {
         super();
-        webPush.setVapidDetails('mailto:' + constants.mailAccess.username, constants.vapidKeys.publicKey, constants.vapidKeys.privateKey);
+        webPush.setVapidDetails(
+            'mailto:' + constants.mailAccess.username,
+            constants.vapidKeys.publicKey,
+            constants.vapidKeys.privateKey
+        );
     }
 
     public async subscribe(options: SubscribeOptions, userId: string) {
@@ -24,9 +28,8 @@ export class NotificationService extends BaseService<INotificationModel> {
             if (previous) {
                 return {
                     status: true
-                }
-            }
-            else {
+                };
+            } else {
                 await NotificationService.initialNotification(options.sub);
                 return this.repository.create({
                     // @ts-ignore
@@ -36,8 +39,7 @@ export class NotificationService extends BaseService<INotificationModel> {
                     device: options.name
                 });
             }
-        }
-        catch(err) {
+        } catch (err) {
             await NotificationService.initialNotification(options.sub);
             return this.repository.create({
                 // @ts-ignore
@@ -57,10 +59,9 @@ export class NotificationService extends BaseService<INotificationModel> {
                 await this.repository.delete(previous.id);
                 return {
                     status: true
-                }
+                };
             }
-        }
-        catch(err) {
+        } catch (err) {
             throw new ApiError(constants.errorTypes.notFound);
         }
     }
@@ -72,17 +73,16 @@ export class NotificationService extends BaseService<INotificationModel> {
                 for (const v of ids) {
                     try {
                         webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then().catch();
-                    }
-                    catch (err) {
+                    } catch (err) {
                         try {
                             // @ts-ignore
                             await this.repository.delete(v.id);
-                        }
-                        catch(err) {}
+                            // eslint-disable-next-line no-empty
+                        } catch (err) {}
                     }
                 }
-            }
-            catch(err) {}
+                // eslint-disable-next-line no-empty
+            } catch (err) {}
         }
     }
 
@@ -93,17 +93,16 @@ export class NotificationService extends BaseService<INotificationModel> {
                 for (const v of ids) {
                     try {
                         webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then().catch();
-                    }
-                    catch (err) {
+                    } catch (err) {
                         try {
                             // @ts-ignore
                             await this.repository.delete(v.id);
-                        }
-                        catch(err) {}
+                            // eslint-disable-next-line no-empty
+                        } catch (err) {}
                     }
                 }
-            }
-            catch(err) {}
+                // eslint-disable-next-line no-empty
+            } catch (err) {}
         }
     }
 
@@ -112,30 +111,34 @@ export class NotificationService extends BaseService<INotificationModel> {
         for (const v of ids) {
             try {
                 NotificationService.initialNotification(v.sub).then().catch();
-            }
-            catch (err) {
+            } catch (err) {
                 try {
                     // @ts-ignore
                     await this.repository.delete(v.id);
-                }
-                catch(err) {}
+                    // eslint-disable-next-line no-empty
+                } catch (err) {}
             }
         }
     }
 
-    private static async initialNotification(sub: { endpoint: string; expirationTime: number | null; keys: { p256dh: string; auth: string } }) {
+    private static async initialNotification(sub: {
+        endpoint: string;
+        expirationTime: number | null;
+        keys: { p256dh: string; auth: string };
+    }) {
         const notificationPayload = {
             notification: {
                 title: 'Welcome to Amrita EMS!',
                 body: 'Thank you for enabling notifications',
                 vibrate: [100, 50, 100],
-                actions: [{
-                    action: 'home',
-                    title: 'Go to site'
-                }]
+                actions: [
+                    {
+                        action: 'home',
+                        title: 'Go to site'
+                    }
+                ]
             }
         };
         return webPush.sendNotification(sub, JSON.stringify(notificationPayload));
     }
-
 }

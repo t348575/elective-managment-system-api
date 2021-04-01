@@ -1,8 +1,7 @@
 import { expect } from 'chai';
 import { stub } from 'sinon';
-import {ApiError, ErrorHandler} from '../../../shared/error-handler';
+import { ApiError, ErrorHandler } from '../../../shared/error-handler';
 import constants from '../../../constants';
-
 
 describe('ErrorHandler', () => {
     it('should normalize errors', () => {
@@ -23,11 +22,13 @@ describe('ErrorHandler', () => {
             nextStub
         );
         expect(statusStub.calledWith(e.statusCode)).to.be.true; // tslint:disable-line
-        expect(jsonStub.calledWith({
-            name: e.name,
-            message: e.message,
-            fields: undefined
-        })).to.be.true; // tslint:disable-line
+        expect(
+            jsonStub.calledWith({
+                name: e.name,
+                message: e.message,
+                fields: undefined
+            })
+        ).to.be.true; // tslint:disable-line
         expect(nextStub.calledOnce).to.be.true; // tslint:disable-line
     });
 });

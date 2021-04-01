@@ -4,7 +4,7 @@ export default {
     scope: 'admin',
     fromHexString: (hexString: string) => {
         // @ts-ignore
-        return new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)))
+        return new Uint8Array(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
     },
     oauth: {
         name: 'OAuth2',
@@ -20,9 +20,9 @@ export default {
     users: {
         name: 'Users',
         basicRoute: '/users/basic',
-        scopeRoute: '/users/scope',
+        scopeRoute: '/users/scope'
     },
 
     privateKey: '',
     publicKey: ''
-}
+};

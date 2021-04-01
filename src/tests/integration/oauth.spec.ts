@@ -1,21 +1,19 @@
-import {expect} from 'chai';
+import { expect } from 'chai';
 import supertest from 'supertest';
 import * as qs from 'query-string';
 import * as crypto from 'crypto';
-import {server as importApp} from '../../server';
-import {IntegrationHelper} from '../integration-helper';
-import {Base64} from 'js-base64';
-import {sha256} from 'js-sha256';
+import { server as importApp } from '../../server';
+import { IntegrationHelper } from '../integration-helper';
+import { Base64 } from 'js-base64';
+import { sha256 } from 'js-sha256';
 import testingConstants from '../testing-constants';
 
 const app = supertest(importApp);
-const integrationHelper = new IntegrationHelper(app);
-
+new IntegrationHelper(app);
 describe(testingConstants.oauth.name, () => {
-
     const redirectURI = 'http://localhost:3000';
     const code_verifier = crypto.randomBytes(32).toString('hex');
-    const code_challenge = Base64.fromUint8Array(testingConstants.fromHexString(sha256(code_verifier)))
+    const code_challenge = Base64.fromUint8Array(testingConstants.fromHexString(sha256(code_verifier)));
     let code = '';
     let id_token = '';
     let access_token = '';
@@ -58,7 +56,10 @@ describe(testingConstants.oauth.name, () => {
 
     describe(testingConstants.oauth.refreshRoute, () => {
         it('should return access_token, refresh_token', async () => {
-            const res = await app.post(testingConstants.oauth.refreshRoute).set('Authorization', `Bearer ${access_token}`).send({ refresh_token });
+            const res = await app
+                .post(testingConstants.oauth.refreshRoute)
+                .set('Authorization', `Bearer ${access_token}`)
+                .send({ refresh_token });
             expect(res.status).to.equal(200);
             expect(res.body.refresh_token).to.be.a('string');
             expect(res.body.access_token).to.be.a('string');
@@ -68,10 +69,12 @@ describe(testingConstants.oauth.name, () => {
     });
 
     describe(testingConstants.oauth.logoutRoute, () => {
-        it('expect status 302', async() => {
-            const res = await app.get(testingConstants.oauth.logoutRoute).query({ refresh_token, id_token }).set('Authorization', `Bearer ${access_token}`);
+        it('expect status 302', async () => {
+            const res = await app
+                .get(testingConstants.oauth.logoutRoute)
+                .query({ refresh_token, id_token })
+                .set('Authorization', `Bearer ${access_token}`);
             expect(res.status).to.equal(302);
         });
     });
-
-})
+});

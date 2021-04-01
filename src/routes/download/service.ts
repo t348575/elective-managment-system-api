@@ -1,13 +1,13 @@
-import {ProvideSingleton} from '../../shared/provide-singleton';
-import {DownloadRespository, IDownloadModel} from '../../models/mongo/download-repository';
-import {BaseService} from '../../models/shared/base-service';
-import {inject} from 'inversify';
-import {randomBytes} from 'crypto';
-import {IUserModel, UserRepository} from '../../models/mongo/user-repository';
-import {OAuthError} from '../../shared/error-handler';
-import {Request as ExRequest, Response as ExResponse} from 'express';
-import {createReadStream} from 'fs';
-import {removeTempFile} from '../../util/general-util';
+import { ProvideSingleton } from '../../shared/provide-singleton';
+import { DownloadRespository, IDownloadModel } from '../../models/mongo/download-repository';
+import { BaseService } from '../../models/shared/base-service';
+import { inject } from 'inversify';
+import { randomBytes } from 'crypto';
+import { IUserModel, UserRepository } from '../../models/mongo/user-repository';
+import { OAuthError } from '../../shared/error-handler';
+import { Response as ExResponse } from 'express';
+import { createReadStream } from 'fs';
+import { removeTempFile } from '../../util/general-util';
 
 @ProvideSingleton(DownloadService)
 export class DownloadService extends BaseService<IDownloadModel> {
@@ -32,8 +32,7 @@ export class DownloadService extends BaseService<IDownloadModel> {
                     fileId
                 });
                 resolve(fileId);
-            }
-            catch(err) {
+            } catch (err) {
                 reject(err);
             }
         });
@@ -47,7 +46,12 @@ export class DownloadService extends BaseService<IDownloadModel> {
                 case 'user': {
                     // @ts-ignore
                     if (file.limitedTo.indexOf(user.id) === -1) {
-                        return reject(new OAuthError({ name: 'access_denied', error_description: 'user does not have access to this file' }));
+                        return reject(
+                            new OAuthError({
+                                name: 'access_denied',
+                                error_description: 'user does not have access to this file'
+                            })
+                        );
                     }
                     break;
                 }
@@ -57,8 +61,7 @@ export class DownloadService extends BaseService<IDownloadModel> {
             readStream.on('close', (err: Error) => {
                 if (err) {
                     reject(err);
-                }
-                else {
+                } else {
                     resolve(null);
                     if (file.deleteOnAccess && file.id != null) {
                         this.repository.delete(file.id).then().catch();

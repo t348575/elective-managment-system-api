@@ -1,0 +1,7 @@
+node_modules
+resources
+build
+coverage
+.idea
+.nyc_output
+logs

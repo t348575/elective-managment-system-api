@@ -1,27 +1,25 @@
-import {ProvideSingleton} from '../../shared/provide-singleton';
-import {FormFormatter, FormsRepository, IFormModel} from '../../models/mongo/form-repository';
-import {BaseService} from '../../models/shared/base-service';
-import {inject} from 'inversify';
-import {BatchRepository} from '../../models/mongo/batch-repository';
-import {CreateFormOptions, GenerateListResponse, UpdateFormOptions} from './controller';
-import {ElectiveFormatter, ElectiveRepository, IElectiveModel} from '../../models/mongo/elective-repository';
-import {ErrorType, UnknownApiError} from '../../shared/error-handler';
-import {IUserModel, UserRepository} from '../../models/mongo/user-repository';
-import {scopes} from '../../models/types';
-import {PaginationModel} from '../../models/shared/pagination-model';
-import {ResponseRepository} from '../../models/mongo/response-repository';
+import { ProvideSingleton } from '../../shared/provide-singleton';
+import { FormsRepository, IFormModel } from '../../models/mongo/form-repository';
+import { BaseService } from '../../models/shared/base-service';
+import { inject } from 'inversify';
+import { BatchRepository } from '../../models/mongo/batch-repository';
+import { CreateFormOptions, GenerateListResponse, UpdateFormOptions } from './controller';
+import { ElectiveRepository, IElectiveModel } from '../../models/mongo/elective-repository';
+import { ApiError, UnknownApiError } from '../../shared/error-handler';
+import { IUserModel, UserRepository } from '../../models/mongo/user-repository';
+import { scopes } from '../../models/types';
+import { PaginationModel } from '../../models/shared/pagination-model';
+import { ResponseRepository } from '../../models/mongo/response-repository';
 import mongoose from 'mongoose';
-import {Request as ExRequest, Response as ExResponse} from 'express';
-import {createWriteStream, unlink} from 'fs';
+import { createWriteStream } from 'fs';
 import * as path from 'path';
-import {randomBytes} from 'crypto';
+import { randomBytes } from 'crypto';
 import constants from '../../constants';
 import * as csv from '@fast-csv/format';
-import {checkNumber} from '../../util/general-util';
-import {DownloadService} from '../download/service';
-import {NotificationService} from '../notification/service';
-import {Parser} from 'json2csv';
-import {ClassService} from '../classes/service';
+import { DownloadService } from '../download/service';
+import { NotificationService } from '../notification/service';
+import { Parser } from 'json2csv';
+import { ClassService } from '../classes/service';
 
 export interface AssignedElective {
     rollNo: string;
@@ -50,39 +48,38 @@ export class FormsService extends BaseService<IFormModel> {
             const batches = [];
             now.setMinutes(now.getMinutes() - 5);
             if (new Date(options.start).getTime() <= now.getTime()) {
-                return <ErrorType>{
+                throw new ApiError({
                     statusCode: 400,
                     name: 'start_time_too_early',
                     message: 'Start time before now'
-                };
+                });
             }
             if (options.numElectives > options.electives.length) {
-                return <ErrorType>{
+                throw new ApiError({
                     statusCode: 400,
                     name: 'numElectives_too_few',
                     message: 'Number of electives more than electives provided'
-                };
+                });
             }
             for (const v of options.electives) {
                 try {
                     const ele = await this.electionRepository.findOne({ _id: v });
                     if (ele === undefined) {
-                        return <ErrorType>{
+                        throw new ApiError({
                             statusCode: 400,
-                            name: 'elective_not_found',
+                            name: 'not_found',
                             message: v
-                        };
+                        });
                     }
                     for (const k of ele.batches) {
                         batches.push(k);
                     }
-                }
-                catch(err) {
-                    return <ErrorType>{
+                } catch (err) {
+                    throw new ApiError({
                         statusCode: 400,
-                        name: 'elective_not_found',
+                        name: 'not_found',
                         message: v
-                    };
+                    });
                 }
             }
             const createdElective = await this.repository.create({
@@ -96,23 +93,31 @@ export class FormsService extends BaseService<IFormModel> {
                 active: true
             });
             const s = new Set(batches);
-            // @ts-ignore
-            this.notificationService.notifyBatches(Array.from(s.values()), {
-                notification: {
-                    title: 'New form available!',
-                    body: `Fill new electives form before ${new Date(options.end).toLocaleString()}`,
-                    vibrate: [100, 50, 100],
-                    requireInteraction: true,
-                    actions: [{
-                        action: `electives/${createdElective.id}`,
-                        title: 'Go to form'
-                    }]
-                }
-            }).then().catch();
+            this.notificationService
+                // @ts-ignore
+                .notifyBatches(Array.from(s.values()), {
+                    notification: {
+                        title: 'New form available!',
+                        body: `Fill new electives form before ${new Date(options.end).toLocaleString()}`,
+                        vibrate: [100, 50, 100],
+                        requireInteraction: true,
+                        actions: [
+                            {
+                                action: `electives/${createdElective.id}`,
+                                title: 'Go to form'
+                            }
+                        ]
+                    }
+                })
+                .then()
+                .catch();
             return createdElective;
-        }
-        catch(err) {
-            throw UnknownApiError(err);
+        } catch (err) {
+            if (err instanceof ApiError) {
+                throw err;
+            } else {
+                throw UnknownApiError(err);
+            }
         }
     }
 
@@ -124,15 +129,14 @@ export class FormsService extends BaseService<IFormModel> {
         switch (scope) {
             case 'student': {
                 const user = await this.userRepository.getPopulated(id, 'student');
-                return (await this.repository.findActive({ end: { '$gte': new Date() }, active: true }))
-                .filter(e => {
+                return (await this.repository.findActive({ end: { $gte: new Date() }, active: true })).filter((e) => {
                     // @ts-ignore
-                    e.electives = e.electives.filter(v => v.batches.indexOf(user.batch?.id) > -1);
+                    e.electives = e.electives.filter((v) => v.batches.indexOf(user.batch?.id) > -1);
                     return e.electives.length > 0;
                 });
             }
             case 'admin': {
-                return this.repository.findActive({ end: { '$gte': new Date() }, active: true});
+                return this.repository.findActive({ end: { $gte: new Date() }, active: true });
             }
         }
     }
@@ -154,29 +158,34 @@ export class FormsService extends BaseService<IFormModel> {
         query: any
     ): Promise<PaginationModel<Entity>> {
         const skip: number = (Math.max(1, page) - 1) * limit;
+        // eslint-disable-next-line prefer-const
         let [count, docs] = await Promise.all([
             this.repository.count(query),
             this.repository.findAndPopulate(skip, limit, sort, query)
         ]);
-        const fieldArray = (fields || '').split(',').map(field => field.trim()).filter(Boolean);
-        if (fieldArray.length) docs = docs.map((d: { [x: string]: any; }) => {
-            const attrs: any = {};
-            // @ts-ignore
-            fieldArray.forEach(f => attrs[f] = d[f]);
-            return attrs;
-        });
+        const fieldArray = (fields || '')
+            .split(',')
+            .map((field) => field.trim())
+            .filter(Boolean);
+        if (fieldArray.length)
+            docs = docs.map((d: { [x: string]: any }) => {
+                const attrs: any = {};
+                // @ts-ignore
+                fieldArray.forEach((f) => (attrs[f] = d[f]));
+                return attrs;
+            });
         return new PaginationModel<Entity>({
             count,
             page,
             limit,
             docs,
-            totalPages: Math.ceil(count / limit),
+            totalPages: Math.ceil(count / limit)
         });
     }
 
     public generateList(id: string, closeForm: boolean, userId: string): Promise<GenerateListResponse> {
         return new Promise<GenerateListResponse>(async (resolve, reject) => {
-            const form: IFormModel = (await this.repository.findAndPopulate(0, undefined, '', {_id: id}))[0];
+            const form: IFormModel = (await this.repository.findAndPopulate(0, undefined, '', { _id: id }))[0];
             const name = randomBytes(8).toString('hex');
             const filePath = path.join(__dirname, constants.directories.csvTemporary, `${name}.csv`);
             const file = createWriteStream(filePath, { encoding: 'utf8', flags: 'a' });
@@ -191,7 +200,11 @@ export class FormsService extends BaseService<IFormModel> {
                     uniqueBatches.add(batch.id);
                 }
             }
-            const selectElective = (rollNo: string, batch: string, responses: IElectiveModel[]): {elective: string, version: number} => {
+            const selectElective = (
+                rollNo: string,
+                batch: string,
+                responses: IElectiveModel[]
+            ): { elective: string; version: number } => {
                 for (const ele of responses) {
                     const selection = electiveCountMap.get(batch + ele.courseCode + ele.version);
                     if (selection !== undefined && selection !== null && selection < ele.strength) {
@@ -214,62 +227,68 @@ export class FormsService extends BaseService<IFormModel> {
                     rollNo: doc.user.rollNo,
                     ...selectElective(doc.user.rollNo, doc.user.batch.batchString, doc.responses),
                     batch: doc.user.batch.batchString
-                }
+                };
             };
             const csvStream = csv.format({ headers: true }).transform(transformer);
-            this.responseRepository.findToStream('{"time":"asc"}', { form: mongoose.Types.ObjectId(id) }, csvStream, file);
+            this.responseRepository.findToStream(
+                '{"time":"asc"}',
+                { form: mongoose.Types.ObjectId(id) },
+                csvStream,
+                file
+            );
             file.on('close', () => {
-                (async() => {
+                (async () => {
                     if (closeForm) {
                         // @ts-ignore
-                        this.repository.update(id, {
-                            end: form.end,
-                            start: form.start,
-                            // @ts-ignore
-                            electives: form.electives.map(e => e.id),
-                            active: false
-                        }).then().catch();
+                        this.repository
+                            .update(id, {
+                                end: form.end,
+                                start: form.start,
+                                // @ts-ignore
+                                electives: form.electives.map((e) => e.id),
+                                active: false
+                            })
+                            .then()
+                            .catch();
                     }
                     const parser = new Parser({
                         fields: ['rollNo']
                     });
                     await new Promise<null>(async (resolveSuccessful) => {
                         try {
-                            const notFilled = (await this.getUnresponsive(successful, Array.from(uniqueBatches.values()))).map(e => e.rollNo);
+                            const notFilled = (
+                                await this.getUnresponsive(successful, Array.from(uniqueBatches.values()))
+                            ).map((e) => e.rollNo);
                             if (notFilled.length > 0) {
-                                const csv = parser.parse(notFilled.map(e => ({ rollNo: e })));
+                                const csv = parser.parse(notFilled.map((e) => ({ rollNo: e })));
                                 const writeFailed = createWriteStream(filePath, { encoding: 'utf8', flags: 'a' });
-                                writeFailed.write('\n\nUnresponsive students:\n' + csv, (err) => {
+                                writeFailed.write('\n\nUnresponsive students:\n' + csv, () => {
                                     writeFailed.close();
                                     resolveSuccessful(null);
                                 });
-                            }
-                            else {
+                            } else {
                                 resolveSuccessful(null);
                             }
-                        }
-                        catch(err) {
+                        } catch (err) {
                             resolveSuccessful(null);
                         }
                     });
-                    await new Promise<null>(resolveFailed => {
+                    await new Promise<null>((resolveFailed) => {
                         try {
                             if (failed.length > 0) {
-                                const csv = parser.parse(failed.map(e => ({ rollNo: e })));
+                                const csv = parser.parse(failed.map((e) => ({ rollNo: e })));
                                 const writeFailed = createWriteStream(filePath, { encoding: 'utf8', flags: 'a' });
-                                writeFailed.write('\n\nGeneration failed for students:\n' + csv, (err) => {
+                                writeFailed.write('\n\nGeneration failed for students:\n' + csv, () => {
                                     writeFailed.close();
                                     resolveFailed(null);
                                 });
-                            }
-                            else {
+                            } else {
                                 resolveFailed(null);
                             }
-                        }
-                        catch(err) {
+                        } catch (err) {
                             resolveFailed(null);
                         }
-                    })
+                    });
                     try {
                         const link = await this.downloadService.addTemporaryUserLink([userId], filePath);
                         resolve({
@@ -277,8 +296,7 @@ export class FormsService extends BaseService<IFormModel> {
                             downloadUri: `${constants.baseUrl}/downloads/temp?file=${link}`,
                             failed
                         });
-                    }
-                    catch(err) {
+                    } catch (err) {
                         reject(err);
                     }
                 })();
@@ -290,24 +308,29 @@ export class FormsService extends BaseService<IFormModel> {
     }
 
     public async createClass(formId: string) {
-        const form: IFormModel = (await this.repository.findAndPopulate(0, undefined, '', {_id: formId}))[0];
-        const electiveCountMap = new Map<string, { count: number, users: IUserModel[] }>();
+        const form: IFormModel = (await this.repository.findAndPopulate(0, undefined, '', { _id: formId }))[0];
+        const electiveCountMap = new Map<string, { count: number; users: IUserModel[] }>();
         const failed: string[] = [];
         const successful: string[] = [];
         const uniqueBatches = new Set<string>();
         for (const elective of form.electives) {
             for (const batch of elective.batches) {
-                electiveCountMap.set(batch.batchString + elective.courseCode + elective.version, { users: [], count: 0 });
+                electiveCountMap.set(batch.batchString + elective.courseCode + elective.version, {
+                    users: [],
+                    count: 0
+                });
                 // @ts-ignore
                 uniqueBatches.add(batch.id);
             }
         }
-        const users = await this.responseRepository.findAndPopulate(0, undefined, '{"time":"asc"}', { form: mongoose.Types.ObjectId(formId) });
+        const users = await this.responseRepository.findAndPopulate(0, undefined, '{"time":"asc"}', {
+            form: mongoose.Types.ObjectId(formId)
+        });
         await this.repository.update(formId, {
             end: form.end,
             start: form.start,
             // @ts-ignore
-            electives: form.electives.map(e => e.id),
+            electives: form.electives.map((e) => e.id),
             active: false
         });
         for (const v of users) {
@@ -328,7 +351,9 @@ export class FormsService extends BaseService<IFormModel> {
                 failed.push(v.user.rollNo);
             }
         }
-        const unresponsive = (await this.getUnresponsive(successful, Array.from(uniqueBatches.values()))).map(e => e.rollNo);
+        const unresponsive = (await this.getUnresponsive(successful, Array.from(uniqueBatches.values()))).map(
+            (e) => e.rollNo
+        );
         await this.classService.createClass(electiveCountMap, form);
         return {
             failed,
@@ -338,7 +363,7 @@ export class FormsService extends BaseService<IFormModel> {
     }
 
     private async getUnresponsive(responsive: string[], batches: string[]) {
-        const totalUsers = await this.userRepository.find(0, undefined, '', { batch: { '$in': batches }});
-        return totalUsers.filter(e => responsive.indexOf(e.rollNo) === -1);
+        const totalUsers = await this.userRepository.find(0, undefined, '', { batch: { $in: batches } });
+        return totalUsers.filter((e) => responsive.indexOf(e.rollNo) === -1);
     }
 }

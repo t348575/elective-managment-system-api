@@ -28,15 +28,6 @@ import * as express from 'express';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
-    "DefaultActionResponse": {
-        "dataType": "refObject",
-        "properties": {
-            "status": {"dataType":"boolean","required":true},
-            "failed": {"dataType":"array","array":{"dataType":"any"},"required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ErrorType": {
         "dataType": "refObject",
         "properties": {
@@ -44,6 +35,25 @@ const models: TsoaRoute.Models = {
             "name": {"dataType":"string","required":true},
             "message": {"dataType":"string"},
             "fields": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"nestedObjectLiteral","nestedProperties":{"message":{"dataType":"string","required":true}}}},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Failed": {
+        "dataType": "refObject",
+        "properties": {
+            "item": {"dataType":"any","required":true},
+            "reason": {"dataType":"string","required":true},
+            "error": {"ref":"ErrorType"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DefaultActionResponse": {
+        "dataType": "refObject",
+        "properties": {
+            "status": {"dataType":"boolean","required":true},
+            "failed": {"dataType":"array","array":{"ref":"Failed"},"required":true},
         },
         "additionalProperties": false,
     },
@@ -609,6 +619,7 @@ export function RegisterRoutes(app: express.Router) {
             function (request: any, response: any, next: any) {
             const args = {
                     body: {"in":"body","name":"body","required":true,"ref":"tokenBodyType"},
+                    request: {"in":"request","name":"request","required":true,"dataType":"object"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

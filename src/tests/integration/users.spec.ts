@@ -55,7 +55,27 @@ describe(testingConstants.users.name, () => {
             const res=await app.get(testingConstants.users.userByRollNoRoute).query(args)
                 .set('Authorization', integrationHelper.getBearer());
             expect(res.status).to.equal(200);
+            expect(res.body.name).to.be.a('string');
+            expect(res.body.username).to.be.a('string');
+            expect(res.body.role).to.be.equal('student');
+            expect(res.body.rollNo).to.be.a('string');
+            expect(res.body.batch.id).to.be.a('string');
+            expect(res.body.batch.year).to.be.equal(2018);
+
+
         })
     })
-    
+    describe(testingConstants.users.validResetRoute,()=>{
+        it("returns a string message for valid reset",async()=>{
+            const args={
+                code:'code'
+            };
+            const res=await app.get(testingConstants.users.validResetRoute).query(args)
+                .set('Authorization', integrationHelper.getBearer())
+            expect(res.status).to.equal(200);
+            expect(res.body.message).to.be.a('string');
+            expect(res.body.status).to.be.a('boolean');//here
+        })
+    })
+
 });

@@ -22,7 +22,8 @@ export default {
         basicRoute: '/users/basic',
         scopeRoute: '/users/scope',
         createRoute: '/users/create',
-        userByRollNoRoute:'/users/user-by-roll-no'
+        userByRollNoRoute:'/users/user-by-roll-no',
+        validResetRoute:'/users/validReset'
     },
 
 

@@ -82,6 +82,10 @@ app.get('/app/*', (req, res) => {
     res.sendFile(path.resolve(__dirname, './../resources/public/index.html'));
 });
 
+app.get('/', (req, res) => {
+    res.redirect('/app');
+});
+
 axios
     .get(`http${constants.environment === 'test' ? '' : 's'}://localhost:3000/private-init`, {
         httpsAgent: new https.Agent({ rejectUnauthorized: false })

@@ -1,19 +1,14 @@
-import {Body, Controller, Delete, Get, Post, Put, Query, Request, Response, Route, Security, Tags} from 'tsoa';
-import {ProvideSingleton} from '../../shared/provide-singleton';
-import {inject} from 'inversify';
-import {FormsService} from './service';
-import {ErrorType} from '../../shared/error-handler';
-import {Request as ExRequest, Response as ExResponse} from 'express';
-import {jwtToken} from '../../models/types';
+import { Body, Controller, Delete, Get, Post, Put, Query, Request, Response, Route, Security, Tags } from 'tsoa';
+import { ProvideSingleton } from '../../shared/provide-singleton';
+import { inject } from 'inversify';
+import { FormsService } from './service';
+import { ErrorType } from '../../shared/error-handler';
+import { Request as ExRequest } from 'express';
+import { jwtToken } from '../../models/types';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
 
 const adminOnly: string[] = ['admin'];
-
-const studentOnly: string[] = ['student'];
-
-const teacherOrStudent: string[] = ['student', 'teacher'];
-
 const teacherOrAdmin: string[] = ['admin', 'teacher'];
 
 /**
@@ -28,10 +23,10 @@ export interface CreateFormOptions {
 
 export interface UpdateFormOptions {
     id: string;
-    start ?: string;
-    end ?: string;
-    num ?: number;
-    electives ?: string[];
+    start?: string;
+    end?: string;
+    num?: number;
+    electives?: string[];
 }
 
 export interface GenerateListResponse {
@@ -44,9 +39,7 @@ export interface GenerateListResponse {
 @Route('forms')
 @ProvideSingleton(FormsController)
 export class FormsController extends Controller {
-    constructor(
-        @inject(FormsService) private service: FormsService
-    ) {
+    constructor(@inject(FormsService) private service: FormsService) {
         super();
     }
 
@@ -54,9 +47,7 @@ export class FormsController extends Controller {
     @Security('jwt', adminOnly)
     @Response<ErrorType>(401, 'ValidationError')
     @Response<ErrorType>(500, 'Unknown server error')
-    public createForm(
-        @Body() options: CreateFormOptions
-    ) {
+    public createForm(@Body() options: CreateFormOptions) {
         return this.service.createForm(options);
     }
 
@@ -72,9 +63,7 @@ export class FormsController extends Controller {
     @Security('jwt', scopeArray)
     @Response<ErrorType>(401, 'ValidationError')
     @Response<ErrorType>(500, 'Unknown server error')
-    public async activeForms(
-        @Request() request: ExRequest
-    ) {
+    public async activeForms(@Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.getActiveForms(accessToken.id, accessToken.scope);
@@ -84,10 +73,7 @@ export class FormsController extends Controller {
     @Security('jwt', adminOnly)
     @Response<ErrorType>(401, 'ValidationError')
     @Response<ErrorType>(500, 'Unknown server error')
-    public async allForms(
-        @Query() pageNumber: number,
-        @Query() limit: number
-    ) {
+    public async allForms(@Query() pageNumber: number, @Query() limit: number) {
         return this.service.getPaginated(pageNumber, limit, '', '{"end": "desc"}', {});
     }
 
@@ -97,7 +83,7 @@ export class FormsController extends Controller {
     @Response<ErrorType>(500, 'Unknown server error')
     public async generateList(
         @Query() id: string,
-        @Query() closeForm: boolean = false,
+        @Query() closeForm = false,
         @Request() request: ExRequest
     ): Promise<GenerateListResponse> {
         // @ts-ignore
@@ -109,9 +95,7 @@ export class FormsController extends Controller {
     @Security('jwt', adminOnly)
     @Response<ErrorType>(401, 'ValidationError')
     @Response<ErrorType>(500, 'Unknown server error')
-    public async createClass(
-        @Query() formId: string
-    ) {
+    public async createClass(@Query() formId: string) {
         return this.service.createClass(formId);
     }
 
@@ -119,9 +103,7 @@ export class FormsController extends Controller {
     @Security('jwt', adminOnly)
     @Response<ErrorType>(401, 'ValidationError')
     @Response<ErrorType>(500, 'Unknown server error')
-    public async updateForm(
-        @Body() options: UpdateFormOptions
-    ) {
+    public async updateForm(@Body() options: UpdateFormOptions) {
         return this.service.updateForm(options);
     }
 
@@ -129,9 +111,7 @@ export class FormsController extends Controller {
     @Security('jwt', adminOnly)
     @Response<ErrorType>(401, 'ValidationError')
     @Response<ErrorType>(500, 'Unknown server error')
-    public async deleteForm(
-        @Query() id: string
-    ) {
+    public async deleteForm(@Query() id: string) {
         return this.service.delete(id);
     }
 }

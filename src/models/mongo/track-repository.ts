@@ -1,10 +1,10 @@
-import {IUserModel, UserFormatter} from './user-repository';
-import {BaseFormatter} from '../../util/base-formatter';
-import mongoose, {Schema} from 'mongoose';
-import {ProvideSingleton} from '../../shared/provide-singleton';
-import {BaseRepository} from '../shared/base-repository';
-import {inject} from 'inversify';
-import {MongoConnector} from '../../shared/mongo-connector';
+import { IUserModel, UserFormatter } from './user-repository';
+import { BaseFormatter } from '../../util/base-formatter';
+import mongoose, { Schema } from 'mongoose';
+import { ProvideSingleton } from '../../shared/provide-singleton';
+import { BaseRepository } from '../shared/base-repository';
+import { inject } from 'inversify';
+import { MongoConnector } from '../../shared/mongo-connector';
 
 export interface ITrackModel {
     device: 'desktop' | 'mobile' | 'bot' | 'unknown';
@@ -17,7 +17,7 @@ export interface ITrackModel {
 
 export class TrackFormatter extends BaseFormatter implements ITrackModel {
     browser: string;
-    device: "desktop" | "mobile" | "bot";
+    device: 'desktop' | 'mobile' | 'bot';
     ip: string;
     platform: string;
     user: IUserModel;
@@ -26,15 +26,13 @@ export class TrackFormatter extends BaseFormatter implements ITrackModel {
         super();
         if (!(args instanceof mongoose.Types.ObjectId)) {
             this.format(args);
-        }
-        else {
+        } else {
             this.id = args.toString();
         }
         if (this.user) {
             if (args.user instanceof mongoose.Types.ObjectId) {
                 this.user = args.user.toString();
-            }
-            else if (typeof args.user === 'object') {
+            } else if (typeof args.user === 'object') {
                 this.user = new UserFormatter(args.user);
             }
         }
@@ -43,14 +41,17 @@ export class TrackFormatter extends BaseFormatter implements ITrackModel {
 
 @ProvideSingleton(TrackRepository)
 export class TrackRepository extends BaseRepository<ITrackModel> {
-    protected modelName: string = 'track';
-    protected schema: Schema = new Schema({
-        browser: {type: String, required: true},
-        device: {type: String, required: true, enum: ['desktop', 'mobile', 'bot', 'unknown']},
-        platform: {type: String, required: true},
-        ip: {type: String, required: true},
-        user: {type: mongoose.Schema.Types.ObjectId, ref: 'users'}
-    }, {collection: this.modelName, timestamps: true});
+    protected modelName = 'track';
+    protected schema: Schema = new Schema(
+        {
+            browser: { type: String, required: true },
+            device: { type: String, required: true, enum: ['desktop', 'mobile', 'bot', 'unknown'] },
+            platform: { type: String, required: true },
+            ip: { type: String, required: true },
+            user: { type: mongoose.Schema.Types.ObjectId, ref: 'users' }
+        },
+        { collection: this.modelName, timestamps: true }
+    );
 
     protected formatter = TrackFormatter;
 

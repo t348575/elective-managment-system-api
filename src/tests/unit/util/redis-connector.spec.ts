@@ -1,21 +1,23 @@
 import 'reflect-metadata';
-import {expect} from 'chai';
-import {init} from '../../unit-helper';
-import {RedisConnector} from '../../../shared/redis-connector';
+import { expect } from 'chai';
+import { init } from '../../unit-helper';
+import { RedisConnector } from '../../../shared/redis-connector';
 
 init();
 
 describe('Redis connector', () => {
     it('Should connect', async () => {
         const connector = new RedisConnector();
-        expect(await new Promise((resolve, reject) => {
-            connector.db.on('ready', () => {
-                resolve(true);
-            });
-            setTimeout(() => {
-                resolve(false);
-            }, 1000);
-        }) && connector.db.connected).to.be.true;
+        expect(
+            (await new Promise((resolve) => {
+                connector.db.on('ready', () => {
+                    resolve(true);
+                });
+                setTimeout(() => {
+                    resolve(false);
+                }, 1000);
+            })) && connector.db.connected
+        ).to.be.true;
         connector.db.quit();
     });
 
@@ -24,11 +26,13 @@ describe('Redis connector', () => {
             const connector = new RedisConnector();
             expect(await connector.setex('test', 2, 'asd')).to.be.true;
             expect(await connector.exists('test')).to.be.true;
-            expect(await new Promise(resolve => {
-                setTimeout(async () => {
-                    resolve(await connector.exists('test'));
-                }, 2500);
-            })).to.be.false;
+            expect(
+                await new Promise((resolve) => {
+                    setTimeout(async () => {
+                        resolve(await connector.exists('test'));
+                    }, 2500);
+                })
+            ).to.be.false;
             connector.db.quit();
         });
     });
@@ -43,5 +47,4 @@ describe('Redis connector', () => {
             connector.db.quit();
         });
     });
-
 });

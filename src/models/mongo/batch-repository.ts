@@ -1,13 +1,13 @@
-import {BaseFormatter} from "../../util/base-formatter";
-import {BaseRepository} from "../shared/base-repository";
-import {Schema} from "mongoose";
-import {MongoConnector} from "../../shared/mongo-connector";
-import {inject} from "inversify";
-import {ProvideSingleton} from '../../shared/provide-singleton';
+import { BaseFormatter } from '../../util/base-formatter';
+import { BaseRepository } from '../shared/base-repository';
+import { Schema } from 'mongoose';
+import { MongoConnector } from '../../shared/mongo-connector';
+import { inject } from 'inversify';
+import { ProvideSingleton } from '../../shared/provide-singleton';
 import mongoose from 'mongoose';
 
 export interface IBatchModel {
-    id ?: string;
+    id?: string;
     year: number;
     numYears: number;
     degree: string;
@@ -31,8 +31,7 @@ export class BatchFormatter extends BaseFormatter implements IBatchModel {
         super();
         if (!(args instanceof mongoose.Types.ObjectId)) {
             this.format(args);
-        }
-        else {
+        } else {
             this.id = args.toString();
         }
     }
@@ -41,13 +40,16 @@ export class BatchFormatter extends BaseFormatter implements IBatchModel {
 @ProvideSingleton(BatchRepository)
 export class BatchRepository extends BaseRepository<IBatchModel> {
     protected modelName = 'batches';
-    protected schema: Schema = new Schema({
-        year: { type: Number, required: true },
-        numYears: { type: Number, required: true },
-        degree: { type: String, required: true },
-        course: { type: String, required: true },
-        batchString: { type: String, required: true, unique: true }
-    }, { collection: this.modelName });
+    protected schema: Schema = new Schema(
+        {
+            year: { type: Number, required: true },
+            numYears: { type: Number, required: true },
+            degree: { type: String, required: true },
+            course: { type: String, required: true },
+            batchString: { type: String, required: true, unique: true }
+        },
+        { collection: this.modelName }
+    );
 
     protected formatter = BatchFormatter;
     constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {

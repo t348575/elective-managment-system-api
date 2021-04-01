@@ -83,8 +83,8 @@ export class FormsController extends Controller {
     @Response<ErrorType>(500, 'Unknown server error')
     public async generateList(
         @Query() id: string,
-        @Query() closeForm = false,
-        @Request() request: ExRequest
+        @Request() request: ExRequest,
+        @Query() closeForm = false
     ): Promise<GenerateListResponse> {
         // @ts-ignore
         const accessToken = request.user as jwtToken;

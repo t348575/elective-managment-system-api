@@ -1,10 +1,9 @@
 import { ProvideSingleton } from '../../shared/provide-singleton';
 import { inject } from 'inversify';
 import { MongoConnector } from '../../shared/mongo-connector';
-import { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 import { BaseRepository } from '../shared/base-repository';
 import { BaseFormatter } from '../../util/base-formatter';
-import mongoose from 'mongoose';
 import { BatchFormatter, IBatchModel } from './batch-repository';
 import { scopes } from '../types';
 import { ApiError } from '../../shared/error-handler';
@@ -17,7 +16,7 @@ export interface IUserModel {
     username: string;
     password: string;
     rollNo: string;
-    role: 'admin' | 'teacher' | 'student';
+    role: scopes;
     batch?: IBatchModel;
     classes?: IClassModel[];
 }
@@ -26,7 +25,7 @@ export class UserFormatter extends BaseFormatter implements IUserModel {
     name: string;
     username: string;
     password: string;
-    role: 'admin' | 'teacher' | 'student';
+    role: scopes;
     rollNo: string;
     batch?: IBatchModel;
     classes?: IClassModel[];

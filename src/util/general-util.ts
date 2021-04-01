@@ -1,11 +1,10 @@
-import * as jwt from 'jsonwebtoken';
 import { createHash } from 'crypto';
 import * as argon2 from 'argon2';
 import { IUserModel } from '../models/mongo/user-repository';
 import constants from '../constants';
-import { VerifyErrors } from 'jsonwebtoken';
+import jwt, { VerifyErrors } from 'jsonwebtoken';
 import { jwtSubjects, jwtToken, scopes } from '../models/types';
-import { unlink } from 'fs';
+import { unlinkSync } from 'fs';
 export const safeParse = (str: string, fallback: any = undefined) => {
     try {
         return JSON.parse(str);
@@ -149,7 +148,7 @@ export async function getArgonHash(str: string) {
 export function removeTempFile(file: string) {
     try {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        unlink(file, () => {});
+        unlinkSync(file);
         // eslint-disable-next-line no-empty
     } catch (err) {}
 }

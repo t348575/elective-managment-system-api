@@ -38,7 +38,6 @@ export class OAuthError extends Error implements ErrorType {
 
 export class ErrorHandler {
     public static handleError(error: ApiError, req: Request, res: Response, next: NextFunction): void {
-        // const normalizedError: ApiError = ErrorHandler.normalizeError(error);
         const { name, message, fields, statusCode } = error;
         Logger.error(
             `Error: ${statusCode}`,

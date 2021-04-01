@@ -3,8 +3,7 @@ import { IUserModel } from './user-repository';
 import { BaseFormatter } from '../../util/base-formatter';
 import { ProvideSingleton } from '../../shared/provide-singleton';
 import { BaseRepository } from '../shared/base-repository';
-import { Schema } from 'mongoose';
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { inject } from 'inversify';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { IElectiveModel } from './elective-repository';
@@ -58,7 +57,7 @@ export class ClassRepository extends BaseRepository<IClassModel> {
         await session.withTransaction(async () => {
             classId = await this.create(classObj);
         });
-        await session.endSession();
+        session.endSession();
         // @ts-ignore
         return classId.id;
     }

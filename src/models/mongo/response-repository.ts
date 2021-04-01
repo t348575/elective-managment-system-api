@@ -4,8 +4,7 @@ import { FormFormatter, IFormModel } from './form-repository';
 import { BaseFormatter } from '../../util/base-formatter';
 import { ProvideSingleton } from '../../shared/provide-singleton';
 import { BaseRepository } from '../shared/base-repository';
-import { Schema } from 'mongoose';
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { inject } from 'inversify';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { cleanQuery } from '../../util/general-util';
@@ -76,7 +75,7 @@ export class ResponseRepository extends BaseRepository<IResponseModel> {
         super.init();
     }
 
-    public async findAndPopulate(skip = 0, limit = 250, sort: string, query: any): Promise<ResponseFormatter[]> {
+    public async findAndPopulate(sort: string, query: any, skip = 0, limit = 250): Promise<ResponseFormatter[]> {
         const sortObject = cleanQuery(sort, this.sortQueryFormatter);
         return (
             await this.documentModel

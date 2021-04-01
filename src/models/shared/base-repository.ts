@@ -1,12 +1,11 @@
 import { MongoConnector } from '../../shared/mongo-connector';
-import { Document, Model, Schema } from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
 import { cleanQuery } from '../../util/general-util';
 import { ApiError } from '../../shared/error-handler';
 import constants from '../../constants';
 import { decorate, injectable } from 'inversify';
 import { IBaseRepository } from './ibase-repository';
-import mongoose from 'mongoose';
 
 export abstract class BaseRepository<EntityType> implements IBaseRepository<EntityType> {
     protected dbConnection: MongoConnector;
@@ -45,7 +44,7 @@ export abstract class BaseRepository<EntityType> implements IBaseRepository<Enti
         return this.documentModel.deleteOne({ _id });
     }
 
-    public async find(skip = 0, limit = 250, sort: string, query: any): Promise<EntityType[]> {
+    public async find(sort: string, query: any, limit = 250, skip = 0): Promise<EntityType[]> {
         const sortObject = cleanQuery(sort, this.sortQueryFormatter);
         return (
             await this.documentModel

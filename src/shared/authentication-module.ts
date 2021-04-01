@@ -4,6 +4,11 @@ import { ApiError, OAuthError } from './error-handler';
 import { RedisConnector } from './redis-connector';
 import { decipherJWT } from '../util/general-util';
 
+const invalidRefreshToken = new OAuthError({
+    name: 'invalid_request',
+    error_description: 'Invalid refresh token'
+});
+
 const redis = new RedisConnector();
 export function expressAuthentication(req: express.Request, securityName: string, scopes: string[]): Promise<any> {
     switch (securityName) {
@@ -72,14 +77,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                                                     );
                                                 }
                                             })
-                                            .catch(() =>
-                                                reject(
-                                                    new OAuthError({
-                                                        name: 'invalid_request',
-                                                        error_description: 'Invalid refresh token'
-                                                    })
-                                                )
-                                            );
+                                            .catch(() => reject(invalidRefreshToken));
                                     } else {
                                         reject(
                                             new OAuthError({
@@ -159,14 +157,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                                                                 );
                                                             }
                                                         })
-                                                        .catch(() =>
-                                                            reject(
-                                                                new OAuthError({
-                                                                    name: 'invalid_request',
-                                                                    error_description: 'Invalid refresh token'
-                                                                })
-                                                            )
-                                                        );
+                                                        .catch(() => reject(invalidRefreshToken));
                                                 } else {
                                                     reject(
                                                         new OAuthError({

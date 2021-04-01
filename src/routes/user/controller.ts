@@ -188,31 +188,27 @@ export class UsersController extends Controller {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return new Promise<DefaultResponse>((resolve, reject) => {
-            try {
-                this.service
-                    .getById(accessToken.id)
-                    .then((user) => {
-                        argon2
-                            .verify(user.password, options.oldPassword)
-                            .then(async (oldPassStatus) => {
-                                if (oldPassStatus) {
-                                    try {
-                                        const newPass = await getArgonHash(options.newPassword);
-                                        await this.service.updatePass(accessToken.id, newPass);
-                                        resolve({ status: true, message: 'success' });
-                                    } catch (err) {
-                                        reject(UnknownApiError(err));
-                                    }
-                                } else {
-                                    resolve({ status: false, message: 'old_pass_mismatch' });
+            this.service
+                .getById(accessToken.id)
+                .then((user) => {
+                    argon2
+                        .verify(user.password, options.oldPassword)
+                        .then(async (oldPassStatus) => {
+                            if (oldPassStatus) {
+                                try {
+                                    const newPass = await getArgonHash(options.newPassword);
+                                    await this.service.updatePass(accessToken.id, newPass);
+                                    resolve({ status: true, message: 'success' });
+                                } catch (err) {
+                                    reject(UnknownApiError(err));
                                 }
-                            })
-                            .catch(() => resolve({ status: false, message: 'old_pass_mismatch' }));
-                    })
-                    .catch((err) => reject(UnknownApiError(err)));
-            } catch (err) {
-                reject(UnknownApiError(err));
-            }
+                            } else {
+                                resolve({ status: false, message: 'old_pass_mismatch' });
+                            }
+                        })
+                        .catch(() => resolve({ status: false, message: 'old_pass_mismatch' }));
+                })
+                .catch((err) => reject(UnknownApiError(err)));
         });
     }
 

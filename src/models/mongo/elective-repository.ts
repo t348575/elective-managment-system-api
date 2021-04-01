@@ -3,8 +3,7 @@ import { BatchFormatter, IBatchModel } from './batch-repository';
 import { IUserModel, SafeUser, UserFormatter } from './user-repository';
 import { BaseFormatter, remove } from '../../util/base-formatter';
 import { BaseRepository } from '../shared/base-repository';
-import { Schema } from 'mongoose';
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { inject } from 'inversify';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { ProvideSingleton } from '../../shared/provide-singleton';
@@ -60,7 +59,7 @@ export class ElectiveFormatter extends BaseFormatter implements IElectiveModel {
         }
         if (this.attributes) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            for (const [i, v] of args.attributes.entries()) {
+            for (const [i] of args.attributes.entries()) {
                 if (args.attributes[i]._id) {
                     // @ts-ignore
                     this.attributes[i].id = args.attributes[i]._id.toString();

@@ -122,7 +122,7 @@ export class FormsService extends BaseService<IFormModel> {
     }
 
     public async getBatches() {
-        return this.batchRepository.find(0, undefined, '{"year": "desc"}', {});
+        return this.batchRepository.find('{"year": "desc"}', {}, undefined, 0);
     }
 
     public async getActiveForms(id: string, scope: scopes) {
@@ -161,7 +161,7 @@ export class FormsService extends BaseService<IFormModel> {
         // eslint-disable-next-line prefer-const
         let [count, docs] = await Promise.all([
             this.repository.count(query),
-            this.repository.findAndPopulate(skip, limit, sort, query)
+            this.repository.findAndPopulate(sort, query, skip, limit)
         ]);
         const fieldArray = (fields || '')
             .split(',')
@@ -185,7 +185,7 @@ export class FormsService extends BaseService<IFormModel> {
 
     public generateList(id: string, closeForm: boolean, userId: string): Promise<GenerateListResponse> {
         return new Promise<GenerateListResponse>(async (resolve, reject) => {
-            const form: IFormModel = (await this.repository.findAndPopulate(0, undefined, '', { _id: id }))[0];
+            const form: IFormModel = (await this.repository.findAndPopulate('', { _id: id }, 0, undefined))[0];
             const name = randomBytes(8).toString('hex');
             const filePath = path.join(__dirname, constants.directories.csvTemporary, `${name}.csv`);
             const file = createWriteStream(filePath, { encoding: 'utf8', flags: 'a' });
@@ -260,9 +260,9 @@ export class FormsService extends BaseService<IFormModel> {
                                 await this.getUnresponsive(successful, Array.from(uniqueBatches.values()))
                             ).map((e) => e.rollNo);
                             if (notFilled.length > 0) {
-                                const csv = parser.parse(notFilled.map((e) => ({ rollNo: e })));
+                                const csvFile = parser.parse(notFilled.map((e) => ({ rollNo: e })));
                                 const writeFailed = createWriteStream(filePath, { encoding: 'utf8', flags: 'a' });
-                                writeFailed.write('\n\nUnresponsive students:\n' + csv, () => {
+                                writeFailed.write('\n\nUnresponsive students:\n' + csvFile, () => {
                                     writeFailed.close();
                                     resolveSuccessful(null);
                                 });
@@ -276,9 +276,9 @@ export class FormsService extends BaseService<IFormModel> {
                     await new Promise<null>((resolveFailed) => {
                         try {
                             if (failed.length > 0) {
-                                const csv = parser.parse(failed.map((e) => ({ rollNo: e })));
+                                const csvFile = parser.parse(failed.map((e) => ({ rollNo: e })));
                                 const writeFailed = createWriteStream(filePath, { encoding: 'utf8', flags: 'a' });
-                                writeFailed.write('\n\nGeneration failed for students:\n' + csv, () => {
+                                writeFailed.write('\n\nGeneration failed for students:\n' + csvFile, () => {
                                     writeFailed.close();
                                     resolveFailed(null);
                                 });
@@ -308,7 +308,7 @@ export class FormsService extends BaseService<IFormModel> {
     }
 
     public async createClass(formId: string) {
-        const form: IFormModel = (await this.repository.findAndPopulate(0, undefined, '', { _id: formId }))[0];
+        const form: IFormModel = (await this.repository.findAndPopulate('', { _id: formId }, 0, undefined))[0];
         const electiveCountMap = new Map<string, { count: number; users: IUserModel[] }>();
         const failed: string[] = [];
         const successful: string[] = [];
@@ -323,9 +323,14 @@ export class FormsService extends BaseService<IFormModel> {
                 uniqueBatches.add(batch.id);
             }
         }
-        const users = await this.responseRepository.findAndPopulate(0, undefined, '{"time":"asc"}', {
-            form: mongoose.Types.ObjectId(formId)
-        });
+        const users = await this.responseRepository.findAndPopulate(
+            '{"time":"asc"}',
+            {
+                form: mongoose.Types.ObjectId(formId)
+            },
+            0,
+            undefined
+        );
         await this.repository.update(formId, {
             end: form.end,
             start: form.start,
@@ -363,7 +368,7 @@ export class FormsService extends BaseService<IFormModel> {
     }
 
     private async getUnresponsive(responsive: string[], batches: string[]) {
-        const totalUsers = await this.userRepository.find(0, undefined, '', { batch: { $in: batches } });
+        const totalUsers = await this.userRepository.find('', { batch: { $in: batches } }, undefined, 0);
         return totalUsers.filter((e) => responsive.indexOf(e.rollNo) === -1);
     }
 }

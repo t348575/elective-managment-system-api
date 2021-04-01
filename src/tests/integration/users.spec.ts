@@ -7,6 +7,7 @@ import testingConstants from '../testing-constants';
 const app = supertest(importApp);
 const integrationHelper = new IntegrationHelper(app);
 
+
 describe(testingConstants.users.name, () => {
 
     describe(testingConstants.users.basicRoute, () => {
@@ -18,6 +19,7 @@ describe(testingConstants.users.name, () => {
             expect(res.body).not.haveOwnProperty('password');
         });
     });
+
 
     describe(testingConstants.users.scopeRoute, () => {
         it(`returns correct scope: ${testingConstants.scope}`, async () => {

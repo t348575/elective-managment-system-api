@@ -13,11 +13,16 @@ export default {
         refreshRoute: '/oauth/refresh',
         logoutRoute: '/oauth/logout'
     },
+    electives: {
+        addRoute:'/electives/add',
+        addcsvRoute:'/electives/add-csv',
+    },
     users: {
         name: 'Users',
         basicRoute: '/users/basic',
         scopeRoute: '/users/scope',
     },
+
     privateKey: '',
     publicKey: ''
 }

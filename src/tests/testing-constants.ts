@@ -25,6 +25,9 @@ export default {
         userByRollNoRoute:'/users/user-by-roll-no',
         validResetRoute:'/users/validReset'
     },
+    notifications:{
+      unsubscribeRoute:'/notifications/unsubscribe'
+    },
 
 
     privateKey: '',

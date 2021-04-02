@@ -30,7 +30,6 @@ describe(testingConstants.oauth.name, () => {
         });
     });
 });
-/*
 describe(testingConstants.electives.postElectiveRoute,()=>{
     let id='asdsa';
     let name='Bobby';
@@ -56,4 +55,3 @@ describe(testingConstants.electives.postElectiveRoute,()=>{
         expect(res.body.id).to.be.a('string');
     });
 })
-*/

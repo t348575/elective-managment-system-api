@@ -4,7 +4,6 @@ import uniqueValidator from 'mongoose-unique-validator';
 import { cleanQuery } from '../../util/general-util';
 import { ApiError } from '../../shared/error-handler';
 import constants from '../../constants';
-import { decorate, injectable } from 'inversify';
 import { IBaseRepository } from './ibase-repository';
 
 export abstract class BaseRepository<EntityType> implements IBaseRepository<EntityType> {
@@ -31,7 +30,9 @@ export abstract class BaseRepository<EntityType> implements IBaseRepository<Enti
 
     async getById(id: string) {
         // @ts-ignore
-        const document: Document = await this.documentModel.findOne({ _id: mongoose.Types.ObjectId(id) });
+        const document: Document = await this.documentModel.findOne({
+            _id: mongoose.Types.ObjectId(id)
+        });
         if (!document) throw new ApiError(constants.errorTypes.notFound);
         return new this.formatter(document);
     }
@@ -41,7 +42,7 @@ export abstract class BaseRepository<EntityType> implements IBaseRepository<Enti
     }
 
     public async delete(_id: string): Promise<{ n: number }> {
-// @ts-ignore
+        // @ts-ignore
         return this.documentModel.deleteOne({ _id });
     }
 
@@ -105,8 +106,10 @@ export abstract class BaseRepository<EntityType> implements IBaseRepository<Enti
                 // @ts-ignore
                 newQuery[key] = value;
             } else {
-                // @ts-ignore
-                newQuery.$or = newQuery.$or.concat(value.map((item) => ({ [key]: item })));
+                newQuery.$or = newQuery.$or.concat(
+                    // @ts-ignore
+                    value.map((item) => ({ [key]: item }))
+                );
             }
         });
         if (!newQuery.$or.length) {
@@ -116,5 +119,3 @@ export abstract class BaseRepository<EntityType> implements IBaseRepository<Enti
         return newQuery;
     }
 }
-
-decorate(injectable(), BaseRepository);

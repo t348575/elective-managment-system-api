@@ -1,6 +1,4 @@
 import { Body, Controller, Delete, Get, Post, Query, Request, Response, Route, Security, Tags } from 'tsoa';
-import { ProvideSingleton } from '../../shared/provide-singleton';
-import { inject } from 'inversify';
 import { ElectivesService } from './service';
 import { DefaultActionResponse, electiveAttributes } from '../../models/types';
 import { ApiError, ErrorType, UnknownApiError } from '../../shared/error-handler';
@@ -9,6 +7,7 @@ import { Readable } from 'stream';
 import csv from 'csvtojson';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import { IElectiveModel } from '../../models/mongo/elective-repository';
+import { Inject, Singleton } from 'typescript-ioc';
 const adminOnly: string[] = ['admin'];
 const teacherOrAdmin: string[] = ['admin', 'teacher'];
 
@@ -47,9 +46,11 @@ export interface UpdateElectiveOptions {
 
 @Tags('electives')
 @Route('electives')
-@ProvideSingleton(ElectivesController)
+@Singleton
 export class ElectivesController extends Controller {
-    constructor(@inject(ElectivesService) private service: ElectivesService) {
+    @Inject
+    private service: ElectivesService;
+    constructor() {
         super();
     }
 
@@ -69,7 +70,10 @@ export class ElectivesController extends Controller {
                     // @ts-ignore
                     options[i].teachers = v.teachers.join(',');
                 }
-                resolve({ status: true, failed: await this.service.addElectives(options) });
+                resolve({
+                    status: true,
+                    failed: await this.service.addElectives(options)
+                });
             } catch (err) {
                 reject(UnknownApiError(err));
             }
@@ -86,7 +90,11 @@ export class ElectivesController extends Controller {
             try {
                 if (request.file === undefined) {
                     reject(
-                        new ApiError({ name: 'form_error', statusCode: 401, message: 'Not a valid multipart form' })
+                        new ApiError({
+                            name: 'form_error',
+                            statusCode: 401,
+                            message: 'Not a valid multipart form'
+                        })
                     );
                 } else {
                     if (request.file.originalname.indexOf('.csv') > -1) {
@@ -96,10 +104,19 @@ export class ElectivesController extends Controller {
                         csv()
                             .fromStream(inputStream)
                             .then(async (obj) => {
-                                resolve({ status: true, failed: await this.service.addElectives(obj) });
+                                resolve({
+                                    status: true,
+                                    failed: await this.service.addElectives(obj)
+                                });
                             });
                     } else {
-                        reject(new ApiError({ name: 'file_type', statusCode: 402, message: 'Improper file type' }));
+                        reject(
+                            new ApiError({
+                                name: 'file_type',
+                                statusCode: 402,
+                                message: 'Improper file type'
+                            })
+                        );
                     }
                 }
             } catch (err) {

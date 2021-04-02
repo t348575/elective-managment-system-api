@@ -1,13 +1,17 @@
 import redis from 'redis';
 import { Logger } from './logger';
 import constants from '../constants';
-import { ProvideSingleton } from './provide-singleton';
-@ProvideSingleton(RedisConnector)
+import { Singleton } from 'typescript-ioc';
+
+@Singleton
 export class RedisConnector {
     public db: redis.RedisClient;
     constructor() {
         Logger.log(`connecting to ${constants.environment} Redis`);
-        this.db = redis.createClient({ auth_pass: constants.redisPassword, host: 'amrita-elective.tk' });
+        this.db = redis.createClient({
+            auth_pass: constants.redisPassword,
+            host: 'amrita-elective.tk'
+        });
     }
     setex(key: string, time: number, value: string): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {

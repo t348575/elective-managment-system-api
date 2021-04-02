@@ -1,13 +1,14 @@
-import { ProvideSingleton } from './provide-singleton';
 import constants from '../constants';
 import Mail, { Attachment } from 'nodemailer/lib/mailer';
 import nodemailer, { TransportOptions } from 'nodemailer';
 import { SentMessageInfo } from 'nodemailer/lib/smtp-transport';
 import { Logger } from './logger';
+import { Singleton } from 'typescript-ioc';
 
-@ProvideSingleton(MailService)
+@Singleton
 export class MailService {
     private transporter: Mail;
+
     constructor() {
         this.transporter = nodemailer.createTransport({
             host: constants.mailAccess.host,

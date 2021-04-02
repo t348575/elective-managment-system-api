@@ -4,10 +4,9 @@ import { IUserModel } from './user-repository';
 import { BaseFormatter } from '../../util/base-formatter';
 import { BaseRepository } from '../shared/base-repository';
 import mongoose, { Schema } from 'mongoose';
-import { inject } from 'inversify';
 import { MongoConnector } from '../../shared/mongo-connector';
-import { ProvideSingleton } from '../../shared/provide-singleton';
 import { cleanQuery } from '../../util/general-util';
+import { Inject, Singleton } from 'typescript-ioc';
 
 export interface IElectiveModel {
     id?: string;
@@ -37,7 +36,7 @@ export class ElectiveFormatter extends BaseFormatter implements IElectiveModel {
     }
 }
 
-@ProvideSingleton(ElectiveRepository)
+@Singleton
 export class ElectiveRepository extends BaseRepository<IElectiveModel> {
     protected modelName = 'electives';
     protected schema: Schema = new Schema(
@@ -60,7 +59,9 @@ export class ElectiveRepository extends BaseRepository<IElectiveModel> {
     );
 
     protected formatter = ElectiveFormatter;
-    constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
+    @Inject
+    protected dbConnection: MongoConnector;
+    constructor() {
         super();
         super.init();
         this.schema.set('toJSON', {

@@ -2,8 +2,6 @@ import { Body, Controller, Get, Post, Query, Route, Security, Response, Put, Req
 import { Request as ExRequest } from 'express';
 import csv from 'csvtojson';
 import { UsersService } from './service';
-import { ProvideSingleton } from '../../shared/provide-singleton';
-import { inject } from 'inversify';
 import { DefaultActionResponse, DefaultResponse, jwtToken } from '../../models/types';
 import { remove } from '../../util/base-formatter';
 import { getSafeUserOmit, IUserModel, SafeUser } from '../../models/mongo/user-repository';
@@ -11,6 +9,7 @@ import { ApiError, ErrorType, UnknownApiError } from '../../shared/error-handler
 import { Readable } from 'stream';
 import * as argon2 from 'argon2';
 import { getArgonHash } from '../../util/general-util';
+import { Inject, Singleton } from 'typescript-ioc';
 
 export interface CreateUserCSV {
     defaultRollNoAsEmail: boolean;
@@ -54,9 +53,11 @@ const scopeArray: string[] = ['teacher', 'admin', 'student'];
 const adminOnly: string[] = ['admin'];
 @Tags('users')
 @Route('users')
-@ProvideSingleton(UsersController)
+@Singleton
 export class UsersController extends Controller {
-    constructor(@inject(UsersService) private service: UsersService) {
+    @Inject
+    private service: UsersService;
+    constructor() {
         super();
     }
 
@@ -96,7 +97,11 @@ export class UsersController extends Controller {
                     });
                 } else {
                     reject(
-                        new ApiError({ name: 'empty_array', statusCode: 401, message: 'Empty users array provided' })
+                        new ApiError({
+                            name: 'empty_array',
+                            statusCode: 401,
+                            message: 'Empty users array provided'
+                        })
                     );
                 }
             } catch (err) {
@@ -115,7 +120,11 @@ export class UsersController extends Controller {
             try {
                 if (request.file === undefined) {
                     reject(
-                        new ApiError({ name: 'form_error', statusCode: 401, message: 'Not a valid multipart form' })
+                        new ApiError({
+                            name: 'form_error',
+                            statusCode: 401,
+                            message: 'Not a valid multipart form'
+                        })
                     );
                 } else {
                     if (request.file.originalname.indexOf('.csv') > -1) {
@@ -125,10 +134,19 @@ export class UsersController extends Controller {
                         csv()
                             .fromStream(inputStream)
                             .then(async (obj) => {
-                                resolve({ status: true, failed: await this.service.createUsers(obj, options) });
+                                resolve({
+                                    status: true,
+                                    failed: await this.service.createUsers(obj, options)
+                                });
                             });
                     } else {
-                        reject(new ApiError({ name: 'file_type', statusCode: 402, message: 'Improper file type' }));
+                        reject(
+                            new ApiError({
+                                name: 'file_type',
+                                statusCode: 402,
+                                message: 'Improper file type'
+                            })
+                        );
                     }
                 }
             } catch (err) {
@@ -145,7 +163,10 @@ export class UsersController extends Controller {
     public updateUser(@Body() options: UpdateUser[]) {
         return new Promise<DefaultActionResponse>(async (resolve, reject) => {
             try {
-                resolve({ status: true, failed: await this.service.updateUser(options) });
+                resolve({
+                    status: true,
+                    failed: await this.service.updateUser(options)
+                });
             } catch (err) {
                 reject(UnknownApiError(err));
             }
@@ -160,7 +181,10 @@ export class UsersController extends Controller {
     public delete(@Body() users: string[]) {
         return new Promise<DefaultActionResponse>(async (resolve, reject) => {
             try {
-                resolve({ status: true, failed: await this.service.deleteUsers(users) });
+                resolve({
+                    status: true,
+                    failed: await this.service.deleteUsers(users)
+                });
             } catch (err) {
                 reject(UnknownApiError(err));
             }

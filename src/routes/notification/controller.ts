@@ -1,10 +1,9 @@
-import { ProvideSingleton } from '../../shared/provide-singleton';
 import { Body, Controller, Post, Put, Request, Response, Route, Security, Tags } from 'tsoa';
-import { inject } from 'inversify';
 import { NotificationService } from './service';
 import { ErrorType } from '../../shared/error-handler';
 import { jwtToken } from '../../models/types';
 import { Request as ExRequest } from 'express';
+import { Inject, Singleton } from 'typescript-ioc';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
 export interface SubscribeOptions {
@@ -21,9 +20,11 @@ export interface SubscribeOptions {
 
 @Tags('notifications')
 @Route('notifications')
-@ProvideSingleton(NotificationController)
+@Singleton
 export class NotificationController extends Controller {
-    constructor(@inject(NotificationService) private service: NotificationService) {
+    @Inject
+    private service: NotificationService;
+    constructor() {
         super();
     }
 

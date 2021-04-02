@@ -1,12 +1,11 @@
 import { IBatchModel } from './batch-repository';
 import { IUserModel } from './user-repository';
 import { BaseFormatter } from '../../util/base-formatter';
-import { ProvideSingleton } from '../../shared/provide-singleton';
 import { BaseRepository } from '../shared/base-repository';
 import mongoose, { Schema } from 'mongoose';
-import { inject } from 'inversify';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { IElectiveModel } from './elective-repository';
+import { Inject, Singleton } from 'typescript-ioc';
 
 export interface IClassModel {
     id?: string;
@@ -28,7 +27,7 @@ export class ClassFormatter extends BaseFormatter implements IClassModel {
     }
 }
 
-@ProvideSingleton(ClassRepository)
+@Singleton
 export class ClassRepository extends BaseRepository<IClassModel> {
     protected modelName = 'classes';
     protected schema: Schema = new Schema(
@@ -42,7 +41,9 @@ export class ClassRepository extends BaseRepository<IClassModel> {
     );
 
     protected formatter = ClassFormatter;
-    constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
+    @Inject
+    protected dbConnection: MongoConnector;
+    constructor() {
         super();
         super.init();
         this.schema.set('toJSON', {

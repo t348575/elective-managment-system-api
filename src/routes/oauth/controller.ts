@@ -1,24 +1,27 @@
 import { Body, Controller, Get, Post, Query, Route, Tags, Request, Hidden, Security } from 'tsoa';
 import { Request as ExRequest, Response as ExResponse } from 'express';
-import { ProvideSingleton } from '../../shared/provide-singleton';
-import { inject } from 'inversify';
 import { AuthService } from './service';
 import * as fs from 'fs';
 import * as path from 'path';
 import { jwtToken, refreshToken, scopes, tokenBodyType } from '../../models/types';
 import { OAuthError } from '../../shared/error-handler';
+import { Inject, Singleton } from 'typescript-ioc';
 
 type acceptedChallengeMethods = 'S256';
 type clientIds = 'api' | 'site';
 type responseTypes = 'code';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
+console.log('dsa');
 @Tags('oauth')
 @Route('oauth')
-@ProvideSingleton(AuthController)
+@Singleton
 export class AuthController extends Controller {
-    constructor(@inject(AuthService) private service: AuthService) {
+    @Inject
+    private service: AuthService;
+    constructor() {
         super();
+        console.log('asd');
     }
 
     @Get('authorize')
@@ -32,7 +35,8 @@ export class AuthController extends Controller {
         @Query() username: string,
         @Query() password: string,
         @Query('code_challenge') codeChallenge: string,
-        @Query('code_challenge_method') codeChallengeMethod: acceptedChallengeMethods,
+        @Query('code_challenge_method')
+        codeChallengeMethod: acceptedChallengeMethods,
         @Query('id_token') idToken?: string
     ) {
         if (username && password && codeChallenge) {
@@ -57,7 +61,10 @@ export class AuthController extends Controller {
                 (<any>request).res as ExResponse
             );
         } else {
-            throw new OAuthError({ name: 'invalid_request', error_description: 'Invalid parameters' });
+            throw new OAuthError({
+                name: 'invalid_request',
+                error_description: 'Invalid parameters'
+            });
         }
     }
 

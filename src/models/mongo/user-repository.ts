@@ -1,5 +1,3 @@
-import { ProvideSingleton } from '../../shared/provide-singleton';
-import { inject } from 'inversify';
 import { MongoConnector } from '../../shared/mongo-connector';
 import mongoose, { Document, Schema } from 'mongoose';
 import { BaseRepository } from '../shared/base-repository';
@@ -9,6 +7,7 @@ import { scopes } from '../types';
 import { ApiError } from '../../shared/error-handler';
 import constants from '../../constants';
 import { IClassModel } from './class-repository';
+import { Inject, Singleton } from 'typescript-ioc';
 
 export interface IUserModel {
     id?: string;
@@ -64,7 +63,7 @@ export function getSafeUserOmit(role: scopes) {
     }
 }
 
-@ProvideSingleton(UserRepository)
+@Singleton
 export class UserRepository extends BaseRepository<IUserModel> {
     protected modelName = 'users';
     protected schema: Schema = new Schema(
@@ -72,7 +71,11 @@ export class UserRepository extends BaseRepository<IUserModel> {
             name: { type: String, required: true },
             username: { type: String, unique: true, required: true },
             password: { type: String, required: true },
-            role: { type: String, required: true, enum: ['admin', 'teacher', 'student'] },
+            role: {
+                type: String,
+                required: true,
+                enum: ['admin', 'teacher', 'student']
+            },
             rollNo: { type: String, required: true },
             batch: { type: mongoose.Schema.Types.ObjectId, ref: 'batches' },
             classes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'classes' }]
@@ -81,7 +84,9 @@ export class UserRepository extends BaseRepository<IUserModel> {
     );
 
     protected formatter = UserFormatter;
-    constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
+    @Inject
+    protected dbConnection: MongoConnector;
+    constructor() {
         super();
         super.init();
         this.schema.set('toJSON', {
@@ -98,7 +103,9 @@ export class UserRepository extends BaseRepository<IUserModel> {
         switch (role) {
             case 'admin': {
                 // @ts-ignore
-                const document: Document = await this.documentModel.findOne({ _id: mongoose.Types.ObjectId(id) });
+                const document: Document = await this.documentModel.findOne({
+                    _id: mongoose.Types.ObjectId(id)
+                });
                 if (!document) throw new ApiError(constants.errorTypes.notFound);
                 return new this.formatter(document);
             }

@@ -13,7 +13,10 @@ export class Logger {
             level: constants.environment,
             format: logger.format.combine(logger.format.colorize(), logger.format.simple()),
             transports: [
-                new logger.transports.File({ filename: `logs/${fileName}`, level: constants.environment }),
+                new logger.transports.File({
+                    filename: `logs/${fileName}`,
+                    level: constants.environment
+                }),
                 new logger.transports.Console()
             ]
         });

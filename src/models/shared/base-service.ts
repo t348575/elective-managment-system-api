@@ -1,5 +1,3 @@
-import { decorate, injectable } from 'inversify';
-
 import { ApiError } from '../../shared/error-handler';
 import constants from '../../constants';
 import { PaginationModel } from './pagination-model';
@@ -60,5 +58,3 @@ export abstract class BaseService<EntityModel> {
         if (!res.n) throw new ApiError(constants.errorTypes.notFound);
     }
 }
-
-decorate(injectable(), BaseService);

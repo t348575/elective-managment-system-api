@@ -59,13 +59,21 @@ app.use(
 );
 app.use(bodyParser.json());
 
-app.use(multer({ storage: multer.memoryStorage(), limits: { fileSize: 50000000 } }).single('file'));
+app.use(
+    multer({
+        storage: multer.memoryStorage(),
+        limits: { fileSize: 50000000 }
+    }).single('file')
+);
 
 app.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
     return res.send(
         swaggerUi.generateHTML(await import(path.resolve('./build/src/swagger.json')), {
             explorer: true,
-            swaggerOptions: { deepLinking: true, oauth: { clientId: 'api', usePkceWithAuthorizationCodeGrant: true } }
+            swaggerOptions: {
+                deepLinking: true,
+                oauth: { clientId: 'api', usePkceWithAuthorizationCodeGrant: true }
+            }
         })
     );
 });

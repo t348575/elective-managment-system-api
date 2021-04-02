@@ -4,10 +4,9 @@ import mongoose, { Schema } from 'mongoose';
 import { IClassModel } from './class-repository';
 import { IBatchModel } from './batch-repository';
 import { scopes } from '../types';
-import { ProvideSingleton } from '../../shared/provide-singleton';
 import { BaseRepository } from '../shared/base-repository';
-import { inject } from 'inversify';
 import { MongoConnector } from '../../shared/mongo-connector';
+import { Inject, Singleton } from 'typescript-ioc';
 
 export interface IDownloadModel {
     id?: string;
@@ -44,7 +43,7 @@ export class DownloadFormatter extends BaseFormatter implements IDownloadModel {
     }
 }
 
-@ProvideSingleton(DownloadRespository)
+@Singleton
 export class DownloadRespository extends BaseRepository<IDownloadModel> {
     protected modelName = 'downloads';
     protected schema: Schema = new Schema(
@@ -53,7 +52,11 @@ export class DownloadRespository extends BaseRepository<IDownloadModel> {
             path: { type: String, required: true },
             deleteOnAccess: { type: Boolean, required: true },
             shouldTrack: { type: Boolean, required: true },
-            limitedBy: { type: String, required: true, enum: ['user', 'class', 'batch', 'role', 'none'] },
+            limitedBy: {
+                type: String,
+                required: true,
+                enum: ['user', 'class', 'batch', 'role', 'none']
+            },
             limitedTo: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
             limitedToClass: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
             limitedToBatch: [{ type: mongoose.Schema.Types.ObjectId, ref: 'batches' }],
@@ -69,7 +72,9 @@ export class DownloadRespository extends BaseRepository<IDownloadModel> {
     );
 
     protected formatter = DownloadFormatter;
-    constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
+    @Inject
+    protected dbConnection: MongoConnector;
+    constructor() {
         super();
         super.init();
         this.schema.set('toJSON', {

@@ -19,7 +19,10 @@ export function expressAuthentication(req: express.Request, securityName: string
             return new Promise((resolve, reject) => {
                 if (!token) {
                     return reject(
-                        new OAuthError({ name: 'invalid_request', error_description: 'Authorization missing' })
+                        new OAuthError({
+                            name: 'invalid_request',
+                            error_description: 'Authorization missing'
+                        })
                     );
                 }
                 decipherJWT(token, 'accessToken')
@@ -188,15 +191,28 @@ export function expressAuthentication(req: express.Request, securityName: string
                                 }
                             } else {
                                 reject(
-                                    new OAuthError({ name: 'access_denied', error_description: 'Token does not exist' })
+                                    new OAuthError({
+                                        name: 'access_denied',
+                                        error_description: 'Token does not exist'
+                                    })
                                 );
                             }
                         } catch (err) {
-                            reject(new OAuthError({ name: 'server_error', error_description: err.message }));
+                            reject(
+                                new OAuthError({
+                                    name: 'server_error',
+                                    error_description: err.message
+                                })
+                            );
                         }
                     })
                     .catch(() => {
-                        reject(new OAuthError({ name: 'invalid_request', error_description: 'Invalid token' }));
+                        reject(
+                            new OAuthError({
+                                name: 'invalid_request',
+                                error_description: 'Invalid token'
+                            })
+                        );
                     });
             });
         }
@@ -205,7 +221,10 @@ export function expressAuthentication(req: express.Request, securityName: string
             return new Promise((resolve, reject) => {
                 if (!token) {
                     return reject(
-                        new OAuthError({ name: 'invalid_request', error_description: 'Authorization missing' })
+                        new OAuthError({
+                            name: 'invalid_request',
+                            error_description: 'Authorization missing'
+                        })
                     );
                 }
                 decipherJWT(token, 'accessToken')
@@ -214,12 +233,20 @@ export function expressAuthentication(req: express.Request, securityName: string
                             resolve(accessToken);
                         } else {
                             reject(
-                                new OAuthError({ name: 'access_denied', error_description: 'Token does not exist' })
+                                new OAuthError({
+                                    name: 'access_denied',
+                                    error_description: 'Token does not exist'
+                                })
                             );
                         }
                     })
                     .catch(() => {
-                        reject(new OAuthError({ name: 'invalid_request', error_description: 'Invalid token' }));
+                        reject(
+                            new OAuthError({
+                                name: 'invalid_request',
+                                error_description: 'Invalid token'
+                            })
+                        );
                     });
             });
         }

@@ -1,8 +1,7 @@
-import { inject } from 'inversify';
+import { Inject } from 'typescript-ioc';
 import * as argon2 from 'argon2';
 import { UserRepository } from '../../models/mongo/user-repository';
 import { Request as ExRequest, Response as ExResponse } from 'express';
-import { ProvideSingleton } from '../../shared/provide-singleton';
 import { IAuthTokenRequest } from '../../models/basic/auth';
 import { BaseService } from '../../models/shared/base-service';
 import { OAuthError } from '../../shared/error-handler';
@@ -12,14 +11,14 @@ import { RedisConnector } from '../../shared/redis-connector';
 import { jwtToken, refreshTokenResponse, scopes, tokenResponse } from '../../models/types';
 import * as qs from 'querystring';
 import { TrackRepository } from '../../models/mongo/track-repository';
+import { Singleton } from 'typescript-ioc';
 
-@ProvideSingleton(AuthService)
+@Singleton
 export class AuthService extends BaseService<IAuthTokenRequest> {
-    constructor(
-        @inject(UserRepository) protected repository: UserRepository,
-        @inject(RedisConnector) protected redis: RedisConnector,
-        @inject(TrackRepository) protected trackRepository: TrackRepository
-    ) {
+    @Inject protected repository: UserRepository;
+    @Inject protected redis: RedisConnector;
+    @Inject protected trackRepository: TrackRepository;
+    constructor() {
         super();
     }
     authorize(
@@ -105,12 +104,20 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                                         );
                                     }
                                 } catch (err) {
-                                    reject(new OAuthError({ name: 'server_error', error_description: err?.message }));
+                                    reject(
+                                        new OAuthError({
+                                            name: 'server_error',
+                                            error_description: err?.message
+                                        })
+                                    );
                                 }
                             })
                             .catch(() => {
                                 return reject(
-                                    new OAuthError({ name: 'access_denied', error_description: 'User does not exist' })
+                                    new OAuthError({
+                                        name: 'access_denied',
+                                        error_description: 'User does not exist'
+                                    })
                                 );
                             });
                     } else {
@@ -125,10 +132,18 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                 .catch((err) => {
                     if (err.statusCode === 404) {
                         return reject(
-                            new OAuthError({ name: 'access_denied', error_description: 'User does not exist' })
+                            new OAuthError({
+                                name: 'access_denied',
+                                error_description: 'User does not exist'
+                            })
                         );
                     }
-                    reject(new OAuthError({ name: 'server_error', error_description: err?.message }));
+                    reject(
+                        new OAuthError({
+                            name: 'server_error',
+                            error_description: err?.message
+                        })
+                    );
                 });
         });
     }
@@ -195,7 +210,10 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                                     })
                                     .catch((err) => {
                                         return reject(
-                                            new OAuthError({ name: 'server_error', error_description: err?.message })
+                                            new OAuthError({
+                                                name: 'server_error',
+                                                error_description: err?.message
+                                            })
                                         );
                                     });
                             } else {
@@ -208,10 +226,22 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                             }
                         })
                         .catch((err) =>
-                            reject(new OAuthError({ name: 'server_error', error_description: err.message }))
+                            reject(
+                                new OAuthError({
+                                    name: 'server_error',
+                                    error_description: err.message
+                                })
+                            )
                         );
                 })
-                .catch(() => reject(new OAuthError({ name: 'invalid_request', error_description: 'Invalid idToken' })));
+                .catch(() =>
+                    reject(
+                        new OAuthError({
+                            name: 'invalid_request',
+                            error_description: 'Invalid idToken'
+                        })
+                    )
+                );
         });
     }
 
@@ -222,7 +252,12 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                     this.redis.db.get(`oneTimeAuthCode::${jwtObject.id}::${jwtObject.stateSlice}`, (err, reply) => {
                         try {
                             if (err) {
-                                reject(new OAuthError({ name: 'server_error', error_description: err?.message }));
+                                reject(
+                                    new OAuthError({
+                                        name: 'server_error',
+                                        error_description: err?.message
+                                    })
+                                );
                             } else if (reply) {
                                 const [storedCode, codeChallenge] = reply.split('::');
                                 if (code === storedCode && getSHA256(codeVerifier) === codeChallenge) {
@@ -262,14 +297,31 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                                     );
                                 }
                             } else {
-                                reject(new OAuthError({ name: 'server_error', error_description: 'An unknown error' }));
+                                reject(
+                                    new OAuthError({
+                                        name: 'server_error',
+                                        error_description: 'An unknown error'
+                                    })
+                                );
                             }
                         } catch (errOuter) {
-                            reject(new OAuthError({ name: 'server_error', error_description: errOuter?.message }));
+                            reject(
+                                new OAuthError({
+                                    name: 'server_error',
+                                    error_description: errOuter?.message
+                                })
+                            );
                         }
                     });
                 })
-                .catch((err) => reject(new OAuthError({ name: 'access_denied', error_description: err?.message })));
+                .catch((err) =>
+                    reject(
+                        new OAuthError({
+                            name: 'access_denied',
+                            error_description: err?.message
+                        })
+                    )
+                );
         });
     }
 
@@ -350,7 +402,10 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                             refreshToken.expiry,
                             refreshToken.jwt
                         );
-                        resolve({ access_token: accessToken.jwt, refresh_token: refreshToken.jwt });
+                        resolve({
+                            access_token: accessToken.jwt,
+                            refresh_token: refreshToken.jwt
+                        });
                     } catch (err) {
                         reject(err);
                     }

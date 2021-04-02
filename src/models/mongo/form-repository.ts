@@ -1,11 +1,10 @@
 import { IElectiveModel } from './elective-repository';
-import { ProvideSingleton } from '../../shared/provide-singleton';
 import { BaseFormatter } from '../../util/base-formatter';
 import { BaseRepository } from '../shared/base-repository';
 import mongoose, { Schema } from 'mongoose';
-import { inject } from 'inversify';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { cleanQuery } from '../../util/general-util';
+import { Inject, Singleton } from 'typescript-ioc';
 
 export interface IFormModel {
     id?: string;
@@ -29,7 +28,7 @@ export class FormFormatter extends BaseFormatter implements IFormModel {
     }
 }
 
-@ProvideSingleton(FormsRepository)
+@Singleton
 export class FormsRepository extends BaseRepository<IFormModel> {
     protected modelName = 'forms';
     protected schema: Schema = new Schema(
@@ -44,7 +43,9 @@ export class FormsRepository extends BaseRepository<IFormModel> {
     );
 
     protected formatter = FormFormatter;
-    constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
+    @Inject
+    protected dbConnection: MongoConnector;
+    constructor() {
         super();
         super.init();
         this.schema.set('toJSON', {

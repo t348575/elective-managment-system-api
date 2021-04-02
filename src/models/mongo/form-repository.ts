@@ -1,9 +1,8 @@
-import { ElectiveFormatter, IElectiveModel } from './elective-repository';
+import { IElectiveModel } from './elective-repository';
 import { ProvideSingleton } from '../../shared/provide-singleton';
 import { BaseFormatter } from '../../util/base-formatter';
 import { BaseRepository } from '../shared/base-repository';
-import { Schema } from 'mongoose';
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { inject } from 'inversify';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { cleanQuery } from '../../util/general-util';
@@ -26,20 +25,7 @@ export class FormFormatter extends BaseFormatter implements IFormModel {
     active: boolean;
     constructor(args: any) {
         super();
-        if (!(args instanceof mongoose.Types.ObjectId)) {
-            this.format(args);
-        } else {
-            this.id = args.toString();
-        }
-        if (this.electives) {
-            for (const [i, v] of args.electives.entries()) {
-                if (v instanceof mongoose.Types.ObjectId) {
-                    this.electives[i] = v.toString();
-                } else if (typeof v === 'object') {
-                    this.electives[i] = new ElectiveFormatter(v);
-                }
-            }
-        }
+        this.format(args);
     }
 }
 
@@ -61,13 +47,21 @@ export class FormsRepository extends BaseRepository<IFormModel> {
     constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
         super();
         super.init();
+        this.schema.set('toJSON', {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
+                ret.id = ret._id;
+                delete ret._id;
+                delete ret.__v;
+            }
+        });
     }
 
     public async findActive(query: any): Promise<IFormModel[]> {
         return (await this.documentModel.find(query).populate('electives')).map((item) => new this.formatter(item));
     }
 
-    public async findAndPopulate(skip = 0, limit = 250, sort: string, query: any): Promise<FormFormatter[]> {
+    public async findAndPopulate(sort: string, query: any, skip = 0, limit = 250): Promise<FormFormatter[]> {
         const sortObject = cleanQuery(sort, this.sortQueryFormatter);
         return (
             await this.documentModel
@@ -82,7 +76,8 @@ export class FormsRepository extends BaseRepository<IFormModel> {
                             path: 'batches'
                         },
                         {
-                            path: 'teachers'
+                            path: 'teachers',
+                            select: 'name username _id rollNo role classes'
                         }
                     ]
                 })

@@ -1,8 +1,7 @@
-import * as nodemailer from 'nodemailer';
 import { ProvideSingleton } from './provide-singleton';
 import constants from '../constants';
 import Mail, { Attachment } from 'nodemailer/lib/mailer';
-import { TransportOptions } from 'nodemailer';
+import nodemailer, { TransportOptions } from 'nodemailer';
 import { SentMessageInfo } from 'nodemailer/lib/smtp-transport';
 import { Logger } from './logger';
 

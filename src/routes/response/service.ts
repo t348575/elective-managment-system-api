@@ -110,7 +110,7 @@ export class ResponseService extends BaseService<IResponseModel> {
         // eslint-disable-next-line prefer-const
         let [count, docs] = await Promise.all([
             this.repository.count(query),
-            this.repository.findAndPopulate(skip, limit, sort, query)
+            this.repository.findAndPopulate(sort, query, skip, limit)
         ]);
         const fieldArray = (fields || '')
             .split(',')

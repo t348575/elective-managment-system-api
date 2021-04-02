@@ -23,7 +23,7 @@ export abstract class BaseService<EntityModel> {
         // eslint-disable-next-line prefer-const
         let [count, docs] = await Promise.all([
             this.repository.count(query),
-            this.repository.find(skip, limit, sort, query)
+            this.repository.find(sort, query, limit, skip)
         ]);
         const fieldArray = (fields || '')
             .split(',')

@@ -91,6 +91,11 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "scopes": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["teacher"]},{"dataType":"enum","enums":["admin"]},{"dataType":"enum","enums":["student"]}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IElectiveModel": {
         "dataType": "refObject",
         "properties": {
@@ -115,7 +120,7 @@ const models: TsoaRoute.Models = {
             "username": {"dataType":"string","required":true},
             "password": {"dataType":"string","required":true},
             "rollNo": {"dataType":"string","required":true},
-            "role": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["admin"]},{"dataType":"enum","enums":["teacher"]},{"dataType":"enum","enums":["student"]}],"required":true},
+            "role": {"ref":"scopes","required":true},
             "batch": {"ref":"IBatchModel"},
             "classes": {"dataType":"array","array":{"ref":"IClassModel"}},
         },
@@ -170,11 +175,6 @@ const models: TsoaRoute.Models = {
     "clientIds": {
         "dataType": "refAlias",
         "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["api"]},{"dataType":"enum","enums":["site"]}],"validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "scopes": {
-        "dataType": "refAlias",
-        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["teacher"]},{"dataType":"enum","enums":["admin"]},{"dataType":"enum","enums":["student"]}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "acceptedChallengeMethods": {
@@ -1184,8 +1184,8 @@ export function RegisterRoutes(app: express.Router) {
             function (request: any, response: any, next: any) {
             const args = {
                     id: {"in":"query","name":"id","required":true,"dataType":"string"},
-                    closeForm: {"default":false,"in":"query","name":"closeForm","dataType":"boolean"},
                     request: {"in":"request","name":"request","required":true,"dataType":"object"},
+                    closeForm: {"default":false,"in":"query","name":"closeForm","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

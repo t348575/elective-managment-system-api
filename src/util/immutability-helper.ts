@@ -1,3 +1,5 @@
+import mongoose from 'mongoose';
+
 export class ImmutabilityHelper {
     public static getType(variable: any): string {
         let type: string = typeof variable;
@@ -9,8 +11,8 @@ export class ImmutabilityHelper {
     public static immute<T>(variable: any): T {
         let copy: T;
         const variableType: string = ImmutabilityHelper.getType(variable);
-
-        if (variableType === 'object') copy = { ...variable };
+        if (variable instanceof mongoose.Types.ObjectId) copy = variable.toString();
+        else if (variableType === 'object') copy = { ...variable };
         else if (variableType === 'array') copy = variable.slice();
         else copy = variable;
 

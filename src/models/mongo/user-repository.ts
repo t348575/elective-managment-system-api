@@ -1,15 +1,14 @@
 import { ProvideSingleton } from '../../shared/provide-singleton';
 import { inject } from 'inversify';
 import { MongoConnector } from '../../shared/mongo-connector';
-import { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 import { BaseRepository } from '../shared/base-repository';
 import { BaseFormatter } from '../../util/base-formatter';
-import mongoose from 'mongoose';
-import { BatchFormatter, IBatchModel } from './batch-repository';
+import { IBatchModel } from './batch-repository';
 import { scopes } from '../types';
 import { ApiError } from '../../shared/error-handler';
 import constants from '../../constants';
-import { ClassFormatter, IClassModel } from './class-repository';
+import { IClassModel } from './class-repository';
 
 export interface IUserModel {
     id?: string;
@@ -17,7 +16,7 @@ export interface IUserModel {
     username: string;
     password: string;
     rollNo: string;
-    role: 'admin' | 'teacher' | 'student';
+    role: scopes;
     batch?: IBatchModel;
     classes?: IClassModel[];
 }
@@ -26,28 +25,14 @@ export class UserFormatter extends BaseFormatter implements IUserModel {
     name: string;
     username: string;
     password: string;
-    role: 'admin' | 'teacher' | 'student';
+    role: scopes;
     rollNo: string;
     batch?: IBatchModel;
     classes?: IClassModel[];
     id: string;
     constructor(args: any) {
         super();
-        if (!(args instanceof mongoose.Types.ObjectId)) {
-            this.format(args);
-        }
-        if (this.batch && typeof args.batch !== 'string') {
-            this.batch = new BatchFormatter(args.batch);
-        }
-        if (this.classes) {
-            for (const [i, v] of args.classes.entries()) {
-                if (v instanceof mongoose.Types.ObjectId) {
-                    this.classes[i] = v.toString();
-                } else if (typeof v === 'object') {
-                    this.classes[i] = new ClassFormatter(v);
-                }
-            }
-        }
+        this.format(args);
     }
 }
 
@@ -99,6 +84,14 @@ export class UserRepository extends BaseRepository<IUserModel> {
     constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
         super();
         super.init();
+        this.schema.set('toJSON', {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
+                ret.id = ret._id;
+                delete ret._id;
+                delete ret.__v;
+            }
+        });
     }
 
     public async getPopulated(id: string, role: scopes | 'any') {
@@ -134,6 +127,6 @@ export class UserRepository extends BaseRepository<IUserModel> {
                 });
             }
         });
-        await session.endSession();
+        session.endSession();
     }
 }

@@ -1,5 +1,5 @@
-import { IUserModel, SafeUser, UserFormatter } from './user-repository';
-import { BaseFormatter, remove } from '../../util/base-formatter';
+import { IUserModel } from './user-repository';
+import { BaseFormatter } from '../../util/base-formatter';
 import mongoose, { Schema } from 'mongoose';
 import { IClassModel } from './class-repository';
 import { IBatchModel } from './batch-repository';
@@ -40,41 +40,7 @@ export class DownloadFormatter extends BaseFormatter implements IDownloadModel {
     fileId: string;
     constructor(args: any) {
         super();
-        if (!(args instanceof mongoose.Types.ObjectId)) {
-            this.format(args);
-        } else {
-            this.id = args.toString();
-        }
-        if (this.limitedTo) {
-            for (const [i, v] of args.limitedTo.entries()) {
-                if (v instanceof mongoose.Types.ObjectId) {
-                    this.limitedTo[i] = v.toString();
-                } else if (typeof v === 'object') {
-                    // @ts-ignore
-                    this.limitedTo[i] = remove<IUserModel, SafeUser>(new UserFormatter(v), ['password']);
-                }
-            }
-        }
-        if (this.limitedToBatch) {
-            for (const [i, v] of args.limitedToBatch.entries()) {
-                if (v instanceof mongoose.Types.ObjectId) {
-                    this.limitedToBatch[i] = v.toString();
-                } else if (typeof v === 'object') {
-                    // @ts-ignore
-                    this.limitedToBatch[i] = new BatchFormatter(v);
-                }
-            }
-        }
-        if (this.limitedToClass) {
-            for (const [i, v] of args.limitedToClass.entries()) {
-                if (v instanceof mongoose.Types.ObjectId) {
-                    this.limitedToClass[i] = v.toString();
-                } else if (typeof v === 'object') {
-                    // @ts-ignore
-                    this.limitedToClass[i] = new ClassFormatter(v);
-                }
-            }
-        }
+        this.format(args);
     }
 }
 
@@ -106,5 +72,13 @@ export class DownloadRespository extends BaseRepository<IDownloadModel> {
     constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
         super();
         super.init();
+        this.schema.set('toJSON', {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
+                ret.id = ret._id;
+                delete ret._id;
+                delete ret.__v;
+            }
+        });
     }
 }

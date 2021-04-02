@@ -237,7 +237,7 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                                                     ip:
                                                         req.ip ||
                                                         req.headers['x-forwarded-for'] ||
-                                                        req.connection.remoteAddress,
+                                                        req.socket.remoteAddress,
                                                     // @ts-ignore
                                                     user: jwtObject.id
                                                 })
@@ -245,11 +245,11 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                                                 .catch();
                                             resolve({ ...tokens });
                                         })
-                                        .catch((err) =>
+                                        .catch((errInner) =>
                                             reject(
                                                 new OAuthError({
                                                     name: 'server_error',
-                                                    error_description: err?.message
+                                                    error_description: errInner?.message
                                                 })
                                             )
                                         );
@@ -264,8 +264,8 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                             } else {
                                 reject(new OAuthError({ name: 'server_error', error_description: 'An unknown error' }));
                             }
-                        } catch (err) {
-                            reject(new OAuthError({ name: 'server_error', error_description: err?.message }));
+                        } catch (errOuter) {
+                            reject(new OAuthError({ name: 'server_error', error_description: errOuter?.message }));
                         }
                     });
                 })

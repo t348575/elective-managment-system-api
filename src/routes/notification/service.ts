@@ -69,20 +69,20 @@ export class NotificationService extends BaseService<INotificationModel> {
     public async notifyUsers(userIds: string[], notificationPayload: { notification: any }) {
         for (const user of userIds) {
             try {
-                const ids = await this.repository.find(0, undefined, '', { user: user });
+                const ids = await this.repository.find('', { user: user }, undefined, 0);
                 for (const v of ids) {
                     try {
                         webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then().catch();
-                    } catch (err) {
+                    } catch (errFor) {
                         try {
                             // @ts-ignore
                             await this.repository.delete(v.id);
                             // eslint-disable-next-line no-empty
-                        } catch (err) {}
+                        } catch (errInner) {}
                     }
                 }
                 // eslint-disable-next-line no-empty
-            } catch (err) {}
+            } catch (errOuter) {}
         }
     }
 
@@ -93,24 +93,24 @@ export class NotificationService extends BaseService<INotificationModel> {
                 for (const v of ids) {
                     try {
                         webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then().catch();
-                    } catch (err) {
+                    } catch (errFor) {
                         try {
                             // @ts-ignore
                             await this.repository.delete(v.id);
                             // eslint-disable-next-line no-empty
-                        } catch (err) {}
+                        } catch (errInner) {}
                     }
                 }
                 // eslint-disable-next-line no-empty
-            } catch (err) {}
+            } catch (errOuter) {}
         }
     }
 
     public async notifyAll() {
-        const ids = await this.repository.find(0, undefined, '', '');
+        const ids = await this.repository.find('', '', undefined, 0);
         for (const v of ids) {
             try {
-                NotificationService.initialNotification(v.sub).then().catch();
+                NotificationService.initialNotification(v.sub).then();
             } catch (err) {
                 try {
                     // @ts-ignore

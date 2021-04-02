@@ -19,7 +19,7 @@ describe('User service', () => {
             expect(res).to.be.instanceof(UserFormatter);
             expect(res.role).to.be.equal(v.scope);
             expect(res.id).to.be.equal(v.id);
-            expect(res).to.not.have.property('password')
+            expect(res).to.not.have.property('password');
         }
     });
 });

@@ -54,6 +54,14 @@ export class NotificationRepository extends BaseRepository<INotificationModel> {
     constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
         super();
         super.init();
+        this.schema.set('toJSON', {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
+                ret.id = ret._id;
+                delete ret._id;
+                delete ret.__v;
+            }
+        });
     }
 
     public async findAndPopulate(id: string): Promise<NotificationFormatter[]> {

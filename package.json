@@ -7,7 +7,7 @@
 	"main": "dist/server.js",
 	"scripts": {
 		"test": "yarn test:unit && yarn test:integration",
-		"test:unit": "yarn env:test nyc mocha -t 30000 -r ts-node/register ./src/tests/unit/**/*.spec.ts",
+		"test:unit": "yarn env:test nyc --reporter=lcov --reporter=text-lcov mocha -t 30000 -r ts-node/register ./src/tests/unit/**/*.spec.ts",
 		"test:integration": "yarn build:test && yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
 		"test:integration:quick": "yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
 		"start": "yarn start:dev",

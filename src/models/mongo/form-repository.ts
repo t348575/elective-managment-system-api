@@ -1,4 +1,4 @@
-import { ElectiveFormatter, IElectiveModel } from './elective-repository';
+import { IElectiveModel } from './elective-repository';
 import { ProvideSingleton } from '../../shared/provide-singleton';
 import { BaseFormatter } from '../../util/base-formatter';
 import { BaseRepository } from '../shared/base-repository';
@@ -25,20 +25,7 @@ export class FormFormatter extends BaseFormatter implements IFormModel {
     active: boolean;
     constructor(args: any) {
         super();
-        if (!(args instanceof mongoose.Types.ObjectId)) {
-            this.format(args);
-        } else {
-            this.id = args.toString();
-        }
-        if (this.electives) {
-            for (const [i, v] of args.electives.entries()) {
-                if (v instanceof mongoose.Types.ObjectId) {
-                    this.electives[i] = v.toString();
-                } else if (typeof v === 'object') {
-                    this.electives[i] = new ElectiveFormatter(v);
-                }
-            }
-        }
+        this.format(args);
     }
 }
 
@@ -60,6 +47,14 @@ export class FormsRepository extends BaseRepository<IFormModel> {
     constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
         super();
         super.init();
+        this.schema.set('toJSON', {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
+                ret.id = ret._id;
+                delete ret._id;
+                delete ret.__v;
+            }
+        });
     }
 
     public async findActive(query: any): Promise<IFormModel[]> {
@@ -81,7 +76,8 @@ export class FormsRepository extends BaseRepository<IFormModel> {
                             path: 'batches'
                         },
                         {
-                            path: 'teachers'
+                            path: 'teachers',
+                            select: 'name username _id rollNo role classes'
                         }
                     ]
                 })

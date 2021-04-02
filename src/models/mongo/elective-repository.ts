@@ -1,6 +1,6 @@
 import { electiveAttributes } from '../types';
-import { BatchFormatter, IBatchModel } from './batch-repository';
-import { IUserModel, UserFormatter } from './user-repository';
+import { IBatchModel } from './batch-repository';
+import { IUserModel } from './user-repository';
 import { BaseFormatter } from '../../util/base-formatter';
 import { BaseRepository } from '../shared/base-repository';
 import mongoose, { Schema } from 'mongoose';
@@ -33,39 +33,7 @@ export class ElectiveFormatter extends BaseFormatter implements IElectiveModel {
     id: string;
     constructor(args: any) {
         super();
-        const items = {
-            batches: BatchFormatter,
-            teachers: UserFormatter
-        };
-        if (!(args instanceof mongoose.Types.ObjectId)) {
-            this.format(args);
-        } else {
-            this.id = args.toString();
-        }
-        for (const v in items) {
-            if (args[v]) {
-                for (const [i, individualItem] of args[v].entries()) {
-                    if (individualItem instanceof mongoose.Types.ObjectId) {
-                        // @ts-ignore
-                        this[v][i] = v.toString();
-                    } else if (typeof v === 'object') {
-                        // @ts-ignore
-                        this[v][i] = new items[v](individualItem);
-                    }
-                }
-            }
-        }
-        if (this.attributes) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            for (const [i] of args.attributes.entries()) {
-                if (args.attributes[i]._id) {
-                    // @ts-ignore
-                    this.attributes[i].id = args.attributes[i]._id.toString();
-                    // @ts-ignore
-                    delete this.attributes[i]._id;
-                }
-            }
-        }
+        this.format(args);
     }
 }
 
@@ -95,6 +63,14 @@ export class ElectiveRepository extends BaseRepository<IElectiveModel> {
     constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
         super();
         super.init();
+        this.schema.set('toJSON', {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
+                ret.id = ret._id;
+                delete ret._id;
+                delete ret.__v;
+            }
+        });
     }
 
     public async findAndPopulate(skip = 0, limit = 250, sort: string, query: any): Promise<ElectiveFormatter[]> {
@@ -106,7 +82,10 @@ export class ElectiveRepository extends BaseRepository<IElectiveModel> {
                 .skip(skip)
                 .limit(limit)
                 .populate('batches')
-                .populate('teachers')
+                .populate({
+                    path: 'teachers',
+                    select: 'name username _id rollNo role classes'
+                })
         ).map((item) => new this.formatter(item));
     }
 }

@@ -1,4 +1,4 @@
-import { IUserModel, UserFormatter } from './user-repository';
+import { IUserModel } from './user-repository';
 import { BaseFormatter } from '../../util/base-formatter';
 import mongoose, { Schema } from 'mongoose';
 import { ProvideSingleton } from '../../shared/provide-singleton';
@@ -24,18 +24,7 @@ export class TrackFormatter extends BaseFormatter implements ITrackModel {
     id: string;
     constructor(args: any) {
         super();
-        if (!(args instanceof mongoose.Types.ObjectId)) {
-            this.format(args);
-        } else {
-            this.id = args.toString();
-        }
-        if (this.user) {
-            if (args.user instanceof mongoose.Types.ObjectId) {
-                this.user = args.user.toString();
-            } else if (typeof args.user === 'object') {
-                this.user = new UserFormatter(args.user);
-            }
-        }
+        this.format(args);
     }
 }
 
@@ -58,5 +47,13 @@ export class TrackRepository extends BaseRepository<ITrackModel> {
     constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
         super();
         super.init();
+        this.schema.set('toJSON', {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
+                ret.id = ret._id;
+                delete ret._id;
+                delete ret.__v;
+            }
+        });
     }
 }

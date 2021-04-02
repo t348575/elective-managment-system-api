@@ -3,7 +3,7 @@ import { BaseRepository } from '../shared/base-repository';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { inject } from 'inversify';
 import { ProvideSingleton } from '../../shared/provide-singleton';
-import mongoose, { Schema } from 'mongoose';
+import { Schema } from 'mongoose';
 
 export interface IBatchModel {
     id?: string;
@@ -28,11 +28,7 @@ export class BatchFormatter extends BaseFormatter implements IBatchModel {
     id: string;
     constructor(args: any) {
         super();
-        if (!(args instanceof mongoose.Types.ObjectId)) {
-            this.format(args);
-        } else {
-            this.id = args.toString();
-        }
+        this.format(args);
     }
 }
 
@@ -54,6 +50,14 @@ export class BatchRepository extends BaseRepository<IBatchModel> {
     constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
         super();
         super.init();
+        this.schema.set('toJSON', {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
+                ret.id = ret._id;
+                delete ret._id;
+                delete ret.__v;
+            }
+        });
     }
 }
 

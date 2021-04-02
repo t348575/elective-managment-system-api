@@ -1,6 +1,6 @@
-import { IUserModel, UserFormatter } from './user-repository';
-import { ElectiveFormatter, IElectiveModel } from './elective-repository';
-import { FormFormatter, IFormModel } from './form-repository';
+import { IUserModel } from './user-repository';
+import { IElectiveModel } from './elective-repository';
+import { IFormModel } from './form-repository';
 import { BaseFormatter } from '../../util/base-formatter';
 import { ProvideSingleton } from '../../shared/provide-singleton';
 import { BaseRepository } from '../shared/base-repository';
@@ -25,34 +25,7 @@ export class ResponseFormatter extends BaseFormatter implements IResponseModel {
     id: string;
     constructor(args: any) {
         super();
-        if (!(args instanceof mongoose.Types.ObjectId)) {
-            this.format(args);
-        } else {
-            this.id = args.toString();
-        }
-        if (this.responses) {
-            for (const [i, v] of args.responses.entries()) {
-                if (v instanceof mongoose.Types.ObjectId) {
-                    this.responses[i] = v.toString();
-                } else if (typeof v === 'object') {
-                    this.responses[i] = new ElectiveFormatter(v);
-                }
-            }
-        }
-        if (this.user) {
-            if (args.user instanceof mongoose.Types.ObjectId) {
-                this.user = args.user.toString();
-            } else if (typeof args.user === 'object') {
-                this.user = new UserFormatter(args.user);
-            }
-        }
-        if (this.form) {
-            if (args.form instanceof mongoose.Types.ObjectId) {
-                this.form = args.form.toString();
-            } else if (typeof args.form === 'object') {
-                this.form = new FormFormatter(args.form);
-            }
-        }
+        this.format(args);
     }
 }
 
@@ -73,6 +46,14 @@ export class ResponseRepository extends BaseRepository<IResponseModel> {
     constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
         super();
         super.init();
+        this.schema.set('toJSON', {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
+                ret.id = ret._id;
+                delete ret._id;
+                delete ret.__v;
+            }
+        });
     }
 
     public async findAndPopulate(sort: string, query: any, skip = 0, limit = 250): Promise<ResponseFormatter[]> {
@@ -85,6 +66,7 @@ export class ResponseRepository extends BaseRepository<IResponseModel> {
                 .limit(limit)
                 .populate({
                     path: 'user',
+                    select: 'name username _id rollNo role classes batch',
                     populate: ['batch']
                 })
                 .populate('responses')
@@ -99,6 +81,7 @@ export class ResponseRepository extends BaseRepository<IResponseModel> {
             .populate('responses')
             .populate({
                 path: 'user',
+                select: 'name username _id rollNo role classes batch',
                 populate: ['batch']
             })
             .cursor()

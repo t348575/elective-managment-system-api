@@ -1,16 +1,17 @@
 import { Controller, Get, Query, Request, Response, Route, Security, Tags } from 'tsoa';
-import { ProvideSingleton } from '../../shared/provide-singleton';
 import { DownloadService } from './service';
-import { inject } from 'inversify';
 import { ErrorType } from '../../shared/error-handler';
 import { jwtToken } from '../../models/types';
 import { Request as ExRequest, Response as ExResponse } from 'express';
+import { Inject, Singleton } from 'typescript-ioc';
 
 @Tags('downloads')
 @Route('downloads')
-@ProvideSingleton(DownloadController)
+@Singleton
 export class DownloadController extends Controller {
-    constructor(@inject(DownloadService) private service: DownloadService) {
+    @Inject
+    private service: DownloadService;
+    constructor() {
         super();
     }
 

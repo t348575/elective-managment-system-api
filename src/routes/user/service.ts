@@ -1,5 +1,4 @@
-import { ProvideSingleton } from '../../shared/provide-singleton';
-import { inject } from 'inversify';
+import { Inject } from 'typescript-ioc';
 import { IUserModel, UserFormatter, UserRepository } from '../../models/mongo/user-repository';
 import { BaseService } from '../../models/shared/base-service';
 import { DefaultResponse, Failed, scopes } from '../../models/types';
@@ -14,10 +13,11 @@ import constants from '../../constants';
 import { CreateUserCSV, ResetPasswordRequest, UpdateUser } from './controller';
 import { PasswordResetFormatter, PasswordResetRepository } from '../../models/mongo/password-reset-repository';
 import { UnknownApiError } from '../../shared/error-handler';
+import { Singleton } from 'typescript-ioc';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
-// eslint-disable-next-line no-use-before-define
-@ProvideSingleton(UsersService)
+
+@Singleton
 export class UsersService extends BaseService<IUserModel> {
     private createUserTemplate = fs
         .readFileSync(path.join(__dirname, constants.emailTemplates.userCreation))
@@ -27,12 +27,11 @@ export class UsersService extends BaseService<IUserModel> {
         .readFileSync(path.join(__dirname, constants.emailTemplates.passReset))
         .toString();
 
-    constructor(
-        @inject(UserRepository) protected repository: UserRepository,
-        @inject(BatchRepository) protected batchRepo: BatchRepository,
-        @inject(PasswordResetRepository) protected passReset: PasswordResetRepository,
-        @inject(MailService) protected mailer: MailService
-    ) {
+    @Inject protected repository: UserRepository;
+    @Inject protected batchRepo: BatchRepository;
+    @Inject protected passReset: PasswordResetRepository;
+    @Inject protected mailer: MailService;
+    constructor() {
         super();
     }
 
@@ -122,7 +121,9 @@ export class UsersService extends BaseService<IUserModel> {
                 if (user) {
                     try {
                         try {
-                            const preExisting = await this.passReset.findOne({ user: user.id });
+                            const preExisting = await this.passReset.findOne({
+                                user: user.id
+                            });
                             if (preExisting && preExisting.id != null) {
                                 await this.passReset.delete(preExisting.id);
                             }

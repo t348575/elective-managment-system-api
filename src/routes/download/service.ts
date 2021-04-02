@@ -1,20 +1,20 @@
-import { ProvideSingleton } from '../../shared/provide-singleton';
 import { DownloadRespository, IDownloadModel } from '../../models/mongo/download-repository';
 import { BaseService } from '../../models/shared/base-service';
-import { inject } from 'inversify';
 import { randomBytes } from 'crypto';
 import { IUserModel, UserRepository } from '../../models/mongo/user-repository';
 import { OAuthError } from '../../shared/error-handler';
 import { Response as ExResponse } from 'express';
 import { createReadStream } from 'fs';
 import { removeTempFile } from '../../util/general-util';
+import { Inject, Singleton } from 'typescript-ioc';
 
-@ProvideSingleton(DownloadService)
+@Singleton
 export class DownloadService extends BaseService<IDownloadModel> {
-    constructor(
-        @inject(DownloadRespository) protected repository: DownloadRespository,
-        @inject(UserRepository) protected userRepository: UserRepository
-    ) {
+    @Inject
+    protected repository: DownloadRespository;
+    @Inject
+    protected userRepository: UserRepository;
+    constructor() {
         super();
     }
 

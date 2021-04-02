@@ -1,10 +1,9 @@
 import { IUserModel } from './user-repository';
 import { BaseFormatter } from '../../util/base-formatter';
-import { ProvideSingleton } from '../../shared/provide-singleton';
 import { BaseRepository } from '../shared/base-repository';
 import mongoose, { Schema } from 'mongoose';
-import { inject } from 'inversify';
 import { MongoConnector } from '../../shared/mongo-connector';
+import { Inject, Singleton } from 'typescript-ioc';
 
 export interface INotificationModel {
     id?: string;
@@ -21,7 +20,11 @@ export interface INotificationModel {
 }
 
 export class NotificationFormatter extends BaseFormatter implements INotificationModel {
-    sub: { endpoint: string; expirationTime: null; keys: { p256dh: string; auth: string } };
+    sub: {
+        endpoint: string;
+        expirationTime: null;
+        keys: { p256dh: string; auth: string };
+    };
     user: IUserModel;
     device: string;
     id: string;
@@ -31,7 +34,7 @@ export class NotificationFormatter extends BaseFormatter implements INotificatio
     }
 }
 
-@ProvideSingleton(NotificationRepository)
+@Singleton
 export class NotificationRepository extends BaseRepository<INotificationModel> {
     protected modelName = 'notifications';
     protected schema: Schema = new Schema(
@@ -51,7 +54,9 @@ export class NotificationRepository extends BaseRepository<INotificationModel> {
     );
 
     protected formatter = NotificationFormatter;
-    constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
+    @Inject
+    protected dbConnection: MongoConnector;
+    constructor() {
         super();
         super.init();
         this.schema.set('toJSON', {

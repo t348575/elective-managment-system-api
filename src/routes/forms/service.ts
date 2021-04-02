@@ -1,7 +1,5 @@
-import { ProvideSingleton } from '../../shared/provide-singleton';
 import { FormsRepository, IFormModel } from '../../models/mongo/form-repository';
 import { BaseService } from '../../models/shared/base-service';
-import { inject } from 'inversify';
 import { BatchRepository } from '../../models/mongo/batch-repository';
 import { CreateFormOptions, GenerateListResponse, UpdateFormOptions } from './controller';
 import { ElectiveRepository, IElectiveModel } from '../../models/mongo/elective-repository';
@@ -20,6 +18,7 @@ import { DownloadService } from '../download/service';
 import { NotificationService } from '../notification/service';
 import { Parser } from 'json2csv';
 import { ClassService } from '../classes/service';
+import { Inject, Singleton } from 'typescript-ioc';
 
 export interface AssignedElective {
     rollNo: string;
@@ -27,18 +26,17 @@ export interface AssignedElective {
     electives: string[];
 }
 
-@ProvideSingleton(FormsService)
+@Singleton
 export class FormsService extends BaseService<IFormModel> {
-    constructor(
-        @inject(FormsRepository) protected repository: FormsRepository,
-        @inject(BatchRepository) protected batchRepository: BatchRepository,
-        @inject(ElectiveRepository) protected electionRepository: ElectiveRepository,
-        @inject(UserRepository) protected userRepository: UserRepository,
-        @inject(ResponseRepository) protected responseRepository: ResponseRepository,
-        @inject(DownloadService) protected downloadService: DownloadService,
-        @inject(NotificationService) protected notificationService: NotificationService,
-        @inject(ClassService) protected classService: ClassService
-    ) {
+    @Inject protected repository: FormsRepository;
+    @Inject protected batchRepository: BatchRepository;
+    @Inject protected electionRepository: ElectiveRepository;
+    @Inject protected userRepository: UserRepository;
+    @Inject protected responseRepository: ResponseRepository;
+    @Inject protected downloadService: DownloadService;
+    @Inject protected notificationService: NotificationService;
+    @Inject protected classService: ClassService;
+    constructor() {
         super();
     }
 
@@ -129,14 +127,24 @@ export class FormsService extends BaseService<IFormModel> {
         switch (scope) {
             case 'student': {
                 const user = await this.userRepository.getPopulated(id, 'student');
-                return (await this.repository.findActive({ end: { $gte: new Date() }, active: true })).filter((e) => {
-                    // @ts-ignore
-                    e.electives = e.electives.filter((v) => v.batches.indexOf(user.batch?.id) > -1);
+                return (
+                    await this.repository.findActive({
+                        end: { $gte: new Date() },
+                        active: true
+                    })
+                ).filter((e) => {
+                    e.electives = e.electives.filter(
+                        // @ts-ignore
+                        (v) => v.batches.indexOf(user.batch?.id) > -1
+                    );
                     return e.electives.length > 0;
                 });
             }
             case 'admin': {
-                return this.repository.findActive({ end: { $gte: new Date() }, active: true });
+                return this.repository.findActive({
+                    end: { $gte: new Date() },
+                    active: true
+                });
             }
         }
     }
@@ -188,7 +196,10 @@ export class FormsService extends BaseService<IFormModel> {
             const form: IFormModel = (await this.repository.findAndPopulate('', { _id: id }, 0, undefined))[0];
             const name = randomBytes(8).toString('hex');
             const filePath = path.join(__dirname, constants.directories.csvTemporary, `${name}.csv`);
-            const file = createWriteStream(filePath, { encoding: 'utf8', flags: 'a' });
+            const file = createWriteStream(filePath, {
+                encoding: 'utf8',
+                flags: 'a'
+            });
             const electiveCountMap = new Map<string, number>();
             const failed: string[] = [];
             const successful: string[] = [];
@@ -261,7 +272,10 @@ export class FormsService extends BaseService<IFormModel> {
                             ).map((e) => e.rollNo);
                             if (notFilled.length > 0) {
                                 const csvFile = parser.parse(notFilled.map((e) => ({ rollNo: e })));
-                                const writeFailed = createWriteStream(filePath, { encoding: 'utf8', flags: 'a' });
+                                const writeFailed = createWriteStream(filePath, {
+                                    encoding: 'utf8',
+                                    flags: 'a'
+                                });
                                 writeFailed.write('\n\nUnresponsive students:\n' + csvFile, () => {
                                     writeFailed.close();
                                     resolveSuccessful(null);
@@ -277,7 +291,10 @@ export class FormsService extends BaseService<IFormModel> {
                         try {
                             if (failed.length > 0) {
                                 const csvFile = parser.parse(failed.map((e) => ({ rollNo: e })));
-                                const writeFailed = createWriteStream(filePath, { encoding: 'utf8', flags: 'a' });
+                                const writeFailed = createWriteStream(filePath, {
+                                    encoding: 'utf8',
+                                    flags: 'a'
+                                });
                                 writeFailed.write('\n\nGeneration failed for students:\n' + csvFile, () => {
                                     writeFailed.close();
                                     resolveFailed(null);

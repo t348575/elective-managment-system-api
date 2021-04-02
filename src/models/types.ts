@@ -19,13 +19,20 @@ export type OAuthErrorTypes =
     | 'server_error'
     | 'temporarily_unavailable';
 
-export type tokenResponse = { id_token: string; access_token: string; refresh_token: string };
+export type tokenResponse = {
+    id_token: string;
+    access_token: string;
+    refresh_token: string;
+};
 
 export type jwtSubjects = 'oneTimeAuthCode' | 'idToken' | 'refreshToken' | 'accessToken';
 
 export type tokenBodyType = { code: string; code_verifier: string };
 
-export type refreshTokenResponse = { refresh_token: string; access_token: string };
+export type refreshTokenResponse = {
+    refresh_token: string;
+    access_token: string;
+};
 
 export type refreshToken = { refresh_token: string };
 

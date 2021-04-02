@@ -2,12 +2,11 @@ import { IUserModel } from './user-repository';
 import { IElectiveModel } from './elective-repository';
 import { IFormModel } from './form-repository';
 import { BaseFormatter } from '../../util/base-formatter';
-import { ProvideSingleton } from '../../shared/provide-singleton';
 import { BaseRepository } from '../shared/base-repository';
 import mongoose, { Schema } from 'mongoose';
-import { inject } from 'inversify';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { cleanQuery } from '../../util/general-util';
+import { Inject, Singleton } from 'typescript-ioc';
 
 export interface IResponseModel {
     id?: string;
@@ -29,7 +28,7 @@ export class ResponseFormatter extends BaseFormatter implements IResponseModel {
     }
 }
 
-@ProvideSingleton(ResponseRepository)
+@Singleton
 export class ResponseRepository extends BaseRepository<IResponseModel> {
     protected modelName = 'responses';
     protected schema: Schema = new Schema(
@@ -43,7 +42,9 @@ export class ResponseRepository extends BaseRepository<IResponseModel> {
     );
 
     protected formatter = ResponseFormatter;
-    constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
+    @Inject
+    protected dbConnection: MongoConnector;
+    constructor() {
         super();
         super.init();
         this.schema.set('toJSON', {

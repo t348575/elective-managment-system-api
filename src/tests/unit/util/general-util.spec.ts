@@ -19,7 +19,9 @@ describe('General utils', () => {
             expect(safeParse('{"test":1}')).to.deep.equal({ test: 1 });
         });
         it('should use a default on invalid json', async () => {
-            expect(safeParse('{syntax error}', { test: 2 })).to.deep.equal({ test: 2 });
+            expect(safeParse('{syntax error}', { test: 2 })).to.deep.equal({
+                test: 2
+            });
         });
     });
 
@@ -59,7 +61,14 @@ describe('General utils', () => {
     describe('getJWT', () => {
         it('should return a JWT', async () => {
             const jwt = await getJWT(
-                { name: '', password: '', role: 'student', rollNo: '', username: '', id: '1234' },
+                {
+                    name: '',
+                    password: '',
+                    role: 'student',
+                    rollNo: '',
+                    username: '',
+                    id: '1234'
+                },
                 'asd',
                 900,
                 'accessToken',
@@ -73,7 +82,14 @@ describe('General utils', () => {
     describe('decipherJWT', () => {
         it('should decode a JWT', async () => {
             const jwt = await getJWT(
-                { name: '', password: '', role: 'student', rollNo: '', username: '', id: '1234' },
+                {
+                    name: '',
+                    password: '',
+                    role: 'student',
+                    rollNo: '',
+                    username: '',
+                    id: '1234'
+                },
                 'asd',
                 900,
                 'accessToken',

@@ -7,7 +7,7 @@
 	"main": "dist/server.js",
 	"scripts": {
 		"test": "yarn test:unit && yarn test:integration",
-		"test:unit": "yarn env:test nyc --silent --reporter=lcov --reporter=text-lcov mocha -t 30000 -r ts-node/register ./src/tests/unit/**/*.spec.ts",
+		"test:unit": "yarn env:test nyc --silent mocha -r ts-node/register ./src/tests/unit/**/*.spec.ts -t 30000",
 		"test:integration": "yarn build:test && yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
 		"test:integration:quick": "yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
 		"testelectives:integration:quick": "yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/electives.spec.ts --exit --no-deprecation",
@@ -36,12 +36,8 @@
 		"copy-server": "shx cp -r /server/resources /server/build",
 		"postinstall": "yarn build:prod:jenkins"
 	},
-	"husky": {
-		"hooks": {
-			"pre-commit": "pretty-quick --staged"
-		}
-	},
 	"nyc": {
+		"extends": "@istanbuljs/nyc-config-typescript",
 		"include": [
 			"src/**/*.ts"
 		],
@@ -53,8 +49,7 @@
 			"src/ioc.ts",
 			"src/server.ts",
 			"src/app.ts",
-			"src/shared/**",
-			"src/models/*model.ts"
+			"src/routes/**/controller.ts"
 		],
 		"extension": [
 			".ts"
@@ -63,10 +58,14 @@
 			"ts-node/register"
 		],
 		"reporter": [
-			"text",
-			"text-summary",
-			"html"
+			"lcov",
+			"text-lcov"
 		]
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "pretty-quick --staged"
+		}
 	},
 	"dependencies": {
 		"argon2": "^0.27.1",
@@ -79,7 +78,6 @@
 		"express-useragent": "^1.0.15",
 		"fast-csv": "^4.3.6",
 		"helmet": "^4.4.1",
-		"inversify": "^5.0.5",
 		"inversify-binding-decorators": "^4.0.0",
 		"json2csv": "^5.0.6",
 		"jsonwebtoken": "^8.5.1",
@@ -95,10 +93,12 @@
 		"swagger-ui-express": "^4.1.6",
 		"ts-node-dev": "^1.1.1",
 		"tsoa": "^3.5.2",
+		"typescript-ioc": "^3.2.2",
 		"web-push": "^3.4.4",
 		"winston": "^3.3.3"
 	},
 	"devDependencies": {
+		"@istanbuljs/nyc-config-typescript": "^1.0.1",
 		"@types/argon2": "^0.15.0",
 		"@types/axios": "^0.14.0",
 		"@types/body-parser": "^1.19.0",
@@ -131,7 +131,6 @@
 		"@typescript-eslint/parser": "^4.20.0",
 		"chai": "^4.3.4",
 		"eslint": "^7.23.0",
-		"eslint-config-airbnb": "^18.2.1",
 		"eslint-config-prettier": "^8.1.0",
 		"eslint-plugin-import": "^2.22.1",
 		"eslint-plugin-prettier": "^3.3.1",

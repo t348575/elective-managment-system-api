@@ -1,10 +1,9 @@
 import { Body, Controller, Delete, Get, Post, Put, Query, Request, Response, Route, Security, Tags } from 'tsoa';
-import { ProvideSingleton } from '../../shared/provide-singleton';
-import { inject } from 'inversify';
 import { FormsService } from './service';
 import { ErrorType } from '../../shared/error-handler';
 import { Request as ExRequest } from 'express';
 import { jwtToken } from '../../models/types';
+import { Inject, Singleton } from 'typescript-ioc';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
 
@@ -37,9 +36,11 @@ export interface GenerateListResponse {
 
 @Tags('forms')
 @Route('forms')
-@ProvideSingleton(FormsController)
+@Singleton
 export class FormsController extends Controller {
-    constructor(@inject(FormsService) private service: FormsService) {
+    @Inject
+    private service: FormsService;
+    constructor() {
         super();
     }
 

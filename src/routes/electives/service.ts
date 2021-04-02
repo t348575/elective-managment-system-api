@@ -1,21 +1,22 @@
-import { ProvideSingleton } from '../../shared/provide-singleton';
 import { AddElectives } from './controller';
 import { ElectiveRepository, IElectiveModel } from '../../models/mongo/elective-repository';
-import { inject } from 'inversify';
 import { BatchRepository, batchStringToModel } from '../../models/mongo/batch-repository';
 import { UserRepository } from '../../models/mongo/user-repository';
 import { checkNumber, checkString } from '../../util/general-util';
 import { electiveAttributes } from '../../models/types';
 import { BaseService } from '../../models/shared/base-service';
 import { PaginationModel } from '../../models/shared/pagination-model';
+import { Inject, Singleton } from 'typescript-ioc';
 
-@ProvideSingleton(ElectivesService)
+@Singleton
 export class ElectivesService extends BaseService<IElectiveModel> {
-    constructor(
-        @inject(ElectiveRepository) protected repository: ElectiveRepository,
-        @inject(BatchRepository) protected batchRepository: BatchRepository,
-        @inject(UserRepository) protected userRepository: UserRepository
-    ) {
+    @Inject
+    protected repository: ElectiveRepository;
+    @Inject
+    protected batchRepository: BatchRepository;
+    @Inject
+    protected userRepository: UserRepository;
+    constructor() {
         super();
     }
 
@@ -42,7 +43,12 @@ export class ElectivesService extends BaseService<IElectiveModel> {
         for (const v of elective.teachers) {
             teacherIds.push(
                 // @ts-ignore
-                (await this.userRepository.findOne({ role: 'teacher', rollNo: v.toLowerCase() })).id.toString()
+                (
+                    await this.userRepository.findOne({
+                        role: 'teacher',
+                        rollNo: v.toLowerCase()
+                    })
+                ).id.toString()
             );
         }
         await this.repository.create({

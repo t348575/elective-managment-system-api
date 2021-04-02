@@ -1,19 +1,18 @@
-import { ProvideSingleton } from '../../shared/provide-singleton';
 import { INotificationModel, NotificationRepository } from '../../models/mongo/notification-repository';
 import { BaseService } from '../../models/shared/base-service';
-import { inject } from 'inversify';
+import { Inject } from 'typescript-ioc';
 import { SubscribeOptions } from './controller';
 import constants from '../../constants';
 import * as webPush from 'web-push';
 import { ApiError } from '../../shared/error-handler';
 import { BatchRepository } from '../../models/mongo/batch-repository';
+import { Singleton } from 'typescript-ioc';
 
-@ProvideSingleton(NotificationService)
+@Singleton
 export class NotificationService extends BaseService<INotificationModel> {
-    constructor(
-        @inject(NotificationRepository) protected repository: NotificationRepository,
-        @inject(BatchRepository) private batchRepository: BatchRepository
-    ) {
+    @Inject protected repository: NotificationRepository;
+    @Inject private batchRepository: BatchRepository;
+    constructor() {
         super();
         webPush.setVapidDetails(
             'mailto:' + constants.mailAccess.username,
@@ -24,7 +23,10 @@ export class NotificationService extends BaseService<INotificationModel> {
 
     public async subscribe(options: SubscribeOptions, userId: string) {
         try {
-            const previous = await this.repository.findOne({ user: userId, device: options.name });
+            const previous = await this.repository.findOne({
+                user: userId,
+                device: options.name
+            });
             if (previous) {
                 return {
                     status: true
@@ -53,7 +55,10 @@ export class NotificationService extends BaseService<INotificationModel> {
 
     public async unsubscribe(options: SubscribeOptions, userId: string) {
         try {
-            const previous = await this.repository.findOne({ user: userId, device: options.name });
+            const previous = await this.repository.findOne({
+                user: userId,
+                device: options.name
+            });
             if (previous) {
                 // @ts-ignore
                 await this.repository.delete(previous.id);

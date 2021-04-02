@@ -1,9 +1,8 @@
 import { BaseFormatter } from '../../util/base-formatter';
 import { BaseRepository } from '../shared/base-repository';
 import { MongoConnector } from '../../shared/mongo-connector';
-import { inject } from 'inversify';
-import { ProvideSingleton } from '../../shared/provide-singleton';
 import { Schema } from 'mongoose';
+import { Inject, Singleton } from 'typescript-ioc';
 
 export interface IBatchModel {
     id?: string;
@@ -32,7 +31,7 @@ export class BatchFormatter extends BaseFormatter implements IBatchModel {
     }
 }
 
-@ProvideSingleton(BatchRepository)
+@Singleton
 export class BatchRepository extends BaseRepository<IBatchModel> {
     protected modelName = 'batches';
     protected schema: Schema = new Schema(
@@ -47,12 +46,19 @@ export class BatchRepository extends BaseRepository<IBatchModel> {
     );
 
     protected formatter = BatchFormatter;
-    constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
+    @Inject
+    protected dbConnection: MongoConnector;
+    constructor() {
         super();
         super.init();
         this.schema.set('toJSON', {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
+            transform: (
+                doc: any,
+                ret: { id: any; _id: any; __v: any },
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                options: any
+            ) => {
                 ret.id = ret._id;
                 delete ret._id;
                 delete ret.__v;

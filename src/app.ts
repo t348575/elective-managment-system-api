@@ -11,9 +11,7 @@ import { ApiError, ErrorHandler, OAuthError } from './shared/error-handler';
 import cors from 'cors';
 import * as fs from 'fs';
 import multer from 'multer';
-import axios from 'axios';
 import './models/types';
-import https from 'https';
 import helmet from 'helmet';
 import constants from './constants';
 import useragent from 'express-useragent';
@@ -93,15 +91,6 @@ app.get('/app/*', (req, res) => {
 app.get('/', (req, res) => {
     res.redirect('/app');
 });
-
-axios
-    .get(`http${constants.environment === 'test' ? '' : 's'}://localhost:3000/private-init`, {
-        httpsAgent: new https.Agent({ rejectUnauthorized: false })
-    })
-    .then()
-    .catch((err) => {
-        throw err;
-    });
 
 app.use(function notFoundHandler(_req, res: ExResponse) {
     res.status(404).send({

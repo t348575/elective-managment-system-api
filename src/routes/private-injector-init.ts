@@ -3,7 +3,7 @@ import { Inject } from 'typescript-ioc';
 import { BatchRepository } from '../models/mongo/batch-repository';
 import { ElectiveRepository } from '../models/mongo/elective-repository';
 import { UserRepository } from '../models/mongo/user-repository';
-import { Controller, Get, Hidden, Route } from 'tsoa';
+import { Get } from 'tsoa';
 import { PasswordResetRepository } from '../models/mongo/password-reset-repository';
 import { ClassRepository } from '../models/mongo/class-repository';
 import { FormsRepository } from '../models/mongo/form-repository';
@@ -13,11 +13,8 @@ import { NotificationRepository } from '../models/mongo/notification-repository'
 import { TrackRepository } from '../models/mongo/track-repository';
 import { Singleton } from 'typescript-ioc';
 
-@Hidden()
-@Route('private-init')
-// eslint-disable-next-line no-use-before-define
 @Singleton
-export class PrivateInjectorInit extends Controller {
+export class PrivateInjectorInit {
     @Inject batchRepository: BatchRepository;
     @Inject electiveRepository: ElectiveRepository;
     @Inject userRepository: UserRepository;
@@ -29,11 +26,15 @@ export class PrivateInjectorInit extends Controller {
     @Inject notificationsRepository: NotificationRepository;
     @Inject trackRepository: TrackRepository;
     constructor() {
-        super();
-    }
-
-    @Get()
-    public init() {
-        return;
+        this.batchRepository;
+        this.electiveRepository;
+        this.userRepository;
+        this.passwordResetRepository;
+        this.classRepository;
+        this.formRepository;
+        this.responseRepository;
+        this.downloadRespository;
+        this.notificationsRepository;
+        this.trackRepository;
     }
 }

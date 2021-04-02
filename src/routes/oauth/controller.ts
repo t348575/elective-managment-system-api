@@ -12,7 +12,6 @@ type clientIds = 'api' | 'site';
 type responseTypes = 'code';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
-console.log('dsa');
 @Tags('oauth')
 @Route('oauth')
 @Singleton
@@ -21,7 +20,6 @@ export class AuthController extends Controller {
     private service: AuthService;
     constructor() {
         super();
-        console.log('asd');
     }
 
     @Get('authorize')

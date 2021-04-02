@@ -13,6 +13,7 @@
 		"testelectives:integration:quick": "yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/electives.spec.ts --exit --no-deprecation",
 		"testusers:integration:quick": "yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/users.spec.ts --exit --no-deprecation",
 		"testnotifications:integration:quick": "yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/notifications.spec.ts --exit --no-deprecation",
+		"testforms:integration:quick": "yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/forms.spec.ts --exit --no-deprecation",
 		"start": "yarn start:dev",
 		"start:dev": "yarn env:dev concurrently \"yarn build:tsoa && ts-node-dev --respawn ./src/server.ts --rs --watch 'src' --debug\" \"nodemon\"",
 		"start:prod": "yarn env:dev node ./build/src/server.js",

@@ -28,6 +28,15 @@ export default {
     notifications:{
       unsubscribeRoute:'/notifications/unsubscribe'
     },
+    forms:{
+        batchesRoute:'/forms/batches',
+        activeRoutes:'/forms/active-forms',
+        getForms:'/forms',
+        postForms:'/forms',
+        deleteForms:'/forms',
+        generateElectiveList:'/forms/generate-elective-list',
+        createClasses:'/forms/create-classes'
+    },
 
 
     privateKey: '',

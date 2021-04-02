@@ -2,6 +2,7 @@ export default {
     username: 'kjosephsubash@gmail.com',
     password: 'admin',
     scope: 'admin',
+    userId: '603f9253cb206eafe3f18444',
     fromHexString: (hexString: string) => {
         // @ts-ignore
         return new Uint8Array(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));

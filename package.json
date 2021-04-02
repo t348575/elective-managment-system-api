@@ -7,7 +7,7 @@
 	"main": "dist/server.js",
 	"scripts": {
 		"test": "yarn test:unit && yarn test:integration",
-		"test:unit": "yarn env:test nyc --silent --reporter=lcov --reporter=text-lcov mocha -t 30000 -r ts-node/register ./src/tests/unit/**/*.spec.ts",
+		"test:unit": "yarn env:test nyc --silent mocha -r ts-node/register ./src/tests/unit/**/*.spec.ts -t 30000",
 		"test:integration": "yarn build:test && yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
 		"test:integration:quick": "yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
 		"testelectives:integration:quick": "yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/electives.spec.ts --exit --no-deprecation",
@@ -35,12 +35,8 @@
 		"copy-server": "shx cp -r /server/resources /server/build",
 		"postinstall": "yarn build:prod:jenkins"
 	},
-	"husky": {
-		"hooks": {
-			"pre-commit": "pretty-quick --staged"
-		}
-	},
 	"nyc": {
+		"extends": "@istanbuljs/nyc-config-typescript",
 		"include": [
 			"src/**/*.ts"
 		],
@@ -52,8 +48,7 @@
 			"src/ioc.ts",
 			"src/server.ts",
 			"src/app.ts",
-			"src/shared/**",
-			"src/models/*model.ts"
+			"src/routes/**/controller.ts"
 		],
 		"extension": [
 			".ts"
@@ -62,10 +57,14 @@
 			"ts-node/register"
 		],
 		"reporter": [
-			"text",
-			"text-summary",
-			"html"
+			"lcov",
+			"text-lcov"
 		]
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "pretty-quick --staged"
+		}
 	},
 	"dependencies": {
 		"argon2": "^0.27.1",
@@ -98,6 +97,7 @@
 		"winston": "^3.3.3"
 	},
 	"devDependencies": {
+		"@istanbuljs/nyc-config-typescript": "^1.0.1",
 		"@types/argon2": "^0.15.0",
 		"@types/axios": "^0.14.0",
 		"@types/body-parser": "^1.19.0",

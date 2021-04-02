@@ -7,9 +7,12 @@
 	"main": "dist/server.js",
 	"scripts": {
 		"test": "yarn test:unit && yarn test:integration",
-		"test:unit": "yarn env:test nyc --silent --reporter=lcov --reporter=text-lcov mocha -t 30000 -r ts-node/register ./src/tests/unit/**/*.spec.ts",
+		"test:unit": "yarn env:test nyc --silent mocha -r ts-node/register ./src/tests/unit/**/*.spec.ts -t 30000",
 		"test:integration": "yarn build:test && yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
 		"test:integration:quick": "yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
+		"testelectives:integration:quick": "yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/electives.spec.ts --exit --no-deprecation",
+		"testusers:integration:quick": "yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/users.spec.ts --exit --no-deprecation",
+		"testnotifications:integration:quick": "yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/notifications.spec.ts --exit --no-deprecation",
 		"start": "yarn start:dev",
 		"start:dev": "yarn env:dev concurrently \"yarn build:tsoa && ts-node-dev --respawn ./src/server.ts --rs --watch 'src' --debug\" \"nodemon\"",
 		"start:prod": "yarn env:dev node ./build/src/server.js",
@@ -32,12 +35,8 @@
 		"copy-server": "shx cp -r /server/resources /server/build",
 		"postinstall": "yarn build:prod:jenkins"
 	},
-	"husky": {
-		"hooks": {
-			"pre-commit": "pretty-quick --staged"
-		}
-	},
 	"nyc": {
+		"extends": "@istanbuljs/nyc-config-typescript",
 		"include": [
 			"src/**/*.ts"
 		],
@@ -49,8 +48,7 @@
 			"src/ioc.ts",
 			"src/server.ts",
 			"src/app.ts",
-			"src/shared/**",
-			"src/models/*model.ts"
+			"src/routes/**/controller.ts"
 		],
 		"extension": [
 			".ts"
@@ -59,10 +57,14 @@
 			"ts-node/register"
 		],
 		"reporter": [
-			"text",
-			"text-summary",
-			"html"
+			"lcov",
+			"text-lcov"
 		]
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "pretty-quick --staged"
+		}
 	},
 	"dependencies": {
 		"argon2": "^0.27.1",
@@ -95,6 +97,7 @@
 		"winston": "^3.3.3"
 	},
 	"devDependencies": {
+		"@istanbuljs/nyc-config-typescript": "^1.0.1",
 		"@types/argon2": "^0.15.0",
 		"@types/axios": "^0.14.0",
 		"@types/body-parser": "^1.19.0",
@@ -106,6 +109,7 @@
 		"@types/express-useragent": "^1.0.0",
 		"@types/inversify": "^2.0.33",
 		"@types/inversify-binding-decorators": "^2.0.0",
+		"@types/js-base64": "^3.0.0",
 		"@types/json2csv": "^5.0.1",
 		"@types/jsonwebtoken": "^8.5.0",
 		"@types/mocha": "^8.2.2",
@@ -115,6 +119,7 @@
 		"@types/multer": "^1.4.5",
 		"@types/node": "^14.14.27",
 		"@types/nodemailer": "^6.4.0",
+		"@types/query-string": "^6.3.0",
 		"@types/redis": "^2.8.28",
 		"@types/sinon": "^9.0.11",
 		"@types/supertest": "^2.0.10",

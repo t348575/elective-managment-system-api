@@ -41,6 +41,7 @@ export abstract class BaseRepository<EntityType> implements IBaseRepository<Enti
     }
 
     public async delete(_id: string): Promise<{ n: number }> {
+// @ts-ignore
         return this.documentModel.deleteOne({ _id });
     }
 

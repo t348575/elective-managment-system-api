@@ -13,11 +13,23 @@ export default {
         refreshRoute: '/oauth/refresh',
         logoutRoute: '/oauth/logout'
     },
+    electives: {
+        addRoute:'/electives/add',
+        postElectiveRoute:'/electives'
+    },
     users: {
         name: 'Users',
         basicRoute: '/users/basic',
-        scopeRoute: '/users/scope'
+        scopeRoute: '/users/scope',
+        createRoute: '/users/create',
+        userByRollNoRoute:'/users/user-by-roll-no',
+        validResetRoute:'/users/validReset'
     },
+    notifications:{
+      unsubscribeRoute:'/notifications/unsubscribe'
+    },
+
+
     privateKey: '',
     publicKey: ''
 };

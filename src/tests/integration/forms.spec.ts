@@ -1,44 +1,47 @@
-import {expect} from 'chai';
+import { expect } from 'chai';
 import supertest from 'supertest';
-import {server as importApp} from '../../server';
-import {IntegrationHelper} from '../integration-helper';
+import { server as importApp } from '../../server';
+import { IntegrationHelper } from '../integration-helper';
 import testingConstants from '../testing-constants';
-import {equal} from "assert";
-const app=supertest(importApp);
-const integrationHelper=new IntegrationHelper(app);
+const app = supertest(importApp);
+const integrationHelper = new IntegrationHelper(app);
 
-describe(testingConstants.forms.batchesRoute,()=>{
-    it('returns details of batch',async()=>{
+describe(testingConstants.forms.batchesRoute, () => {
+    it('returns details of batch', async () => {
         await integrationHelper.login();
-        const res= await app.get(testingConstants.forms.batchesRoute)
+        const res = await app
+            .get(testingConstants.forms.batchesRoute)
             .set('Authorization', integrationHelper.getBearer());
         expect(res.status).to.equal(200);
         expect(res.body[0].id).to.be.a('string');
         expect(res.body[0].degree).to.be.a('string');
         expect(res.body[0].course).to.be.a('string');
-    })
-})
-describe(testingConstants.forms.activeRoutes,()=>{
-    it('returns all the active forms',async()=>{
+    });
+});
+describe(testingConstants.forms.activeRoutes, () => {
+    it('returns all the active forms', async () => {
         await integrationHelper.login();
-        const res=await app.get(testingConstants.forms.activeRoutes)
-            .set('Authorization',integrationHelper.getBearer());
+        const res = await app
+            .get(testingConstants.forms.activeRoutes)
+            .set('Authorization', integrationHelper.getBearer());
         expect(res.status).to.equal(200);
-    })
-})
-describe(testingConstants.forms.getForms,()=>{
-    it('gets details of form',async()=>{
+    });
+});
+describe(testingConstants.forms.getForms, () => {
+    it('gets details of form', async () => {
         await integrationHelper.login();
-        const args={
-            pageNumber:12,
-            limit:20
+        const args = {
+            pageNumber: 12,
+            limit: 20
         };
-        const res=await app.get(testingConstants.forms.getForms).query(args)
-            .set('Authorization',integrationHelper.getBearer());
+        const res = await app
+            .get(testingConstants.forms.getForms)
+            .query(args)
+            .set('Authorization', integrationHelper.getBearer());
         expect(res.status).to.equal(200);
         expect(res.body.count).to.be.a('number');
-    })
-})
+    });
+});
 /*
 describe(testingConstants.forms.postForms,()=>{
     let id='iua98das';

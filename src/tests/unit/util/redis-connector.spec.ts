@@ -1,9 +1,8 @@
-import 'reflect-metadata';
+import { UnitHelper } from '../../unit-helper';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const unitHelper = new UnitHelper();
 import { expect } from 'chai';
-import { init } from '../../unit-helper';
 import { RedisConnector } from '../../../shared/redis-connector';
-
-init();
 
 describe('Redis connector', () => {
     it('Should connect', async () => {

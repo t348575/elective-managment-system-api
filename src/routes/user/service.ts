@@ -11,7 +11,11 @@ import cryptoRandomString from 'crypto-random-string';
 import { Logger } from '../../shared/logger';
 import constants from '../../constants';
 import { CreateUserCSV, ResetPasswordRequest, UpdateUser } from './controller';
-import { PasswordResetFormatter, PasswordResetRepository } from '../../models/mongo/password-reset-repository';
+import {
+    IPasswordResetModel,
+    PasswordResetFormatter,
+    PasswordResetRepository
+} from '../../models/mongo/password-reset-repository';
 import { UnknownApiError } from '../../shared/error-handler';
 import { Singleton } from 'typescript-ioc';
 
@@ -35,7 +39,7 @@ export class UsersService extends BaseService<IUserModel> {
         super();
     }
 
-    public async basic(userId: string, role: scopes) {
+    public async basic(userId: string, role: scopes): Promise<IUserModel> {
         return this.repository.getPopulated(userId, role);
     }
 
@@ -99,9 +103,11 @@ export class UsersService extends BaseService<IUserModel> {
                         });
                     }
                 }
-                this.sendCreateEmails(mailList)
-                    .then()
-                    .catch((err) => Logger.error(err));
+                try {
+                    await this.sendCreateEmails(mailList);
+                } catch (err) {
+                    // eslint-disable-next-line no-empty
+                }
                 resolve(failed);
             } catch (err) {
                 reject(err);
@@ -109,9 +115,9 @@ export class UsersService extends BaseService<IUserModel> {
         });
     }
 
-    public async updatePass(id: string, password: string) {
+    public async updatePass(id: string, password: string): Promise<void> {
         // @ts-ignore
-        return this.repository.update(id, { password });
+        await this.repository.update(id, { password: await getArgonHash(password) });
     }
 
     public requestReset(userId: string): Promise<DefaultResponse> {
@@ -166,7 +172,7 @@ export class UsersService extends BaseService<IUserModel> {
         });
     }
 
-    public async validReset(code: string) {
+    public async validReset(code: string): Promise<IPasswordResetModel> {
         return this.passReset.findOne({ code });
     }
 
@@ -176,8 +182,7 @@ export class UsersService extends BaseService<IUserModel> {
                 const code = await this.passReset.findOne({ code: options.code });
                 if (code && code.id != null) {
                     await this.passReset.delete(code.id.toString());
-                    const newPass = await getArgonHash(options.password);
-                    await this.updatePass(code.user, newPass);
+                    await this.updatePass(code.user, options.password);
                     resolve({ status: true, message: 'success' });
                 } else {
                     resolve({ status: false, message: 'Reset link expired!' });
@@ -188,7 +193,7 @@ export class UsersService extends BaseService<IUserModel> {
         });
     }
 
-    public updateUser(options: UpdateUser[]) {
+    public updateUser(options: UpdateUser[]): Promise<Failed[]> {
         return new Promise<Failed[]>(async (resolve, reject) => {
             try {
                 const failed: Failed[] = [];
@@ -223,7 +228,7 @@ export class UsersService extends BaseService<IUserModel> {
         });
     }
 
-    public async getByRollNo(rollNo: string) {
+    public async getByRollNo(rollNo: string): Promise<IUserModel> {
         // @ts-ignore
         return this.repository.getPopulated((await this.repository.findOne({ rollNo })).id, 'any');
     }

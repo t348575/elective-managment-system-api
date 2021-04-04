@@ -107,7 +107,7 @@ export class UserRepository extends BaseRepository<IUserModel> {
                     .findOne({
                         _id: mongoose.Types.ObjectId(id)
                     })
-                    .select('_id rollNo name batch username classes');
+                    .select('_id rollNo name batch username classes role');
                 if (!document) throw new ApiError(constants.errorTypes.notFound);
                 return new this.formatter(document);
             }

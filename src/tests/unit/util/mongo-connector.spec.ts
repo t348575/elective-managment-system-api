@@ -1,9 +1,11 @@
-import 'reflect-metadata';
+import { UnitHelper } from '../../unit-helper';
+const unitHelper = new UnitHelper();
 import { expect } from 'chai';
-import { init } from '../../unit-helper';
 import { MongoConnector } from '../../../shared/mongo-connector';
 
-init();
+before(async () => {
+    await unitHelper.init();
+});
 
 describe('MongoDB connector', () => {
     it('Should connect', async () => {

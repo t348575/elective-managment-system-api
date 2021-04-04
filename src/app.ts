@@ -17,6 +17,7 @@ import constants from './constants';
 import useragent from 'express-useragent';
 // routes
 import './routes/controller';
+import { PrivateInjectorInit } from './routes/private-injector-init';
 
 export const app = express();
 
@@ -124,3 +125,5 @@ app.use(function errorHandler(err: unknown, req: ExRequest, res: ExResponse, nex
     }
     return res.status(500).json(err);
 });
+
+new PrivateInjectorInit();

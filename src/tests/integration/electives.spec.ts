@@ -31,7 +31,7 @@ describe(testingConstants.oauth.name, () => {
                 })
                 .set('Authorization', integrationHelper.getBearer());
             expect(res.status).to.equal(200);
-            expect(res.body.status).to.be.a('boolean');
+            expect(res.body.status).to.be.equal(true);
             expect(res.body.failed).to.be.an('array');
         });
     });

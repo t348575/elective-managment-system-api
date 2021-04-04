@@ -1,3 +1,6 @@
+import { UnitHelper } from '../../unit-helper';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const unitHelper = new UnitHelper();
 import { expect } from 'chai';
 import {
     checkNumber,
@@ -9,9 +12,6 @@ import {
     isId,
     safeParse
 } from '../../../util/general-util';
-import { init } from '../../unit-helper';
-
-init();
 
 describe('General utils', () => {
     describe('safeParse', () => {

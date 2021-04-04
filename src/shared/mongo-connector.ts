@@ -10,8 +10,9 @@ if (constants.environment === 'debug') {
 @Singleton
 export class MongoConnector {
     public db: mongoose.Connection;
-    private readonly connectionString: string = constants.mongoConnectionString;
+    private connectionString: string;
     constructor() {
+        this.connectionString = constants.mongoConnectionString;
         Logger.log(`connecting to ${constants.environment} MongoDb`);
         this.db = mongoose.createConnection(this.connectionString, {
             useNewUrlParser: true,

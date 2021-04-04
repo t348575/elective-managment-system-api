@@ -103,9 +103,11 @@ export class UserRepository extends BaseRepository<IUserModel> {
         switch (role) {
             case 'admin': {
                 // @ts-ignore
-                const document: Document = await this.documentModel.findOne({
-                    _id: mongoose.Types.ObjectId(id)
-                });
+                const document: Document = await this.documentModel
+                    .findOne({
+                        _id: mongoose.Types.ObjectId(id)
+                    })
+                    .select('_id rollNo name batch username classes role');
                 if (!document) throw new ApiError(constants.errorTypes.notFound);
                 return new this.formatter(document);
             }
@@ -116,7 +118,8 @@ export class UserRepository extends BaseRepository<IUserModel> {
                 const document: Document = await this.documentModel
                     .findOne({ _id: mongoose.Types.ObjectId(id) })
                     .populate('batch')
-                    .populate('classes');
+                    .populate('classes')
+                    .select('_id rollNo name batch username classes role');
                 if (!document) throw new ApiError(constants.errorTypes.notFound);
                 return new this.formatter(document);
             }

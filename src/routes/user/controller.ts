@@ -8,7 +8,6 @@ import { getSafeUserOmit, IUserModel, SafeUser } from '../../models/mongo/user-r
 import { ApiError, ErrorType, UnknownApiError } from '../../shared/error-handler';
 import { Readable } from 'stream';
 import * as argon2 from 'argon2';
-import { getArgonHash } from '../../util/general-util';
 import { Inject, Singleton } from 'typescript-ioc';
 
 export interface CreateUserCSV {
@@ -220,8 +219,7 @@ export class UsersController extends Controller {
                         .then(async (oldPassStatus) => {
                             if (oldPassStatus) {
                                 try {
-                                    const newPass = await getArgonHash(options.newPassword);
-                                    await this.service.updatePass(accessToken.id, newPass);
+                                    await this.service.updatePass(accessToken.id, options.newPassword);
                                     resolve({ status: true, message: 'success' });
                                 } catch (err) {
                                     reject(UnknownApiError(err));

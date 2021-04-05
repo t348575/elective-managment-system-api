@@ -3,7 +3,7 @@ import { ElectiveRepository, IElectiveModel } from '../../models/mongo/elective-
 import { BatchRepository, batchStringToModel } from '../../models/mongo/batch-repository';
 import { UserRepository } from '../../models/mongo/user-repository';
 import { checkNumber, checkString } from '../../util/general-util';
-import { electiveAttributes } from '../../models/types';
+import { electiveAttributes, Failed } from "../../models/types";
 import { BaseService } from '../../models/shared/base-service';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import { Inject, Singleton } from 'typescript-ioc';
@@ -66,60 +66,125 @@ export class ElectivesService extends BaseService<IElectiveModel> {
         });
     }
 
-    public addElectives(electives: any[]): Promise<any[]> {
-        return new Promise<any[]>(async (resolve, reject) => {
+    public addElectives(electives: any[]): Promise<Failed[]> {
+        return new Promise<Failed[]>(async (resolve, reject) => {
             try {
-                const invalid: any[] = [];
+                const failed: Failed[] = [];
                 for (const v of electives) {
                     try {
-                        if (
-                            checkString(v, 'name') &&
-                            checkString(v, 'description') &&
-                            checkString(v, 'courseCode') &&
-                            checkNumber(v, 'version', true) &&
-                            checkNumber(v, 'strength', true) &&
-                            checkString(v, 'attributes') &&
-                            checkString(v, 'batches') &&
-                            checkString(v, 'teachers')
-                        ) {
+                        if (!checkString(v, 'name')) {
+                            failed.push({
+                                item: v,
+                                reason: 'name: invalid'
+                            });
+                            continue;
+                        }
+                        if (!checkString(v, 'description')) {
+                            failed.push({
+                                item: v,
+                                reason: 'description: invalid'
+                            });
+                            continue;
+                        }
+                        if (!checkString(v, 'courseCode')) {
+                            failed.push({
+                                item: v,
+                                reason: 'courseCode: invalid'
+                            });
+                            continue;
+                        }
+                        if (!checkNumber(v, 'version', true)) {
+                            failed.push({
+                                item: v,
+                                reason: 'version: invalid'
+                            });
+                            continue;
+                        }
+                        if (!checkNumber(v, 'strength', true)) {
+                            failed.push({
+                                item: v,
+                                reason: 'strength: invalid'
+                            });
+                            continue;
+                        }
+                        if (!checkString(v, 'attributes')) {
+                            failed.push({
+                                item: v,
+                                reason: 'attributes: invalid'
+                            });
+                            continue;
+                        }
+                        if (!checkString(v, 'batches')) {
+                            failed.push({
+                                item: v,
+                                reason: 'batches: invalid'
+                            });
+                            continue;
+                        }
+                        if (!checkString(v, 'teachers')) {
+                            failed.push({
+                                item: v,
+                                reason: 'checkString(v, \'teachers\'): invalid'
+                            });
+                            continue;
+                        }
+                        try {
                             const attributes: string[] = v.attributes.split(',');
                             const batches: string[] = v.batches.split(',');
                             const teachers: string[] = v.teachers.split(',');
-                            if (
-                                attributes.length === 0 ||
-                                (attributes.length > 0 && attributes.length % 2 !== 0) ||
-                                batches.length === 0 ||
-                                teachers.length === 0
-                            ) {
-                                invalid.push(v);
-                            } else {
-                                const parsedAttributes: electiveAttributes = [];
-                                const n = attributes.length / 2;
-                                for (let i = 0; i < n; i += 2) {
-                                    parsedAttributes.push({
-                                        key: attributes[i],
-                                        value: attributes[i + 1]
-                                    });
-                                }
-                                await this.createHelper({
-                                    name: v.name,
-                                    description: v.description,
-                                    courseCode: v.courseCode,
-                                    version: parseInt(v.version, 10),
-                                    strength: parseInt(v.strength, 10),
-                                    attributes: parsedAttributes,
-                                    batches,
-                                    teachers
+                            if (attributes.length === 0 ||
+                                (attributes.length > 0 && attributes.length % 2 !== 0)) {
+                                failed.push({
+                                    item: v,
+                                    reason: 'attributes: invalid'
+                                });
+                                continue;
+                            }
+                            if (batches.length === 0) {
+                                failed.push({
+                                    item: v,
+                                    reason: 'batches: empty'
+                                });
+                                continue;
+                            }
+                            if (teachers.length === 0) {
+                                failed.push({
+                                    item: v,
+                                    reason: 'teachers: empty'
+                                });
+                                continue;
+                            }
+                            const parsedAttributes: electiveAttributes = [];
+                            const n = attributes.length / 2;
+                            for (let i = 0; i < n; i += 2) {
+                                parsedAttributes.push({
+                                    key: attributes[i],
+                                    value: attributes[i + 1]
                                 });
                             }
-                        } else {
-                            invalid.push(v);
+                            await this.createHelper({
+                                name: v.name,
+                                description: v.description,
+                                courseCode: v.courseCode,
+                                version: parseInt(v.version, 10),
+                                strength: parseInt(v.strength, 10),
+                                attributes: parsedAttributes,
+                                batches,
+                                teachers
+                            });
+                        }
+                        catch(err) {
+                            failed.push({
+                                item: v,
+                                reason: 'unknown',
+                                error: err
+                            });
                         }
                     } catch (err) {
-                        invalid.push(v);
+                        failed.push(v);
                     }
                 }
-                resolve(invalid);
+                resolve(failed);
             } catch (err) {
                 reject(err);
             }

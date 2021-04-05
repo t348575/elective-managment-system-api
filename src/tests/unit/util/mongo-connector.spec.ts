@@ -1,18 +1,22 @@
-import 'reflect-metadata';
-import {expect} from 'chai';
-import {init} from '../../unit-helper';
-import {MongoConnector} from '../../../shared/mongo-connector';
+import { UnitHelper } from '../../unit-helper';
+const unitHelper = new UnitHelper();
+import { expect } from 'chai';
+import { MongoConnector } from '../../../shared/mongo-connector';
 
-init();
+before(async () => {
+    await unitHelper.init();
+});
 
 describe('MongoDB connector', () => {
     it('Should connect', async () => {
         const connector = new MongoConnector();
-        expect(await new Promise((resolve, reject) => {
-            setTimeout(() => {
-                resolve(connector.db.readyState);
-            }, 1000);
-        })).to.be.equal(1);
+        expect(
+            await new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve(connector.db.readyState);
+                }, 1000);
+            })
+        ).to.be.equal(1);
         await connector.db.close();
     });
 });

@@ -1,20 +1,18 @@
-import {IBatchModel} from './batch-repository';
-import {IUserModel, UserRepository} from './user-repository';
-import {BaseFormatter} from '../../util/base-formatter';
-import {ProvideSingleton} from '../../shared/provide-singleton';
-import {BaseRepository} from '../shared/base-repository';
-import {Schema} from 'mongoose';
-import mongoose from 'mongoose';
-import {inject} from 'inversify';
-import {MongoConnector} from '../../shared/mongo-connector';
-import {IElectiveModel} from './elective-repository';
+import { IBatchModel } from './batch-repository';
+import { IUserModel } from './user-repository';
+import { BaseFormatter } from '../../util/base-formatter';
+import { BaseRepository } from '../shared/base-repository';
+import mongoose, { Schema } from 'mongoose';
+import { MongoConnector } from '../../shared/mongo-connector';
+import { IElectiveModel } from './elective-repository';
+import { Inject, Singleton } from 'typescript-ioc';
 
 export interface IClassModel {
-    id ?: string;
+    id?: string;
     batch: IBatchModel;
-    elective: IElectiveModel,
-    students: IUserModel[],
-    teacher: IUserModel
+    elective: IElectiveModel;
+    students: IUserModel[];
+    teacher: IUserModel;
 }
 
 export class ClassFormatter extends BaseFormatter implements IClassModel {
@@ -25,31 +23,37 @@ export class ClassFormatter extends BaseFormatter implements IClassModel {
     id: string;
     constructor(args: any) {
         super();
-        if (!(args instanceof mongoose.Types.ObjectId)) {
-            this.format(args);
-        }
-        else {
-            this.id = args.toString();
-        }
+        this.format(args);
     }
 }
 
-@ProvideSingleton(ClassRepository)
+@Singleton
 export class ClassRepository extends BaseRepository<IClassModel> {
-    protected modelName: string  = 'classes';
-    protected schema: Schema = new Schema({
-        elective: { type : mongoose.Schema.Types.ObjectId, ref: 'electives' },
-        batch: { type : mongoose.Schema.Types.ObjectId, ref: 'batches' },
-        students: [{ type : mongoose.Schema.Types.ObjectId, ref: 'users' }],
-        teacher: { type : mongoose.Schema.Types.ObjectId, ref: 'users' }
-    }, { collection: this.modelName });
+    protected modelName = 'classes';
+    protected schema: Schema = new Schema(
+        {
+            elective: { type: mongoose.Schema.Types.ObjectId, ref: 'electives' },
+            batch: { type: mongoose.Schema.Types.ObjectId, ref: 'batches' },
+            students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
+            teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'users' }
+        },
+        { collection: this.modelName }
+    );
 
     protected formatter = ClassFormatter;
-    constructor(
-        @inject(MongoConnector) protected dbConnection: MongoConnector
-    ) {
+    @Inject
+    protected dbConnection: MongoConnector;
+    constructor() {
         super();
         super.init();
+        this.schema.set('toJSON', {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
+                ret.id = ret._id;
+                delete ret._id;
+                delete ret.__v;
+            }
+        });
     }
 
     public async addClass(classObj: IClassModel): Promise<string> {
@@ -58,7 +62,7 @@ export class ClassRepository extends BaseRepository<IClassModel> {
         await session.withTransaction(async () => {
             classId = await this.create(classObj);
         });
-        await session.endSession();
+        session.endSession();
         // @ts-ignore
         return classId.id;
     }

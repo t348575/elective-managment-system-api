@@ -1,13 +1,11 @@
-import {BaseFormatter} from "../../util/base-formatter";
-import {BaseRepository} from "../shared/base-repository";
-import {Schema} from "mongoose";
-import {MongoConnector} from "../../shared/mongo-connector";
-import {inject} from "inversify";
-import {ProvideSingleton} from '../../shared/provide-singleton';
-import mongoose from 'mongoose';
+import { BaseFormatter } from '../../util/base-formatter';
+import { BaseRepository } from '../shared/base-repository';
+import { MongoConnector } from '../../shared/mongo-connector';
+import { Schema } from 'mongoose';
+import { Inject, Singleton } from 'typescript-ioc';
 
 export interface IBatchModel {
-    id ?: string;
+    id?: string;
     year: number;
     numYears: number;
     degree: string;
@@ -29,30 +27,43 @@ export class BatchFormatter extends BaseFormatter implements IBatchModel {
     id: string;
     constructor(args: any) {
         super();
-        if (!(args instanceof mongoose.Types.ObjectId)) {
-            this.format(args);
-        }
-        else {
-            this.id = args.toString();
-        }
+        this.format(args);
     }
 }
 
-@ProvideSingleton(BatchRepository)
+@Singleton
 export class BatchRepository extends BaseRepository<IBatchModel> {
     protected modelName = 'batches';
-    protected schema: Schema = new Schema({
-        year: { type: Number, required: true },
-        numYears: { type: Number, required: true },
-        degree: { type: String, required: true },
-        course: { type: String, required: true },
-        batchString: { type: String, required: true, unique: true }
-    }, { collection: this.modelName });
+    protected schema: Schema = new Schema(
+        {
+            year: { type: Number, required: true },
+            numYears: { type: Number, required: true },
+            degree: { type: String, required: true },
+            course: { type: String, required: true },
+            batchString: { type: String, required: true, unique: true }
+        },
+        { collection: this.modelName }
+    );
 
     protected formatter = BatchFormatter;
-    constructor(@inject(MongoConnector) protected dbConnection: MongoConnector) {
+    @Inject
+    protected dbConnection: MongoConnector;
+    constructor() {
         super();
         super.init();
+        this.schema.set('toJSON', {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            transform: (
+                doc: any,
+                ret: { id: any; _id: any; __v: any },
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                options: any
+            ) => {
+                ret.id = ret._id;
+                delete ret._id;
+                delete ret.__v;
+            }
+        });
     }
 }
 

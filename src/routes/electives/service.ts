@@ -1,24 +1,22 @@
-import {ProvideSingleton} from '../../shared/provide-singleton';
-import {BaseRepository} from '../../models/shared/base-repository';
-import {AddElectives} from './controller';
-import {ElectiveFormatter, ElectiveRepository, IElectiveModel} from '../../models/mongo/elective-repository';
-import {inject} from 'inversify';
-import {BatchRepository, batchStringToModel} from '../../models/mongo/batch-repository';
-import {UserRepository} from '../../models/mongo/user-repository';
-import {checkNumber, checkString, cleanQuery} from '../../util/general-util';
-import {electiveAttributes} from '../../models/types';
-import {BaseService} from '../../models/shared/base-service';
-import {PaginationModel} from '../../models/shared/pagination-model';
-import mongoose from 'mongoose';
+import { AddElectives } from './controller';
+import { ElectiveRepository, IElectiveModel } from '../../models/mongo/elective-repository';
+import { BatchRepository, batchStringToModel } from '../../models/mongo/batch-repository';
+import { UserRepository } from '../../models/mongo/user-repository';
+import { checkNumber, checkString } from '../../util/general-util';
+import { electiveAttributes, Failed } from "../../models/types";
+import { BaseService } from '../../models/shared/base-service';
+import { PaginationModel } from '../../models/shared/pagination-model';
+import { Inject, Singleton } from 'typescript-ioc';
 
-@ProvideSingleton(ElectivesService)
+@Singleton
 export class ElectivesService extends BaseService<IElectiveModel> {
-
-    constructor(
-        @inject(ElectiveRepository) protected repository: ElectiveRepository,
-        @inject(BatchRepository) protected batchRepository: BatchRepository,
-        @inject(UserRepository) protected userRepository: UserRepository
-    ) {
+    @Inject
+    protected repository: ElectiveRepository;
+    @Inject
+    protected batchRepository: BatchRepository;
+    @Inject
+    protected userRepository: UserRepository;
+    constructor() {
         super();
     }
 
@@ -36,15 +34,22 @@ export class ElectivesService extends BaseService<IElectiveModel> {
                     course: batch.course,
                     batchString: batch.batchString
                 });
-            }
-            catch (err) {}
+                // eslint-disable-next-line no-empty
+            } catch (err) {}
             // @ts-ignore
             batchIds.push((await this.batchRepository.findOne({ batchString: batch.batchString })).id.toString());
         }
         // @ts-ignore
         for (const v of elective.teachers) {
-            // @ts-ignore
-            teacherIds.push((await this.userRepository.findOne({ role: 'teacher', rollNo: v.toLowerCase() })).id.toString());
+            teacherIds.push(
+                // @ts-ignore
+                (
+                    await this.userRepository.findOne({
+                        role: 'teacher',
+                        rollNo: v.toLowerCase()
+                    })
+                ).id.toString()
+            );
         }
         await this.repository.create({
             name: elective.name,
@@ -61,60 +66,126 @@ export class ElectivesService extends BaseService<IElectiveModel> {
         });
     }
 
-    public addElectives(electives: any[]): Promise<any[]> {
-        return new Promise<any[]>(async (resolve, reject) => {
+    public addElectives(electives: any[]): Promise<Failed[]> {
+        return new Promise<Failed[]>(async (resolve, reject) => {
             try {
-                const invalid: any[] = [];
+                const failed: Failed[] = [];
                 for (const v of electives) {
                     try {
-                        if (
-                            checkString(v, 'name') &&
-                            checkString(v, 'description') &&
-                            checkString(v, 'courseCode') &&
-                            checkNumber(v, 'version', true) &&
-                            checkNumber(v, 'strength', true) &&
-                            checkString(v, 'attributes') &&
-                            checkString(v, 'batches') &&
-                            checkString(v, 'teachers')
-                        ) {
+                        if (!checkString(v, 'name')) {
+                            failed.push({
+                                item: v,
+                                reason: 'name: invalid'
+                            });
+                            continue;
+                        }
+                        if (!checkString(v, 'description')) {
+                            failed.push({
+                                item: v,
+                                reason: 'description: invalid'
+                            });
+                            continue;
+                        }
+                        if (!checkString(v, 'courseCode')) {
+                            failed.push({
+                                item: v,
+                                reason: 'courseCode: invalid'
+                            });
+                            continue;
+                        }
+                        if (!checkNumber(v, 'version', true)) {
+                            failed.push({
+                                item: v,
+                                reason: 'version: invalid'
+                            });
+                            continue;
+                        }
+                        if (!checkNumber(v, 'strength', true)) {
+                            failed.push({
+                                item: v,
+                                reason: 'strength: invalid'
+                            });
+                            continue;
+                        }
+                        if (!checkString(v, 'attributes')) {
+                            failed.push({
+                                item: v,
+                                reason: 'attributes: invalid'
+                            });
+                            continue;
+                        }
+                        if (!checkString(v, 'batches')) {
+                            failed.push({
+                                item: v,
+                                reason: 'batches: invalid'
+                            });
+                            continue;
+                        }
+                        if (!checkString(v, 'teachers')) {
+                            failed.push({
+                                item: v,
+                                reason: 'checkString(v, \'teachers\'): invalid'
+                            });
+                            continue;
+                        }
+                        try {
                             const attributes: string[] = v.attributes.split(',');
                             const batches: string[] = v.batches.split(',');
                             const teachers: string[] = v.teachers.split(',');
-                            if (attributes.length === 0 || (attributes.length > 0 && attributes.length % 2 !== 0) || batches.length === 0 || teachers.length === 0) {
-                                invalid.push(v);
+                            if (attributes.length === 0 ||
+                                (attributes.length > 0 && attributes.length % 2 !== 0)) {
+                                failed.push({
+                                    item: v,
+                                    reason: 'attributes: invalid'
+                                });
+                                continue;
                             }
-                            else {
-                                const parsedAttributes: electiveAttributes = [];
-                                const n = attributes.length / 2;
-                                for (let i = 0; i < n; i += 2) {
-                                    parsedAttributes.push({
-                                        key: attributes[i],
-                                        value: attributes[i + 1]
-                                    });
-                                }
-                                await this.createHelper({
-                                    name: v.name,
-                                    description: v.description,
-                                    courseCode: v.courseCode,
-                                    version: parseInt(v.version, 10),
-                                    strength: parseInt(v.strength, 10),
-                                    attributes: parsedAttributes,
-                                    batches,
-                                    teachers
+                            if (batches.length === 0) {
+                                failed.push({
+                                    item: v,
+                                    reason: 'batches: empty'
+                                });
+                                continue;
+                            }
+                            if (teachers.length === 0) {
+                                failed.push({
+                                    item: v,
+                                    reason: 'teachers: empty'
+                                });
+                                continue;
+                            }
+                            const parsedAttributes: electiveAttributes = [];
+                            const n = attributes.length / 2;
+                            for (let i = 0; i < n; i += 2) {
+                                parsedAttributes.push({
+                                    key: attributes[i],
+                                    value: attributes[i + 1]
                                 });
                             }
+                            await this.createHelper({
+                                name: v.name,
+                                description: v.description,
+                                courseCode: v.courseCode,
+                                version: parseInt(v.version, 10),
+                                strength: parseInt(v.strength, 10),
+                                attributes: parsedAttributes,
+                                batches,
+                                teachers
+                            });
                         }
-                        else {
-                            invalid.push(v);
+                        catch(err) {
+                            failed.push({
+                                item: v,
+                                reason: 'unknown',
+                                error: err
+                            });
                         }
-                    }
-                    catch (err) {
-                        invalid.push(v);
+                    } catch (err) {
+                        failed.push(v);
                     }
                 }
-                resolve(invalid);
-            }
-            catch (err) {
+                resolve(failed);
+            } catch (err) {
                 reject(err);
             }
         });
@@ -128,24 +199,28 @@ export class ElectivesService extends BaseService<IElectiveModel> {
         query: any
     ): Promise<PaginationModel<Entity>> {
         const skip: number = (Math.max(1, page) - 1) * limit;
+        // eslint-disable-next-line prefer-const
         let [count, docs] = await Promise.all([
             this.repository.count(query),
             this.repository.findAndPopulate(skip, limit, sort, query)
         ]);
-        const fieldArray = (fields || '').split(',').map(field => field.trim()).filter(Boolean);
-        if (fieldArray.length) docs = docs.map((d: { [x: string]: any; }) => {
-            const attrs: any = {};
-            // @ts-ignore
-            fieldArray.forEach(f => attrs[f] = d[f]);
-            return attrs;
-        });
+        const fieldArray = (fields || '')
+            .split(',')
+            .map((field) => field.trim())
+            .filter(Boolean);
+        if (fieldArray.length)
+            docs = docs.map((d: { [x: string]: any }) => {
+                const attrs: any = {};
+                // @ts-ignore
+                fieldArray.forEach((f) => (attrs[f] = d[f]));
+                return attrs;
+            });
         return new PaginationModel<Entity>({
             count,
             page,
             limit,
             docs,
-            totalPages: Math.ceil(count / limit),
+            totalPages: Math.ceil(count / limit)
         });
     }
 }
-

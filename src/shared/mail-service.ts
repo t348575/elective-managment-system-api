@@ -1,13 +1,14 @@
-import * as nodemailer from 'nodemailer';
-import {ProvideSingleton} from './provide-singleton';
 import constants from '../constants';
-import Mail, {Attachment} from 'nodemailer/lib/mailer';
-import {TransportOptions} from 'nodemailer';
-import {SentMessageInfo} from 'nodemailer/lib/smtp-transport';
+import Mail, { Attachment } from 'nodemailer/lib/mailer';
+import nodemailer, { TransportOptions } from 'nodemailer';
+import { SentMessageInfo } from 'nodemailer/lib/smtp-transport';
+import { Logger } from './logger';
+import { Singleton } from 'typescript-ioc';
 
-@ProvideSingleton(MailService)
+@Singleton
 export class MailService {
     private transporter: Mail;
+
     constructor() {
         this.transporter = nodemailer.createTransport({
             host: constants.mailAccess.host,
@@ -22,10 +23,10 @@ export class MailService {
             },
             sendingRate: 2
         } as TransportOptions);
-        console.log('Mail service initialized');
+        Logger.log('Mail service initialized');
     }
 
-    async sendEmail(to: string | string[], subject: string, html: string, text ?: string, attachments ?: Attachment[]) {
+    async sendEmail(to: string | string[], subject: string, html: string, text?: string, attachments?: Attachment[]) {
         if (to instanceof Array) {
             to = to.join(', ');
         }
@@ -39,15 +40,21 @@ export class MailService {
         });
     }
 
-    replaceAndSendEmail(to: string[], replaceFrom: any[], subject: string, html: string, text ?: string, attachments ?: Attachment[]): Promise<SentMessageInfo[]> {
+    replaceAndSendEmail(
+        to: string[],
+        replaceFrom: any[],
+        subject: string,
+        html: string,
+        text?: string,
+        attachments?: Attachment[]
+    ): Promise<SentMessageInfo[]> {
         return new Promise<SentMessageInfo[]>(async (resolve, reject) => {
             if (to.length !== replaceFrom.length || to.length === 0) {
                 return reject(new Error('Length of replace and to array do not match'));
-            }
-            else {
+            } else {
                 const returnItems: SentMessageInfo[] = [];
                 const replaceRegex: RegExp[] = [];
-                const keys = Object.keys(replaceFrom[0])
+                const keys = Object.keys(replaceFrom[0]);
                 for (const v of keys) {
                     replaceRegex.push(new RegExp(`{{${v}}}`, 'gi'));
                 }
@@ -63,14 +70,16 @@ export class MailService {
                                 replaceText = replaceText.replace(replaceRegex[j], v[k]);
                             }
                         }
-                        returnItems.push(await this.transporter.sendMail({
-                            from: `"${constants.mailAccess.name}" <${constants.mailAccess.username}>`,
-                            to: to[i],
-                            subject: replaceSubject,
-                            text: replaceText,
-                            html: replaceHTML,
-                            attachments: attachments
-                        }));
+                        returnItems.push(
+                            await this.transporter.sendMail({
+                                from: `"${constants.mailAccess.name}" <${constants.mailAccess.username}>`,
+                                to: to[i],
+                                subject: replaceSubject,
+                                text: replaceText,
+                                html: replaceHTML,
+                                attachments: attachments
+                            })
+                        );
                     } catch (err) {
                         returnItems.push(err);
                     }

@@ -1,23 +1,14 @@
-import {Body, Controller, Delete, Get, Post, Put, Query, Request, Response, Route, Security, Tags} from 'tsoa';
-import {ProvideSingleton} from '../../shared/provide-singleton';
-import {inject} from 'inversify';
-import {ElectivesService} from './service';
-import {DefaultActionResponse, electiveAttributes, jwtToken} from '../../models/types';
-import {ApiError, ErrorType, UnknownApiError} from '../../shared/error-handler';
-import {Request as ExRequest} from 'express';
-import {Readable} from 'stream';
+import { Body, Controller, Delete, Get, Post, Query, Request, Response, Route, Security, Tags } from 'tsoa';
+import { ElectivesService } from './service';
+import { DefaultActionResponse, electiveAttributes } from '../../models/types';
+import { ApiError, ErrorType, UnknownApiError } from '../../shared/error-handler';
+import { Request as ExRequest } from 'express';
+import { Readable } from 'stream';
 import csv from 'csvtojson';
-import {PaginationModel} from '../../models/shared/pagination-model';
-import {ElectiveFormatter, IElectiveModel} from '../../models/mongo/elective-repository';
-
-const scopeArray: string[] = ['teacher', 'admin', 'student'];
-
+import { PaginationModel } from '../../models/shared/pagination-model';
+import { IElectiveModel } from '../../models/mongo/elective-repository';
+import { Inject, Singleton } from 'typescript-ioc';
 const adminOnly: string[] = ['admin'];
-
-const studentOnly: string[] = ['student'];
-
-const teacherOrStudent: string[] = ['student', 'teacher'];
-
 const teacherOrAdmin: string[] = ['admin', 'teacher'];
 
 export interface AddElectives {
@@ -55,10 +46,11 @@ export interface UpdateElectiveOptions {
 
 @Tags('electives')
 @Route('electives')
-@ProvideSingleton(ElectivesController)
+@Singleton
 export class ElectivesController extends Controller {
-
-    constructor(@inject(ElectivesService) private service: ElectivesService) {
+    @Inject
+    private service: ElectivesService;
+    constructor() {
         super();
     }
 
@@ -67,9 +59,7 @@ export class ElectivesController extends Controller {
     @Response<ErrorType>(401, 'ValidationError')
     @Response<ErrorType>(500, 'Unknown server error')
     @Response<DefaultActionResponse>(200, 'Success')
-    public addElectives(
-        @Body() options: AddElectives[]
-    ) {
+    public addElectives(@Body() options: AddElectives[]) {
         return new Promise<DefaultActionResponse>(async (resolve, reject) => {
             try {
                 for (const [i, v] of options.entries()) {
@@ -80,7 +70,10 @@ export class ElectivesController extends Controller {
                     // @ts-ignore
                     options[i].teachers = v.teachers.join(',');
                 }
-                resolve({ status: true, failed: await this.service.addElectives(options) });
+                resolve({
+                    status: true,
+                    failed: await this.service.addElectives(options)
+                });
             } catch (err) {
                 reject(UnknownApiError(err));
             }
@@ -92,26 +85,38 @@ export class ElectivesController extends Controller {
     @Response<ErrorType>(401, 'ValidationError')
     @Response<ErrorType>(500, 'Unknown server error')
     @Response<DefaultActionResponse>(200, 'Success')
-    public addElectivesCSV(
-        @Request() request: ExRequest
-    ) {
+    public addElectivesCSV(@Request() request: ExRequest) {
         return new Promise<DefaultActionResponse>(async (resolve, reject) => {
             try {
                 if (request.file === undefined) {
-                    reject(new ApiError({ name: 'form_error', statusCode: 401, message: 'Not a valid multipart form' }));
-                }
-                else {
+                    reject(
+                        new ApiError({
+                            name: 'form_error',
+                            statusCode: 401,
+                            message: 'Not a valid multipart form'
+                        })
+                    );
+                } else {
                     if (request.file.originalname.indexOf('.csv') > -1) {
                         const inputStream = new Readable();
                         inputStream.push(request.file.buffer);
                         inputStream.push(null);
-                        csv().fromStream(inputStream)
+                        csv()
+                            .fromStream(inputStream)
                             .then(async (obj) => {
-                                resolve({ status: true, failed: await this.service.addElectives(obj) });
+                                resolve({
+                                    status: true,
+                                    failed: await this.service.addElectives(obj)
+                                });
                             });
-                    }
-                    else {
-                        reject(new ApiError({ name: 'file_type', statusCode: 402, message: 'Improper file type'}))
+                    } else {
+                        reject(
+                            new ApiError({
+                                name: 'file_type',
+                                statusCode: 402,
+                                message: 'Improper file type'
+                            })
+                        );
                     }
                 }
             } catch (err) {
@@ -119,7 +124,6 @@ export class ElectivesController extends Controller {
             }
         });
     }
-
 
     /**
      * @param fields csv of fields from return schema eg: name,description,courseCode
@@ -131,11 +135,10 @@ export class ElectivesController extends Controller {
     public async getElectives(
         @Query() pageNumber: number,
         @Query() limit: number,
-        @Query() fields ?: string,
-        @Query() sortBy ?: string,
-        @Query() courseCode ?: string,
-        @Query() name ?: string
-
+        @Query() fields?: string,
+        @Query() sortBy?: string,
+        @Query() courseCode?: string,
+        @Query() name?: string
     ): Promise<PaginationModel<IElectiveModel>> {
         const queryObj = {};
         if (name || courseCode) {
@@ -148,16 +151,20 @@ export class ElectivesController extends Controller {
                 queryObj.courseCode = courseCode;
             }
         }
-        return this.service.getPaginated<IElectiveModel>(pageNumber, limit, fields || '', sortBy || '{"name":"asc"}', queryObj);
+        return this.service.getPaginated<IElectiveModel>(
+            pageNumber,
+            limit,
+            fields || '',
+            sortBy || '{"name":"asc"}',
+            queryObj
+        );
     }
 
     @Post('')
     @Security('jwt', teacherOrAdmin)
     @Response<ErrorType>(401, 'ValidationError')
     @Response<ErrorType>(500, 'Unknown server error')
-    public async updateElective(
-        @Body() options: UpdateElectiveOptions
-    ) {
+    public async updateElective(@Body() options: UpdateElectiveOptions) {
         // @ts-ignore
         options._id = options.id;
         // @ts-ignore
@@ -170,9 +177,7 @@ export class ElectivesController extends Controller {
     @Security('jwt', adminOnly)
     @Response<ErrorType>(401, 'ValidationError')
     @Response<ErrorType>(500, 'Unknown server error')
-    public async deleteElective(
-        @Query() id: string
-    ) {
+    public async deleteElective(@Query() id: string) {
         return this.service.delete(id);
     }
 

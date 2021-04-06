@@ -12,5 +12,4 @@ jobs:
         with:
           node-version: 15
       - run: yarn install
-      - run: yarn test
-      - run: yarn build:prod
+      - run: yarn test:unit

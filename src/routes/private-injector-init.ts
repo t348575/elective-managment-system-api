@@ -3,7 +3,6 @@ import { Inject } from 'typescript-ioc';
 import { BatchRepository } from '../models/mongo/batch-repository';
 import { ElectiveRepository } from '../models/mongo/elective-repository';
 import { UserRepository } from '../models/mongo/user-repository';
-import { Get } from 'tsoa';
 import { PasswordResetRepository } from '../models/mongo/password-reset-repository';
 import { ClassRepository } from '../models/mongo/class-repository';
 import { FormsRepository } from '../models/mongo/form-repository';

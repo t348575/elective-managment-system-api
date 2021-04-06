@@ -4,6 +4,7 @@ import https from 'https';
 import dotenv from 'dotenv';
 import constants from './constants';
 import { Logger } from './shared/logger';
+import { setConstants } from "./util/general-util";
 dotenv.config({
     path: path.resolve(process.cwd(), process.env.NODE_ENV + '.env')
 });
@@ -12,7 +13,6 @@ setConstants();
 const port = parseInt(process.env.port, 10) || 8080;
 Logger.init();
 import { app } from './app';
-import { setConstants } from "./util/general-util";
 let server: http.Server | https.Server;
 if (constants.environment === 'test') {
     server = http.createServer(app);

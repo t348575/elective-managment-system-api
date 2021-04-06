@@ -3,6 +3,16 @@ on:
   push:
     branches: [master]
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-node@master
+        with:
+          node-version: 15
+      - run: yarn install
+      - run: yarn build:prod
+      - run: yarn test:unit
   deploy:
     runs-on: ubuntu-latest
     steps:
@@ -14,8 +24,8 @@ jobs:
       - run: docker build -t amrita-elective.tk:5000/api .
       - run: docker push amrita-elective.tk:5000/api
       - uses: fjogeleit/http-request-action@v1.8.0
+        id: startContainer
         with:
-          id: startContainer
           url: 'http://amrita-elective.tk:4000/new-api-container'
           method: 'GET'
           timeout: 300000,

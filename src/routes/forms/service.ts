@@ -307,7 +307,7 @@ export class FormsService extends BaseService<IFormModel> {
                         }
                     });
                     try {
-                        const link = await this.downloadService.addTemporaryUserLink([userId], filePath);
+                        const link = await this.downloadService.addTemporaryUserLink(userId, filePath);
                         resolve({
                             status: failed.length === 0,
                             downloadUri: `${constants.baseUrl}/downloads/temp?file=${link}`,

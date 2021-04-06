@@ -4,6 +4,7 @@ import testingConstants from './testing-constants';
 import { Base64 } from 'js-base64';
 import { sha256 } from 'js-sha256';
 import * as qs from 'query-string';
+import { setConstants } from "../server";
 
 export class IntegrationHelper {
     public app: SuperTest<any>;
@@ -13,6 +14,7 @@ export class IntegrationHelper {
     public refresh_token: string;
 
     constructor(app: SuperTest<any>) {
+        setConstants();
         this.app = app;
     }
 

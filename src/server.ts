@@ -1,13 +1,15 @@
 import * as path from 'path';
-import fs from 'fs';
 import http from 'http';
 import https from 'https';
-import { ConfigModel } from './models/config-model';
+import dotenv from 'dotenv';
 import constants from './constants';
 import { Logger } from './shared/logger';
-const config: ConfigModel = JSON.parse(fs.readFileSync(path.join(__dirname, './../resources/config.json')).toString());
-const port = config.port || 8080;
+dotenv.config({
+    path: path.resolve(process.cwd(), process.env.NODE_ENV + '.env')
+});
 setConstants();
+// @ts-ignore
+const port = parseInt(process.env.port, 10) || 8080;
 Logger.init();
 import { app } from './app';
 let server: http.Server | https.Server;
@@ -24,7 +26,6 @@ if (constants.environment === 'test') {
         app
     );
 }
-
 process.on('SIGINT', shutdown);
 function shutdown() {
     Logger.log('Graceful shutdown...');
@@ -32,23 +33,32 @@ function shutdown() {
     process.exit(0);
 }
 
-server.listen(port, () => Logger.log(`App listening at ${config.serverAddress}:${port}`));
+server.listen(port, () => Logger.log(`App listening at ${process.env.serverAddress}:${port}`));
 
 function setConstants() {
-    constants.port = config.port;
-    constants.privateKey = fs.readFileSync(path.resolve(config.privateKey)).toString();
-    constants.publicKey = fs.readFileSync(path.resolve(config.publicKey)).toString();
+    // @ts-ignore
+    constants.port = parseInt(process.env.port, 10);
+    // @ts-ignore
+    constants.privateKey = Buffer.from(process.env.privateKey, 'base64').toString();
+    // @ts-ignore
+    constants.publicKey = Buffer.from(process.env.publicKey, 'base64').toString();
 
-    constants.vapidKeys.privateKey = config.vapidKeys.privateKey;
-    constants.vapidKeys.publicKey = config.vapidKeys.publicKey;
+    // @ts-ignore
+    constants.vapidKeys.privateKey = process.env.vapidKeyPrivateKey;
+    // @ts-ignore
+    constants.vapidKeys.publicKey = process.env.vapidKeyPublicKey;
 
-    constants.mailAccess.host = config.mailHost;
-    constants.mailAccess.username = config.mailUsername;
-    constants.mailAccess.password = config.mailPassword;
-    constants.mailAccess.name = config.mailName;
+    // @ts-ignore
+    constants.mailAccess.host = process.env.mailHost;
+    // @ts-ignore
+    constants.mailAccess.username = process.env.mailUsername;
+    // @ts-ignore
+    constants.mailAccess.password = process.env.mailPassword;
+    // @ts-ignore
+    constants.mailAccess.name = process.env.mailName;
 
     // @ts-ignore
     constants.environment = process.env.NODE_ENV;
 }
 
-export { server };
+export { server, setConstants };

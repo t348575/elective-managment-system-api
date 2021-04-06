@@ -7,9 +7,9 @@
 	"main": "dist/server.js",
 	"scripts": {
 		"test": "yarn test:unit && yarn test:integration",
-		"test:unit": "yarn env:test nyc --silent mocha -r ts-node/register ./src/tests/unit/**/*.spec.ts -t 30000",
-		"test:integration": "yarn build:test && yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
-		"test:integration:quick": "yarn env:test mocha -t 30000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
+		"test:unit": "yarn env:test nyc --silent mocha -r ts-node/register ./src/tests/unit/**/*.spec.ts -t 100000",
+		"test:integration": "yarn build:test && yarn env:test mocha -t 100000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
+		"test:integration:quick": "yarn env:test mocha -t 100000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
 		"start": "yarn start:dev",
 		"start:dev": "yarn env:dev concurrently \"yarn build:tsoa && ts-node-dev --respawn ./src/server.ts --rs --watch 'src' --debug\" \"nodemon\"",
 		"start:prod": "yarn env:prod node ./build/src/server.js",

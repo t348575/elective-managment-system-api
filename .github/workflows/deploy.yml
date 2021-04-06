@@ -8,8 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: sudo rm -rf /etc/docker/daemon.json
-      - run: echo '{"experimental":true,\n' | sudo tee -a /etc/docker/daemon.json
-      - run: echo '"insecure-registries":["amrita-elective.tk:5000"]}\n' | sudo tee -a /etc/docker/daemon.json
+      - run: echo '{"experimental":false,"insecure-registries":["amrita-elective.tk:5000"]}\n' | sudo tee -a /etc/docker/daemon.json
       - run: sudo systemctl restart docker
       - uses: docker/setup-buildx-action@v1
       - run: docker build -t amrita-elective.tk:5000/api .

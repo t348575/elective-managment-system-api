@@ -29,8 +29,7 @@
 		"clean": "shx rm -rf build && shx mkdir build && shx mkdir build\\src && shx mkdir build\\resources",
 		"copy-flutter": "shx cp -r /var/lib/jenkins/workspace/elective-management-system-site/dist/elective-management-system-site/* /server/resources/public",
 		"copy": "shx cp -r ./resources ./build",
-		"copy-server": "shx cp -r /server/resources /server/build",
-		"postinstall": "yarn clean && yarn build:prod:jenkins"
+		"copy-server": "shx cp -r /server/resources /server/build"
 	},
 	"nyc": {
 		"extends": "@istanbuljs/nyc-config-typescript",

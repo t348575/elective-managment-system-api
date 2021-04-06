@@ -12,6 +12,7 @@ setConstants();
 const port = parseInt(process.env.port, 10) || 8080;
 Logger.init();
 import { app } from './app';
+import { setConstants } from "./util/general-util";
 let server: http.Server | https.Server;
 if (constants.environment === 'test') {
     server = http.createServer(app);
@@ -35,30 +36,4 @@ function shutdown() {
 
 server.listen(port, () => Logger.log(`App listening at ${process.env.serverAddress}:${port}`));
 
-function setConstants() {
-    // @ts-ignore
-    constants.port = parseInt(process.env.port, 10);
-    // @ts-ignore
-    constants.privateKey = Buffer.from(process.env.privateKey, 'base64').toString();
-    // @ts-ignore
-    constants.publicKey = Buffer.from(process.env.publicKey, 'base64').toString();
-
-    // @ts-ignore
-    constants.vapidKeys.privateKey = process.env.vapidKeyPrivateKey;
-    // @ts-ignore
-    constants.vapidKeys.publicKey = process.env.vapidKeyPublicKey;
-
-    // @ts-ignore
-    constants.mailAccess.host = process.env.mailHost;
-    // @ts-ignore
-    constants.mailAccess.username = process.env.mailUsername;
-    // @ts-ignore
-    constants.mailAccess.password = process.env.mailPassword;
-    // @ts-ignore
-    constants.mailAccess.name = process.env.mailName;
-
-    // @ts-ignore
-    constants.environment = process.env.NODE_ENV;
-}
-
-export { server, setConstants };
+export { server };

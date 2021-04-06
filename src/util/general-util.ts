@@ -174,3 +174,29 @@ export function chunkArray(arr: any[], n: number) {
     }
     return out;
 }
+
+export function setConstants() {
+    // @ts-ignore
+    constants.port = parseInt(process.env.port, 10);
+    // @ts-ignore
+    constants.privateKey = Buffer.from(process.env.privateKey, 'base64').toString();
+    // @ts-ignore
+    constants.publicKey = Buffer.from(process.env.publicKey, 'base64').toString();
+
+    // @ts-ignore
+    constants.vapidKeys.privateKey = process.env.vapidKeyPrivateKey;
+    // @ts-ignore
+    constants.vapidKeys.publicKey = process.env.vapidKeyPublicKey;
+
+    // @ts-ignore
+    constants.mailAccess.host = process.env.mailHost;
+    // @ts-ignore
+    constants.mailAccess.username = process.env.mailUsername;
+    // @ts-ignore
+    constants.mailAccess.password = process.env.mailPassword;
+    // @ts-ignore
+    constants.mailAccess.name = process.env.mailName;
+
+    // @ts-ignore
+    constants.environment = process.env.NODE_ENV;
+}

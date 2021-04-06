@@ -4,8 +4,9 @@ import { scopes } from '../../../models/types';
 import { Container } from 'typescript-ioc';
 import { BatchRepository, batchStringToModel } from '../../../models/mongo/batch-repository';
 import { MongoConnector } from '../../../shared/mongo-connector';
-export function getMockUser(scope: scopes, batch?: string): UserFormatter {
-    const rollNo = getRollNo(scope);
+let globalI = 0;
+export function getMockUser(scope: scopes, num: number, batch?: string): UserFormatter {
+    const rollNo = getRollNo(scope, num);
     return new UserFormatter({
         name: faker.name.firstName(),
         username: getUsername(scope, rollNo),
@@ -29,14 +30,14 @@ function getUsername(scope: scopes, rollNo: string): string {
         }
     }
 }
-function getRollNo(scope: scopes): string {
+function getRollNo(scope: scopes, num: number): string {
     switch (scope) {
         case 'student': {
-            return `cb.en.u4cse${faker.datatype.number()}`;
+            return `cb.en.u4cse${globalI}${num}`;
         }
         case 'admin':
         case 'teacher': {
-            return `${faker.datatype.number()}`;
+            return `${globalI}${num}`;
         }
     }
 }
@@ -68,38 +69,42 @@ function getMockBatches(count: number): string[] {
 }
 
 export async function setupMockUsers(): Promise<IUserModel[]> {
+    globalI++;
     const userRepository = Container.get(UserRepository);
     const users: IUserModel[] = [];
     const batches = await setupMockBatches(5);
-    for (let i = 0, j = 0; i < 50; i++) {
-        users.push(await userRepository.create(getMockUser('student', batches[j])));
+    let i, j;
+    for (i = 0, j = 0; i < 50; i++) {
+        users.push(await userRepository.create(getMockUser('student', i, batches[j])));
         if (i % 10 === 0) {
             j++;
         }
     }
-    for (let i = 0; i < 5; i++) {
-        users.push(await userRepository.create(getMockUser('teacher')));
+    for (; i < 55; i++) {
+        users.push(await userRepository.create(getMockUser('teacher', i)));
     }
-    for (let i = 0; i < 2; i++) {
-        users.push(await userRepository.create(getMockUser('admin')));
+    for (; i < 57; i++) {
+        users.push(await userRepository.create(getMockUser('admin', i)));
     }
     return users;
 }
 
 export function getMockUsers(): IUserModel[] {
+    globalI++;
     const users: IUserModel[] = [];
     const batches = getMockBatches(5);
-    for (let i = 0, j = 0; i < 50; i++) {
-        users.push(getMockUser('student', batches[j]));
+    let i, j;
+    for (i = 0, j = 0; i < 50; i++) {
+        users.push(getMockUser('student', i, batches[j]));
         if ((i + 1) % 10 === 0) {
             j++;
         }
     }
-    for (let i = 0; i < 5; i++) {
-        users.push(getMockUser('teacher'));
+    for (; i < 55; i++) {
+        users.push(getMockUser('teacher', i));
     }
-    for (let i = 0; i < 2; i++) {
-        users.push(getMockUser('admin'));
+    for (; i < 57; i++) {
+        users.push(getMockUser('admin', i));
     }
     return users;
 }

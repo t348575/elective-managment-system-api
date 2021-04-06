@@ -77,10 +77,6 @@ app.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
     );
 });
 
-app.use('/swagger', (req, res) => {
-    return res.send(fs.readFileSync(path.join(__dirname, 'swagger.json')));
-});
-
 app.use('/app', express.static(path.resolve(__dirname, './../resources/public')));
 
 RegisterRoutes(app);

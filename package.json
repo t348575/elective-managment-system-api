@@ -17,7 +17,7 @@
 		"build:swagger": "tsoa spec --host \"amrita-elective.tk\"",
 		"build:tsoa": "yarn clean && yarn build:routes && yarn build:swagger && yarn copy",
 		"build:test": "yarn build:routes && tsc",
-		"build:prod": "yarn build:routes && yarn build:swagger && tsc && yarn copy",
+		"build:prod": "yarn clean && yarn build:routes && yarn build:swagger && tsc",
 		"build:prod:jenkins": "yarn build:routes && yarn build:swagger && tsc",
 		"build": "yarn build:prod",
 		"lint": "eslint . --ext .ts --quiet",

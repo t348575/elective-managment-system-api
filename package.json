@@ -26,7 +26,7 @@
 		"env:dev": "cross-env NODE_ENV=debug",
 		"env:test": "cross-env NODE_ENV=test",
 		"env:prod": "cross-env NODE_ENV=production",
-		"clean": "shx rm -rf build && shx mkdir build && shx mkdir build\\src && shx mkdir build\\resources",
+		"clean": "shx rm -rf build && shx mkdir build && shx mkdir -p build\\src && shx mkdir -p build\\resources",
 		"copy-flutter": "shx cp -r /var/lib/jenkins/workspace/elective-management-system-site/dist/elective-management-system-site/* /server/resources/public",
 		"copy": "shx cp -r ./resources ./build",
 		"copy-server": "shx cp -r /server/resources /server/build"

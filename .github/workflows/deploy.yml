@@ -7,6 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - run: sudo rm -rf /etc/docker/daemon.json
       - run: echo '{"experimental":true,\n' | sudo tee -a /etc/docker/daemon.json
       - run: echo '"insecure-registries":["amrita-elective.tk:5000"]}\n' | sudo tee -a /etc/docker/daemon.json
       - run: sudo systemctl restart docker

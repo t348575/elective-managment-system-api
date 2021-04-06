@@ -118,3 +118,5 @@ sonar-project.properties
 .scannerwork/report-task.txt
 .scannerwork/.sonar_lock
 .scannerwork
+debug.env
+production.env

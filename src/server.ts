@@ -1,6 +1,7 @@
 import * as path from 'path';
 import fs from 'fs';
 import http from 'http';
+import https from 'https';
 import { ConfigModel } from './models/config-model';
 import constants from './constants';
 import { Logger } from './shared/logger';
@@ -9,8 +10,8 @@ const port = config.port || 8080;
 setConstants();
 Logger.init();
 import { app } from './app';
-const server: http.Server = http.createServer(app);
-/*if (constants.environment === 'test') {
+let server: http.Server | https.Server;
+if (constants.environment === 'test') {
     server = http.createServer(app);
 } else {
     server = https.createServer(
@@ -22,7 +23,7 @@ const server: http.Server = http.createServer(app);
         },
         app
     );
-}*/
+}
 
 process.on('SIGINT', shutdown);
 function shutdown() {

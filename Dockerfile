@@ -4,11 +4,11 @@ WORKDIR ./
 
 COPY package*.json ./
 
+COPY . .
+
 RUN yarn install
 
 RUN yarn build:prod
-
-COPY . .
 
 EXPOSE 3000
 

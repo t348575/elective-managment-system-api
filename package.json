@@ -38,7 +38,7 @@
 		],
 		"sourceMap": true,
 		"instrument": true,
-		"all": true,
+		"all": false,
 		"exclude": [
 			"src/tests/**",
 			"src/ioc.ts",

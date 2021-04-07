@@ -7,7 +7,7 @@
 	"main": "dist/server.js",
 	"scripts": {
 		"test": "yarn test:unit && yarn test:integration",
-		"test:unit": "yarn env:test nyc --silent mocha -r ts-node/register ./src/tests/unit/**/*.spec.ts -t 100000",
+		"test:unit": "yarn env:test nyc mocha -r ts-node/register ./src/tests/unit/**/*.spec.ts -t 100000",
 		"test:integration": "yarn build:test && yarn env:test mocha -t 100000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
 		"test:integration:quick": "yarn env:test mocha -t 100000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
 		"start": "yarn start:dev",
@@ -38,7 +38,7 @@
 		],
 		"sourceMap": true,
 		"instrument": true,
-		"all": false,
+		"all": true,
 		"exclude": [
 			"src/tests/**",
 			"src/ioc.ts",
@@ -55,7 +55,8 @@
 		"reporter": [
 			"lcov",
 			"text-lcov"
-		]
+		],
+		"report-dir": "coverage"
 	},
 	"husky": {
 		"hooks": {

@@ -30,8 +30,8 @@ jobs:
           method: 'GET'
           timeout: 300000,
       - run: echo ${{ steps.startContainer.outputs.response }}
-      - if: ${{ steps.startContainer.outputs.response == 'OK' }}
+      - if: ${{ startsWith(steps.startContainer.outputs.response, 'OK') }}
         run: exit 0
-      - if: ${{ steps.startContainer.outputs.response != 'OK' }}
+      - if: ${{ !startsWith(steps.startContainer.outputs.response, 'OK') }}
         run: exit 1
 

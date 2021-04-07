@@ -14,6 +14,7 @@ jobs:
       - run: yarn build:prod
       - run: yarn test:unit
   deploy:
+    needs: [prepare]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

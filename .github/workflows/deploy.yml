@@ -34,10 +34,11 @@ jobs:
       - uses: fjogeleit/http-request-action@v1.8.0
         id: startContainer
         with:
-          url: 'https://amrita-elective.tk:4000/new-api-container'
+          url: "https://amrita-elective.tk:4000/new-api-container"
           method: 'POST'
           data: ${{ secrets.EC2_LOGIN }}
           timeout: 300000,
+      - run: echo ${{ secrets.EC2_LOGIN }}
       - run: echo ${{ steps.startContainer.outputs.response }}
       - if: ${{ steps.startContainer.outputs.response == '"OK"' }}
         run: exit 0

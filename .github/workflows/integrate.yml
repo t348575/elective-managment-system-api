@@ -7,11 +7,19 @@ jobs:
   test_pull_request:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - name: Clone repository
+        uses: actions/checkout@v2
+      - name: Setup node
+        uses: actions/setup-node@v1
         with:
-          node-version: 15
-      - run: yarn install
-      - run: yarn lint:fix
-      - run: yarn build:prod
-      - run: yarn test:unit
+          node-version: '15'
+      - name: Setup cache
+        uses: c-hive/gha-yarn-cache@v1
+      - name: Install dependencies
+        run: yarn install
+      - name: Run eslint
+        run: yarn lint:fix
+      - name: Build API
+        run: yarn build:prod
+      - name: Run tests
+        run: yarn test:unit

@@ -31,7 +31,6 @@ jobs:
           password: ${{ secrets.DOCKER_PWD }}
       - run: docker build -t amrita-elective.tk:5000/api .
       - run: docker push amrita-elective.tk:5000/api
-      - run: echo ${{ secrets.EC2_LOGIN }}
       - uses: Satak/webrequest-action@v1.2.3
         id: startContainer
         with:

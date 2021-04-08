@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@master
       - uses: actions/setup-node@master
         with:
-            node-version: 15
+          node-version: 15
       - uses: warchant/setup-sonar-scanner@v3
       - run: yarn install
       - run: yarn test:unit
@@ -31,14 +31,15 @@ jobs:
           password: ${{ secrets.DOCKER_PWD }}
       - run: docker build -t amrita-elective.tk:5000/api .
       - run: docker push amrita-elective.tk:5000/api
-      - uses: Satak/webrequest-action@v1.2.3
+      - uses: fjogeleit/http-request-action@v1.8.0
         id: startContainer
         with:
-          url: https://amrita-elective.tk:4000/new-api-container
-          method: POST
-          payload: ${{ secrets.EC2_LOGIN }}
-      - run: echo ${{ steps.startContainer.outputs.output }}
-      - if: ${{ steps.startContainer.outputs.response.data == 'OK' }}
+          url: "http://amrita-elective.tk:4000/new-api-container"
+          method: 'POST'
+          data: ${{ secrets.EC2_LOGIN }}
+          timeout: 300000
+      - run: echo ${{ steps.startContainer.outputs.response }}
+      - if: ${{ steps.startContainer.outputs.response == '"OK"' }}
         run: exit 0
-      - if: ${{ steps.startContainer.outputs.response.data != 'OK' }}
+      - if: ${{ steps.startContainer.outputs.response != '"OK"' }}
         run: exit 1

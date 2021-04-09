@@ -179,7 +179,11 @@ export class ElectivesService extends BaseService<IElectiveModel> {
                             });
                         }
                     } catch (err) {
-                        failed.push(v);
+                        failed.push({
+                            item: v,
+                            reason: 'unknown',
+                            error: err
+                        });
                     }
                 }
                 resolve(failed);

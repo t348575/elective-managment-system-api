@@ -20,14 +20,9 @@ jobs:
         uses: c-hive/gha-yarn-cache@v1
       - name: Install dependencies
         run: yarn install
-      - name: suggester
+      - name: suggest & lint
         uses: reviewdog/action-suggester@v1
         with:
-          fail_on_error: true
-      - name: eslint
-        uses: reviewdog/action-eslint@v1
-        with:
-          github_token: ${{ github.token }}
           fail_on_error: true
       - name: Build API
         run: yarn build:prod

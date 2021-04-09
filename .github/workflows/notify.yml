@@ -9,7 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Notify commit
-        uses: nebularg/actions-discord-webhook@v1.0
+        uses: sarisia/actions-status-discord@v1.8.5
         with:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "commit"
 

@@ -26,9 +26,6 @@ jobs:
   deploy:
     needs: [prepare]
     runs-on: ubuntu-latest
-    env:
-      embed_string_success: '[{"title":"Deployment successful","color":2664261,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}]}]'
-      embed_string_failure: '[{"title":"Deployment failed","color":12845619,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}]}]'
     steps:
       - name: Setup repository
         uses: actions/checkout@v2
@@ -57,22 +54,21 @@ jobs:
           method: 'POST'
           data: ${{ secrets.EC2_LOGIN }}
           timeout: 300000
+      - name: set time
+        uses: gerred/actions/current-time@master
+        id: current-time
       - if: ${{ steps.startContainer.outputs.response == '"OK"' }}
         name: Discord notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          DISCORD_EMBEDS: ${{ env.embed_string_success }}
+          DISCORD_EMBEDS: '[{"title":"Deployment successful","color":2664261,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}],"timestamp":"${{ steps.current-time.outputs.time }}"}]'
         uses: Ilshidur/action-discord@master
-        with:
-          args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} has been deployed.'
       - if: ${{ steps.startContainer.outputs.response != '"OK"' }}
         name: Discord notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          DISCORD_EMBEDS: ${{ env.embed_string_failure }}
+          DISCORD_EMBEDS: '[{"title":"Deployment failed","color":12845619,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}],"timestamp":"${{ steps.current-time.outputs.time }}"}]'
         uses: Ilshidur/action-discord@master
-        with:
-          args: 'Deployment failed for the project {{ EVENT_PAYLOAD.repository.full_name }}.'
       - if: ${{ steps.startContainer.outputs.response == '"OK"' }}
         run: exit 0
       - if: ${{ steps.startContainer.outputs.response != '"OK"' }}

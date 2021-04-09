@@ -23,7 +23,7 @@ jobs:
       - name: suggester
         uses: reviewdog/action-suggester@v1
         with:
-          tool_name: eslint
+          fail_on_error: true
       - name: eslint
         uses: reviewdog/action-eslint@v1
         with:

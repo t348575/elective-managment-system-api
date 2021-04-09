@@ -8,13 +8,12 @@ jobs:
   notify_discord:
     runs-on: ubuntu-latest
     env:
-      embed_string: '[{"title": "Push on:","color": 43878, "url": "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"}]'
+      embed_string: '[{"title": "Push on:","color": 43878, "url": "${{ env.GITHUB_SERVER_URL }}/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"}]'
     steps:
-      - run: echo ${{ env.embed_string }}
       - name: Discord notification
-        env:
+        env: ${{ embed_string }}
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          DISCORD_EMBEDS: ${{ env.embed_string }}
+          DISCORD_EMBEDS: '[{"title": "Push on:","color": 43878, "url": "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"}]'
         uses: Ilshidur/action-discord@master
         with:
           args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} has been deployed.'

@@ -27,7 +27,7 @@ jobs:
     needs: [prepare]
     runs-on: ubuntu-latest
     env:
-      embed_string_success: '[{"title":"Deployment successful","color":43878,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}]}]'
+      embed_string_success: '[{"title":"Deployment successful","color":2664261,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}]}]'
       embed_string_failure: '[{"title":"Deployment failed","color":12845619,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}]}]'
     steps:
       - name: Setup repository

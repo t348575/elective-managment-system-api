@@ -9,7 +9,6 @@ import { RegisterRoutes } from './routes/routes';
 import { Logger } from './shared/logger';
 import { ApiError, ErrorHandler, OAuthError } from './shared/error-handler';
 import cors from 'cors';
-import * as fs from 'fs';
 import multer from 'multer';
 import './models/types';
 import helmet from 'helmet';

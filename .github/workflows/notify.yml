@@ -7,14 +7,9 @@ on:
 jobs:
   notify_discord:
     runs-on: ubuntu-latest
-    env:
-      embed_string: '[{"title": "Push on:","color": 43878, "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}]'
     steps:
-      - run: echo ${{ env.embed_string }}
-      - name: Discord notification
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          DISCORD_EMBEDS: ${{ env.embed_string }}
-        uses: Ilshidur/action-discord@master
+      - name: Notify commit
+        uses: nebularg/actions-discord-webhook@v1.0
         with:
-          args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} has been deployed.'
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+

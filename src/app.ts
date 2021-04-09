@@ -22,9 +22,6 @@ export const app = express();
 
 app.set('trust proxy', true);
 
-
-Logger.warn('Debug mode is enabled');
-
 if (constants.environment === 'debug') {
     app.use(cors());
 }

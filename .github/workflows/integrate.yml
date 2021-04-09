@@ -20,11 +20,15 @@ jobs:
         uses: c-hive/gha-yarn-cache@v1
       - name: Install dependencies
         run: yarn install
+      - name: suggester
+        uses: reviewdog/action-suggester@v1
+        with:
+          tool_name: eslint
       - name: eslint
         uses: reviewdog/action-eslint@v1
         with:
           github_token: ${{ github.token }}
-          workdir: src
+          fail_on_error: true
       - name: Build API
         run: yarn build:prod
       - name: Run tests

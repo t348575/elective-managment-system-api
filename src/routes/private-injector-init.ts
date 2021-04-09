@@ -11,7 +11,6 @@ import { DownloadRespository } from '../models/mongo/download-repository';
 import { NotificationRepository } from '../models/mongo/notification-repository';
 import { TrackRepository } from '../models/mongo/track-repository';
 import { Singleton } from 'typescript-ioc';
-import * as fs from 'fs';
 @Singleton
 export class PrivateInjectorInit {
     @Inject batchRepository: BatchRepository;

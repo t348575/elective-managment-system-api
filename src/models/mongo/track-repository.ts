@@ -4,7 +4,7 @@ import mongoose, { Schema } from 'mongoose';
 import { BaseRepository } from '../shared/base-repository';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { Inject, Singleton } from 'typescript-ioc';
-
+import * as fs from 'fs';
 export interface ITrackModel {
     device: 'desktop' | 'mobile' | 'bot' | 'unknown';
     browser: string;

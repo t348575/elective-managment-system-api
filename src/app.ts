@@ -13,7 +13,7 @@ import './models/types';
 import helmet from 'helmet';
 import constants from './constants';
 import useragent from 'express-useragent';
-
+import * as fs from 'fs';
 import './routes/controller';
 import { PrivateInjectorInit } from './routes/private-injector-init';
 

@@ -6,9 +6,6 @@ on:
 jobs:
   test_pull_request:
     runs-on: ubuntu-latest
-    env:
-      embed_string_success: '[{"title":"Integration successful","color":2664261,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Event: pull request","value":"[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.number }})"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}]}]'
-      embed_string_failure: '[{"title":"Integration failed","color":12845619,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Event: pull request","value":"[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.number }})"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}]}]'
     steps:
       - name: Clone repository
         uses: actions/checkout@v2
@@ -28,19 +25,18 @@ jobs:
         run: yarn build:prod
       - name: Run tests
         run: yarn test:unit
+      - name: set time
+        uses: gerred/actions/current-time@master
+        id: current-time
       - name: Discord notification success
         if: success()
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          DISCORD_EMBEDS: ${{ env.embed_string_success }}
+          DISCORD_EMBEDS: '[{"title":"Integration successful","color":2664261,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Event: pull request","value":"[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.number }})"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}],"timestamp":"${{ steps.current-time.outputs.time }}"}]'
         uses: Ilshidur/action-discord@master
-        with:
-          args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} merge request tests succeeded!'
       - name: Discord notification failure
         if: failure()
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          DISCORD_EMBEDS: ${{ env.embed_string_failure }}
+          DISCORD_EMBEDS: '[{"title":"Integration failed","color":12845619,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Event: pull request","value":"[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.number }})"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}],"timestamp":"${{ steps.current-time.outputs.time }}"}]'
         uses: Ilshidur/action-discord@master
-        with:
-          args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} merge request tests failed!'

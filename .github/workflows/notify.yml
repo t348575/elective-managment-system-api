@@ -10,7 +10,7 @@ jobs:
     env:
       embed_string: '[{"title": "Push on:","color": 43878, "url": "${{ github.server_url }}/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"}]'
     steps:
-      - run: echo ${{ embed_string }}
+      - run: echo ${{ env.embed_string }}
       - name: Discord notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}

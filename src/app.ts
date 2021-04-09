@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import express, { Response as ExResponse, Request as ExRequest, NextFunction } from 'express';
 import { ValidateError } from '@tsoa/runtime';
 import swaggerUi from 'swagger-ui-express';
@@ -14,7 +13,6 @@ import './models/types';
 import helmet from 'helmet';
 import constants from './constants';
 import useragent from 'express-useragent';
-// routes
 import './routes/controller';
 import { PrivateInjectorInit } from './routes/private-injector-init';
 

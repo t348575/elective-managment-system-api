@@ -26,6 +26,9 @@ jobs:
   deploy:
     needs: [prepare]
     runs-on: ubuntu-latest
+    env:
+      embed_string_success: '[{"title":"Deployment successful","color":43878,"fields":[{"name":"Trigger by:","value":"${{ github.actor }}"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}]}]'
+      embed_string_failure: '[{"title":"Deployment failed","color":12845619,"fields":[{"name":"Trigger by:","value":"${{ github.actor }}"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}]}]'
     steps:
       - name: Setup repository
         uses: actions/checkout@v2
@@ -58,7 +61,7 @@ jobs:
         name: Discord notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          DISCORD_EMBEDS: '[{"title": "Deployment successful!","color": 43878, "url": "{{ GITHUB_SERVER_URL }}/{{ GITHUB_REPOSITORY }}/actions/runs/{{ GITHUB_RUN_ID }}"}]'
+          DISCORD_EMBEDS: ${{ env.embed_string_success }}
         uses: Ilshidur/action-discord@master
         with:
           args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} has been deployed.'
@@ -66,7 +69,7 @@ jobs:
         name: Discord notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          DISCORD_EMBEDS: '[{"title": "Deployment failed!","color": 16384000, "url": "{{ GITHUB_SERVER_URL }}/{{ GITHUB_REPOSITORY }}/actions/runs/{{ GITHUB_RUN_ID }}"}]'
+          DISCORD_EMBEDS: ${{ env.embed_string_failure }}
         uses: Ilshidur/action-discord@master
         with:
           args: 'Deployment failed for the project {{ EVENT_PAYLOAD.repository.full_name }}.'

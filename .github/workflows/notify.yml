@@ -8,7 +8,7 @@ jobs:
   notify_discord:
     runs-on: ubuntu-latest
     env:
-      embed_string: '[{"title": "Push on:","color": 43878, "url": "${{ GITHUB_SERVER_URL }}/${{ GITHUB_REPOSITORY }}/$actions/runs/${{ GITHUB_RUN_ID }}"}]'
+      embed_string: '[{"title": "Push on:","color": 43878, "url": "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"}]'
     steps:
       - name: Discord notification
         env:

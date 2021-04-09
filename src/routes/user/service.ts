@@ -35,13 +35,12 @@ export class UsersService extends BaseService<IUserModel> {
         super();
         if (constants.environment !== 'test') {
             this.createUserTemplate = fs
-            .readFileSync(path.join(__dirname, constants.emailTemplates.userCreation))
-            .toString();
+                .readFileSync(path.join(__dirname, constants.emailTemplates.userCreation))
+                .toString();
             this.resetPasswordTemplate = fs
-            .readFileSync(path.join(__dirname, constants.emailTemplates.passReset))
-            .toString();
-        }
-        else {
+                .readFileSync(path.join(__dirname, constants.emailTemplates.passReset))
+                .toString();
+        } else {
             this.createUserTemplate = '';
             this.resetPasswordTemplate = '';
         }

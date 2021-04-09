@@ -27,7 +27,11 @@ if (constants.environment === 'debug') {
 }
 
 if (constants.environment === 'production') {
-    app.use(helmet());
+    app.use(
+        helmet({
+            hsts: false
+        })
+    );
 }
 
 if (constants.environment === 'debug') {

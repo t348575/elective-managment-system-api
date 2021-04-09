@@ -7,7 +7,7 @@ jobs:
   test_pull_request:
     runs-on: ubuntu-latest
     env:
-      embed_string_success: '[{"title":"Integration successful","color":43878,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Event: pull request","value":"[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.number }})"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}]}]'
+      embed_string_success: '[{"title":"Integration successful","color":2664261,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Event: pull request","value":"[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.number }})"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}]}]'
       embed_string_failure: '[{"title":"Integration failed","color":12845619,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Event: pull request","value":"[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.number }})"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}]}]'
     steps:
       - name: Clone repository
@@ -20,8 +20,11 @@ jobs:
         uses: c-hive/gha-yarn-cache@v1
       - name: Install dependencies
         run: yarn install
-      - name: Run eslint
-        run: yarn lint:fix
+      - name: eslint
+        uses: reviewdog/action-eslint@v1
+        with:
+          github_token: ${{ github.token }}
+          workdir: src
       - name: Build API
         run: yarn build:prod
       - name: Run tests

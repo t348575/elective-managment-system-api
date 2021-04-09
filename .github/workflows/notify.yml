@@ -7,12 +7,13 @@ on:
 jobs:
   notify_discord:
     runs-on: ubuntu-latest
+    env:
+      embed_string: '[{"title": "Push on:","color": 43878, "url": "${{ GITHUB_SERVER_URL }}/${{ GITHUB_REPOSITORY }}/$actions/runs/${{ GITHUB_RUN_ID }}"}]'
     steps:
-      - run: echo "{{ GITHUB_SERVER_URL }}/{{ GITHUB_REPOSITORY }}/actions/runs/{{ GITHUB_RUN_ID }}"
       - name: Discord notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          DISCORD_EMBEDS: '[{"title": "Push on:","color": 43878, "url": "https://amrita-elective.tk"}]'
+          DISCORD_EMBEDS: ${{ env.embed_string }}
         uses: Ilshidur/action-discord@master
         with:
           args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} has been deployed.'

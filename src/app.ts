@@ -24,6 +24,7 @@ app.set('trust proxy', true);
 
 if (constants.environment === 'debug') {
     app.use(cors());
+    Logger.warn('Debug mode is enabled');
 }
 
 if (constants.environment === 'production') {

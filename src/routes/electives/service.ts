@@ -3,7 +3,7 @@ import { ElectiveRepository, IElectiveModel } from '../../models/mongo/elective-
 import { BatchRepository, batchStringToModel } from '../../models/mongo/batch-repository';
 import { UserRepository } from '../../models/mongo/user-repository';
 import { checkNumber, checkString } from '../../util/general-util';
-import { electiveAttributes, Failed } from "../../models/types";
+import { electiveAttributes, Failed } from '../../models/types';
 import { BaseService } from '../../models/shared/base-service';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import { Inject, Singleton } from 'typescript-ioc';
@@ -124,7 +124,7 @@ export class ElectivesService extends BaseService<IElectiveModel> {
                         if (!checkString(v, 'teachers')) {
                             failed.push({
                                 item: v,
-                                reason: 'checkString(v, \'teachers\'): invalid'
+                                reason: "checkString(v, 'teachers'): invalid"
                             });
                             continue;
                         }
@@ -132,8 +132,7 @@ export class ElectivesService extends BaseService<IElectiveModel> {
                             const attributes: string[] = v.attributes.split(',');
                             const batches: string[] = v.batches.split(',');
                             const teachers: string[] = v.teachers.split(',');
-                            if (attributes.length === 0 ||
-                                (attributes.length > 0 && attributes.length % 2 !== 0)) {
+                            if (attributes.length === 0 || (attributes.length > 0 && attributes.length % 2 !== 0)) {
                                 failed.push({
                                     item: v,
                                     reason: 'attributes: invalid'
@@ -172,8 +171,7 @@ export class ElectivesService extends BaseService<IElectiveModel> {
                                 batches,
                                 teachers
                             });
-                        }
-                        catch(err) {
+                        } catch (err) {
                             failed.push({
                                 item: v,
                                 reason: 'unknown',

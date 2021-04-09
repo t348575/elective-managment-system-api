@@ -1,13 +1,16 @@
 import * as path from 'path';
-import fs from 'fs';
-import https from 'https';
 import http from 'http';
-import { ConfigModel } from './models/config-model';
+import https from 'https';
+import dotenv from 'dotenv';
 import constants from './constants';
 import { Logger } from './shared/logger';
-const config: ConfigModel = JSON.parse(fs.readFileSync(path.join(__dirname, './../resources/config.json')).toString());
-const port = config.port || 8080;
+import { setConstants } from './util/general-util';
+dotenv.config({
+    path: path.resolve(process.cwd(), process.env.NODE_ENV + '.env')
+});
 setConstants();
+// @ts-ignore
+const port = parseInt(process.env.port, 10) || 8080;
 Logger.init();
 import { app } from './app';
 let server: http.Server | https.Server;
@@ -24,7 +27,6 @@ if (constants.environment === 'test') {
         app
     );
 }
-
 process.on('SIGINT', shutdown);
 function shutdown() {
     Logger.log('Graceful shutdown...');
@@ -32,23 +34,6 @@ function shutdown() {
     process.exit(0);
 }
 
-server.listen(port, () => Logger.log(`App listening at ${config.serverAddress}:${port}`));
-
-function setConstants() {
-    constants.port = config.port;
-    constants.privateKey = fs.readFileSync(path.resolve(config.privateKey)).toString();
-    constants.publicKey = fs.readFileSync(path.resolve(config.publicKey)).toString();
-
-    constants.vapidKeys.privateKey = config.vapidKeys.privateKey;
-    constants.vapidKeys.publicKey = config.vapidKeys.publicKey;
-
-    constants.mailAccess.host = config.mailHost;
-    constants.mailAccess.username = config.mailUsername;
-    constants.mailAccess.password = config.mailPassword;
-    constants.mailAccess.name = config.mailName;
-
-    // @ts-ignore
-    constants.environment = process.env.NODE_ENV;
-}
+server.listen(port, () => Logger.log(`App listening at ${process.env.serverAddress}:${port}`));
 
 export { server };

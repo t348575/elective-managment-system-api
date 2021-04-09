@@ -23,13 +23,9 @@ const scopeArray: string[] = ['teacher', 'admin', 'student'];
 
 @Singleton
 export class UsersService extends BaseService<IUserModel> {
-    private createUserTemplate = fs
-        .readFileSync(path.join(__dirname, constants.emailTemplates.userCreation))
-        .toString();
+    private createUserTemplate;
 
-    private resetPasswordTemplate = fs
-        .readFileSync(path.join(__dirname, constants.emailTemplates.passReset))
-        .toString();
+    private resetPasswordTemplate;
 
     @Inject protected repository: UserRepository;
     @Inject protected batchRepo: BatchRepository;
@@ -37,6 +33,17 @@ export class UsersService extends BaseService<IUserModel> {
     @Inject protected mailer: MailService;
     constructor() {
         super();
+        if (constants.environment !== 'test') {
+            this.createUserTemplate = fs
+                .readFileSync(path.join(__dirname, constants.emailTemplates.userCreation))
+                .toString();
+            this.resetPasswordTemplate = fs
+                .readFileSync(path.join(__dirname, constants.emailTemplates.passReset))
+                .toString();
+        } else {
+            this.createUserTemplate = '';
+            this.resetPasswordTemplate = '';
+        }
     }
 
     public async basic(userId: string, role: scopes): Promise<IUserModel> {

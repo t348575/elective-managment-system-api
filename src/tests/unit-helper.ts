@@ -1,20 +1,16 @@
 import constants from '../constants';
-import { ConfigModel } from '../models/config-model';
-import fs from 'fs';
-import path from 'path';
 import { Logger } from '../shared/logger';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-
+import { setConstants } from '../util/general-util';
+import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({
+    path: path.resolve(process.cwd(), process.env.NODE_ENV + '.env')
+});
 export class UnitHelper {
     public server: MongoMemoryServer;
     constructor() {
-        const config: ConfigModel = JSON.parse(
-            fs.readFileSync(path.join(__dirname, './../../resources/config.json')).toString()
-        );
-        constants.privateKey = fs.readFileSync(path.resolve(config.privateKey)).toString();
-        constants.publicKey = fs.readFileSync(path.resolve(config.publicKey)).toString();
-        // @ts-ignore
-        constants.environment = process.env.NODE_ENV;
+        setConstants();
         Logger.init();
     }
     async init(): Promise<void> {

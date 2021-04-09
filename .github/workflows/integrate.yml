@@ -7,8 +7,8 @@ jobs:
   test_pull_request:
     runs-on: ubuntu-latest
     env:
-      embed_string_success: '[{"title":"CI successful","color":43878,"fields":[{"name":"Trigger by:","value":"${{ github.actor }}"},{"name":"Event: ${{ github.event_name }}","value":"[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/${{ github.event_name }}/${{ github.ref }})"},{"name":"Action","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}]}]'
-      embed_string_failure: '[{"title":"CI failed","color":12845619,"fields":[{"name":"Trigger by:","value":"${{ github.actor }}"},{"name":"Event: ${{ github.event_name }}","value":"[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/${{ github.event_name }}/${{ github.ref }})"},{"name":"Action","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}]}]'
+      embed_string_success: '[{"title":"Integration successful","color":43878,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Event: pull request","value":"[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.number }})"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}]}]'
+      embed_string_failure: '[{"title":"Integration failed","color":12845619,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Event: pull request","value":"[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.number }})"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}]}]'
     steps:
       - name: Clone repository
         uses: actions/checkout@v2
@@ -33,7 +33,7 @@ jobs:
           DISCORD_EMBEDS: ${{ env.embed_string_success }}
         uses: Ilshidur/action-discord@master
         with:
-          args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} merge request tests completed!'
+          args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} merge request tests succeeded!'
       - name: Discord notification failure
         if: failure()
         env:
@@ -41,4 +41,4 @@ jobs:
           DISCORD_EMBEDS: ${{ env.embed_string_failure }}
         uses: Ilshidur/action-discord@master
         with:
-          args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} merge request tests completed!'
+          args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} merge request tests failed!'

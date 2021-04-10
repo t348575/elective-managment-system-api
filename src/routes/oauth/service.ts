@@ -406,7 +406,7 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
         });
     }
 
-    public logout(jwtAccess: jwtToken, jwtId: jwtToken, jwtRefresh: jwtToken, response: ExResponse): Promise<null> {
+    public logout(jwtAccess: jwtToken, jwtId: jwtToken, jwtRefresh: jwtToken): Promise<null> {
         return new Promise<null>((resolve, reject) => {
             this.repository
                 .getById(jwtAccess.id)
@@ -415,7 +415,6 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                         await this.redis.remove(`accessToken::${jwtAccess.id}::${jwtAccess.exp}`);
                         await this.redis.remove(`refreshToken::${jwtAccess.id}::${jwtRefresh.exp}`);
                         await this.redis.remove(`idToken::${jwtAccess.id}::${jwtId.exp}`);
-                        response.redirect(constants.baseUrl);
                         resolve(null);
                     } catch (err) {
                         reject(err);

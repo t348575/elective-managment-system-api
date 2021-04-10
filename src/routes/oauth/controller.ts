@@ -110,7 +110,6 @@ export class AuthController extends Controller {
         const jwtId = request.userId as jwtToken;
         // @ts-ignore
         const jwtRefresh = request.userRefresh as jwtToken;
-        const response = (<any>request).res as ExResponse;
-        return this.service.logout(jwtAccess, jwtId, jwtRefresh, response);
+        return this.service.logout(jwtAccess, jwtId, jwtRefresh);
     }
 }

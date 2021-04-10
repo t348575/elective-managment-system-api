@@ -21,6 +21,8 @@ jobs:
         uses: reviewdog/action-suggester@v1
         with:
           fail_on_error: true
+      - name: prettier
+        run: yarn prettier
       - name: Build API
         run: yarn build:prod
       - name: Run tests

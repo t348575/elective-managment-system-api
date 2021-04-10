@@ -41,11 +41,11 @@ function getRollNo(scope: scopes, num: number): string {
         }
     }
 }
-async function setupMockBatches(count: number): Promise<string[]> {
+export async function setupMockBatches(count: number): Promise<string[]> {
     const batches: string[] = [];
     const batchRepository = Container.get(BatchRepository);
     for (let i = 0; i < count; i++) {
-        const year = faker.date.past(faker.datatype.number(6)).getFullYear();
+        const year = faker.date.past(faker.datatype.number({ min: 1, max: 6 })).getFullYear();
         const fromNow = new Date().getFullYear() - year;
         const str = `${year}-${fromNow}-BTECH-CSE`;
         try {
@@ -58,33 +58,53 @@ async function setupMockBatches(count: number): Promise<string[]> {
     return batches;
 }
 
-function getMockBatches(count: number): string[] {
+export function getMockBatches(count: number): string[] {
     const batches = [];
     for (let i = 0; i < count; i++) {
-        const year = faker.date.past(faker.datatype.number(6)).getFullYear();
+        const year = faker.date.past(faker.datatype.number({ min: 1, max: 6 })).getFullYear();
         const fromNow = new Date().getFullYear() - year;
         batches.push(`${year}-${fromNow}-BTECH-CSE`);
     }
     return batches;
 }
 
-export async function setupMockUsers(): Promise<IUserModel[]> {
+export async function setupMockUsers(mode: 'all' | 'adminOnly' | 'adminTeachers' = 'all'): Promise<IUserModel[]> {
     globalI++;
     const userRepository = Container.get(UserRepository);
     const users: IUserModel[] = [];
-    const batches = await setupMockBatches(5);
     let i, j;
-    for (i = 0, j = 0; i < 50; i++) {
-        users.push(await userRepository.create(getMockUser('student', i, batches[j])));
-        if (i % 10 === 0) {
-            j++;
+    switch (mode) {
+        case 'all': {
+            const batches = await setupMockBatches(5);
+            for (i = 0, j = 0; i < 50; i++) {
+                users.push(await userRepository.create(getMockUser('student', i, batches[j])));
+                if (i % 10 === 0) {
+                    j++;
+                }
+            }
+            for (; i < 55; i++) {
+                users.push(await userRepository.create(getMockUser('teacher', i)));
+            }
+            for (; i < 57; i++) {
+                users.push(await userRepository.create(getMockUser('admin', i)));
+            }
+            break;
         }
-    }
-    for (; i < 55; i++) {
-        users.push(await userRepository.create(getMockUser('teacher', i)));
-    }
-    for (; i < 57; i++) {
-        users.push(await userRepository.create(getMockUser('admin', i)));
+        case 'adminOnly': {
+            for (i = 0; i < 2; i++) {
+                users.push(await userRepository.create(getMockUser('admin', i)));
+            }
+            break;
+        }
+        case 'adminTeachers': {
+            for (i = 0; i < 5; i++) {
+                users.push(await userRepository.create(getMockUser('teacher', i)));
+            }
+            for (; i < 7; i++) {
+                users.push(await userRepository.create(getMockUser('admin', i)));
+            }
+            break;
+        }
     }
     return users;
 }

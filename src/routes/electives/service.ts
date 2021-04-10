@@ -154,7 +154,7 @@ export class ElectivesService extends BaseService<IElectiveModel> {
                                 continue;
                             }
                             const parsedAttributes: electiveAttributes = [];
-                            const n = attributes.length / 2;
+                            const n = attributes.length;
                             for (let i = 0; i < n; i += 2) {
                                 parsedAttributes.push({
                                     key: attributes[i],

@@ -22,10 +22,10 @@ before(async () => {
 });
 
 describe('User service', () => {
-
     afterEach(() => {
         mockMailReplaceSpy.resetHistory();
     });
+
     const userService = Container.get(UsersService);
 
     it('Should return basic user details', async () => {

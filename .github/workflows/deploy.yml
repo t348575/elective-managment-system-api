@@ -42,6 +42,7 @@ jobs:
           registry: amrita-elective.tk:5000
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PWD }}
+      - run: cat Dockerfile
       - name: Build container
         run: docker build -t amrita-elective.tk:5000/api .
       - name: Push to registry

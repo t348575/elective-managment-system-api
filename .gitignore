@@ -119,3 +119,5 @@ BatchRun.ffs_batch
 .scannerwork
 debug.env
 production.env
+debug.env
+production.env

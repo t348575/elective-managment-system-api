@@ -18,7 +18,7 @@ import { PrivateInjectorInit } from './routes/private-injector-init';
 
 export const app = express();
 
-app.set('trust proxy', true);
+app.set('trust proxy', '127.0.0.1');
 
 if (constants.environment === 'debug') {
     app.use(cors());

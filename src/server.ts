@@ -17,15 +17,7 @@ let server: http.Server | https.Server;
 if (constants.environment === 'test') {
     server = http.createServer(app);
 } else {
-    server = https.createServer(
-        {
-            // @ts-ignore
-            key: constants.privateKey,
-            // @ts-ignore
-            cert: constants.publicKey
-        },
-        app
-    );
+    server = http.createServer(app);
 }
 process.on('SIGINT', shutdown);
 function shutdown() {

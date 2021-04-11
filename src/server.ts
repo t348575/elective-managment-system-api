@@ -26,6 +26,6 @@ function shutdown() {
     process.exit(0);
 }
 
-server.listen(port, () => Logger.log(`App listening at ${process.env.serverAddress}:${port}`));
+server.listen(port, '0.0.0.0',() => Logger.log(`App listening at ${process.env.serverAddress}:${port}`));
 
 export { server };

@@ -126,6 +126,16 @@ export class NotificationService extends BaseService<INotificationModel> {
         }
     }
 
+    public async isSubscribed(device: string, user: string): Promise<{ subscribed: boolean }> {
+        try {
+            await this.repository.findOne({ user, device });
+            return { subscribed: true };
+        }
+        catch(err) {
+            return { subscribed: false };
+        }
+    }
+
     private static async initialNotification(sub: {
         endpoint: string;
         expirationTime: number | null;

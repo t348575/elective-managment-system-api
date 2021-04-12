@@ -123,4 +123,6 @@ app.use(function errorHandler(err: unknown, req: ExRequest, res: ExResponse, nex
     return res.status(500).json(err);
 });
 
-new PrivateInjectorInit();
+export function initApp() {
+    new PrivateInjectorInit();
+}

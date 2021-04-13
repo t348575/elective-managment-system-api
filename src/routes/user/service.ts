@@ -18,6 +18,8 @@ import {
 } from '../../models/mongo/password-reset-repository';
 import { UnknownApiError } from '../../shared/error-handler';
 import { Singleton } from 'typescript-ioc';
+import { PaginationModel } from '../../models/shared/pagination-model';
+import { ITrackModel, TrackRepository } from '../../models/mongo/track-repository';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
 
@@ -31,6 +33,7 @@ export class UsersService extends BaseService<IUserModel> {
     @Inject protected batchRepo: BatchRepository;
     @Inject protected passReset: PasswordResetRepository;
     @Inject protected mailer: MailService;
+    @Inject protected trackRepository: TrackRepository;
     constructor() {
         super();
         if (constants.environment !== 'test') {
@@ -321,5 +324,38 @@ export class UsersService extends BaseService<IUserModel> {
             }
         }
         return obj['username'];
+    }
+
+    public async getTrackedDataPaginated(
+        page: number,
+        limit: number,
+        fields: string,
+        sort: string,
+        query: any
+    ): Promise<PaginationModel<ITrackModel>> {
+        const skip: number = (Math.max(1, page) - 1) * limit;
+        // eslint-disable-next-line prefer-const
+        let [count, docs] = await Promise.all([
+            this.trackRepository.count(query),
+            this.trackRepository.find(sort, query, limit, skip)
+        ]);
+        const fieldArray = (fields || '')
+        .split(',')
+        .map((field) => field.trim())
+        .filter(Boolean);
+        if (fieldArray.length)
+            docs = docs.map((d: { [x: string]: any }) => {
+                const attrs: any = {};
+                // @ts-ignore
+                fieldArray.forEach((f) => (attrs[f] = d[f]));
+                return attrs;
+            });
+        return new PaginationModel<ITrackModel>({
+            count,
+            page,
+            limit,
+            docs,
+            totalPages: Math.ceil(count / limit)
+        });
     }
 }

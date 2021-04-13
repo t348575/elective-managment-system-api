@@ -4,6 +4,8 @@ import mongoose, { Schema } from 'mongoose';
 import { BaseRepository } from '../shared/base-repository';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { Inject, Singleton } from 'typescript-ioc';
+import { cleanQuery } from '../../util/general-util';
+
 export interface ITrackModel {
     device: 'desktop' | 'mobile' | 'bot' | 'unknown';
     browser: string;
@@ -58,5 +60,20 @@ export class TrackRepository extends BaseRepository<ITrackModel> {
                 delete ret.__v;
             }
         });
+    }
+
+    public async findAndPopulate(skip = 0, limit = 250, sort: string, query: any): Promise<TrackFormatter[]> {
+        const sortObject = cleanQuery(sort, this.sortQueryFormatter);
+        return (
+            await this.documentModel
+            .find(this.cleanWhereQuery(query))
+            .sort(Object.keys(sortObject).map((key) => [key, sortObject[key]]))
+            .skip(skip)
+            .limit(limit)
+            .populate({
+                path: 'user',
+                select: 'name username _id rollNo role'
+            })
+        ).map((item) => new this.formatter(item));
     }
 }

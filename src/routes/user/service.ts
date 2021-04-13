@@ -337,7 +337,7 @@ export class UsersService extends BaseService<IUserModel> {
         // eslint-disable-next-line prefer-const
         let [count, docs] = await Promise.all([
             this.trackRepository.count(query),
-            this.trackRepository.find(sort, query, limit, skip)
+            this.trackRepository.findAndPopulate(skip, limit, sort, query)
         ]);
         const fieldArray = (fields || '')
         .split(',')

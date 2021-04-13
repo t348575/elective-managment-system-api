@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Put, Request, Response, Route, Security, Tags } from 'tsoa';
+import { Body, Controller, Get, Post, Put, Request, Response, Route, Security, Tags, Query } from 'tsoa';
 import { NotificationService } from './service';
 import { ErrorType } from '../../shared/error-handler';
 import { jwtToken } from '../../models/types';
@@ -46,5 +46,18 @@ export class NotificationController extends Controller {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.unsubscribe(options, accessToken.id);
+    }
+
+    @Get('isSubscribed')
+    @Security('jwt', scopeArray)
+    @Response<ErrorType>(401, 'ValidationError')
+    @Response<ErrorType>(500, 'Unknown server error')
+    public async isSubscribed(
+        @Query('name') name: string,
+        @Request() request: ExRequest
+    ) {
+        // @ts-ignore
+        const accessToken = request.user as jwtToken;
+        return this.service.isSubscribed(name, accessToken.id);
     }
 }

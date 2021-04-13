@@ -9,6 +9,8 @@ import { ApiError, ErrorType, UnknownApiError } from '../../shared/error-handler
 import { Readable } from 'stream';
 import * as argon2 from 'argon2';
 import { Inject, Singleton } from 'typescript-ioc';
+import { ITrackModel } from '../../models/mongo/track-repository';
+import { PaginationModel } from '../../models/shared/pagination-model';
 
 export interface CreateUserCSV {
     defaultRollNoAsEmail: boolean;
@@ -269,5 +271,47 @@ export class UsersController extends Controller {
     @Response<DefaultResponse>(200, 'Success')
     public async resetPass(@Body() options: ResetPasswordRequest) {
         return this.service.resetPassword(options);
+    }
+
+    @Get('tracked-data')
+    @Response<ErrorType>(401, 'ValidationError')
+    @Response<ErrorType>(500, 'Unknown server error')
+    public async getTrackedData(
+        @Query('page') page: number,
+        @Query('sortBy') sortBy: 'time' | 'ip' | 'device' | 'browser' | 'platform' | 'createdAt',
+        @Query('dir') dir: 'asc' | 'desc',
+        @Query('startTime') startTime ?: string,
+        @Query('endTime') endTime ?: string,
+        @Query('ip') ip ?: string,
+        @Query('pageSize') pageSize = 25,
+    ): Promise<PaginationModel<ITrackModel>> {
+        const query: any = {};
+        if (startTime && endTime) {
+            try {
+                query.createdAt = {
+                    '$gte': new Date(startTime).toISOString(),
+                    '$lte': new Date(endTime).toISOString()
+                };
+            }
+            catch(err) {
+                console.log(err);
+            }
+        }
+        else if (startTime) {
+            query.createdAt = {
+                '$gte': new Date(startTime).toISOString()
+            };
+        }
+        else if (endTime) {
+            query.createdAt = {
+                '$lte': new Date(endTime).toISOString()
+            };
+        }
+        if (ip) {
+            query.ip = ip;
+        }
+        const sort: any = {};
+        sort[sortBy] = dir;
+        return this.service.getTrackedDataPaginated(page, pageSize, '', JSON.stringify(sort), query);
     }
 }

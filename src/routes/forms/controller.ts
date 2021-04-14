@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Post, Put, Query, Request, Response, Rou
 import { FormsService } from './service';
 import { ErrorType } from '../../shared/error-handler';
 import { Request as ExRequest } from 'express';
-import { jwtToken } from '../../models/types';
+import { Failed, jwtToken } from '../../models/types';
 import { Inject, Singleton } from 'typescript-ioc';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
@@ -31,7 +31,7 @@ export interface UpdateFormOptions {
 export interface GenerateListResponse {
     status: boolean;
     downloadUri: string;
-    failed: string[];
+    failed: Failed[];
 }
 
 @Tags('forms')

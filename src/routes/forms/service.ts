@@ -20,12 +20,6 @@ import { Parser } from 'json2csv';
 import { ClassService } from '../classes/service';
 import { Inject, Singleton } from 'typescript-ioc';
 
-export interface AssignedElective {
-    rollNo: string;
-    batch: string;
-    electives: string[];
-}
-
 @Singleton
 export class FormsService extends BaseService<IFormModel> {
     @Inject protected repository: FormsRepository;
@@ -40,7 +34,7 @@ export class FormsService extends BaseService<IFormModel> {
         super();
     }
 
-    public async createForm(options: CreateFormOptions) {
+    public async createForm(options: CreateFormOptions): Promise<IFormModel> {
         try {
             const now = new Date();
             const batches = [];
@@ -140,7 +134,8 @@ export class FormsService extends BaseService<IFormModel> {
                     return e.electives.length > 0;
                 });
             }
-            case 'admin': {
+        case 'teacher':
+        case 'admin': {
                 return this.repository.findActive({
                     end: { $gte: new Date() },
                     active: true
@@ -155,7 +150,7 @@ export class FormsService extends BaseService<IFormModel> {
         // @ts-ignore
         delete options.id;
         // @ts-ignore
-        return this.repository.findAndUpdate({ _id: options._id }, options);
+        return this.repository.findAndUpdate({ _id: mongoose.Types.ObjectId(options._id) }, options);
     }
 
     public async getPaginated<Entity>(

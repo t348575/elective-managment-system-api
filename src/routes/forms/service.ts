@@ -5,7 +5,7 @@ import { CreateFormOptions, GenerateListResponse, UpdateFormOptions } from './co
 import { ElectiveRepository, IElectiveModel } from '../../models/mongo/elective-repository';
 import { ApiError, UnknownApiError } from '../../shared/error-handler';
 import { IUserModel, UserRepository } from '../../models/mongo/user-repository';
-import { scopes } from '../../models/types';
+import { Failed, scopes } from '../../models/types';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import { ResponseRepository } from '../../models/mongo/response-repository';
 import mongoose from 'mongoose';
@@ -201,7 +201,7 @@ export class FormsService extends BaseService<IFormModel> {
                 flags: 'a'
             });
             const electiveCountMap = new Map<string, number>();
-            const failed: string[] = [];
+            const failed: Failed[] = [];
             const successful: string[] = [];
             const uniqueBatches = new Set<string>();
             for (const elective of form.electives) {
@@ -227,7 +227,10 @@ export class FormsService extends BaseService<IFormModel> {
                         };
                     }
                 }
-                failed.push(rollNo);
+                failed.push({
+                    item: rollNo,
+                    reason: 'no_space'
+                });
                 return {
                     elective: '',
                     version: 0

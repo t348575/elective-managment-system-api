@@ -77,7 +77,7 @@ export function getMockElective(teachers: string[]): IElectiveModel {
         description: faker.lorem.words(15),
         courseCode: faker.datatype.uuid(),
         version: faker.datatype.number({ min: 1 }),
-        strength: faker.datatype.number({ min: 1, max: 100 }),
+        strength: faker.datatype.number({ min: 50, max: 100 }),
         // @ts-ignore
         attributes: faker.datatype
             .array(faker.datatype.number({ min: 1, max: 5 }))

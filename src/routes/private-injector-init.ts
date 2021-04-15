@@ -1,5 +1,4 @@
 /* eslint @typescript-eslint/no-unused-vars: 0 */
-import { Inject } from 'typescript-ioc';
 import { BatchRepository } from '../models/mongo/batch-repository';
 import { ElectiveRepository } from '../models/mongo/elective-repository';
 import { UserRepository } from '../models/mongo/user-repository';
@@ -10,29 +9,35 @@ import { ResponseRepository } from '../models/mongo/response-repository';
 import { DownloadRespository } from '../models/mongo/download-repository';
 import { NotificationRepository } from '../models/mongo/notification-repository';
 import { TrackRepository } from '../models/mongo/track-repository';
-import { Singleton } from 'typescript-ioc';
-@Singleton
+import { MongoConnector } from '../shared/mongo-connector';
+import { Logger } from '../shared/logger';
+import { provideSingleton } from '../provide-singleton';
+import {inject} from 'inversify';
+
+@provideSingleton(PrivateInjectorInit)
 export class PrivateInjectorInit {
-    @Inject batchRepository: BatchRepository;
-    @Inject electiveRepository: ElectiveRepository;
-    @Inject userRepository: UserRepository;
-    @Inject passwordResetRepository: PasswordResetRepository;
-    @Inject classRepository: ClassRepository;
-    @Inject formRepository: FormsRepository;
-    @Inject responseRepository: ResponseRepository;
-    @Inject downloadRespository: DownloadRespository;
-    @Inject notificationsRepository: NotificationRepository;
-    @Inject trackRepository: TrackRepository;
+    @inject() mongoConnector: MongoConnector;
+    @inject() batchRepository: BatchRepository;
+    @inject() electiveRepository: ElectiveRepository;
+    @inject() userRepository: UserRepository;
+    @inject() passwordResetRepository: PasswordResetRepository;
+    @inject() classRepository: ClassRepository;
+    @inject() formRepository: FormsRepository;
+    @inject() responseRepository: ResponseRepository;
+    @inject() downloadRespository: DownloadRespository;
+    @inject() notificationsRepository: NotificationRepository;
+    @inject() trackRepository: TrackRepository;
     constructor() {
-        this.batchRepository;
-        this.electiveRepository;
-        this.userRepository;
-        this.passwordResetRepository;
-        this.classRepository;
-        this.formRepository;
-        this.responseRepository;
-        this.downloadRespository;
-        this.notificationsRepository;
-        this.trackRepository;
+        Logger.log(this.mongoConnector.db.name);
+        this.batchRepository.test();
+        this.electiveRepository.test();
+        this.userRepository.test();
+        this.passwordResetRepository.test();
+        this.classRepository.test();
+        this.formRepository.test();
+        this.responseRepository.test();
+        this.downloadRespository.test();
+        this.notificationsRepository.test();
+        this.trackRepository.test();
     }
 }

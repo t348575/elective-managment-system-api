@@ -3,8 +3,9 @@ import { BaseFormatter } from '../../util/base-formatter';
 import mongoose, { Schema } from 'mongoose';
 import { BaseRepository } from '../shared/base-repository';
 import { MongoConnector } from '../../shared/mongo-connector';
-import { Inject, Singleton } from 'typescript-ioc';
 import { cleanQuery } from '../../util/general-util';
+import { provideSingleton } from '../../provide-singleton';
+import { inject } from 'inversify';
 export interface ITrackModel {
     device: 'desktop' | 'mobile' | 'bot' | 'unknown';
     browser: string;
@@ -27,7 +28,7 @@ export class TrackFormatter extends BaseFormatter implements ITrackModel {
     }
 }
 
-@Singleton
+@provideSingleton(TrackRepository)
 export class TrackRepository extends BaseRepository<ITrackModel> {
     protected modelName = 'track';
     protected schema: Schema = new Schema(
@@ -46,8 +47,7 @@ export class TrackRepository extends BaseRepository<ITrackModel> {
     );
 
     protected formatter = TrackFormatter;
-    @Inject
-    protected dbConnection: MongoConnector;
+    @inject(MongoConnector) protected dbConnection: MongoConnector;
     constructor() {
         super();
         super.init();

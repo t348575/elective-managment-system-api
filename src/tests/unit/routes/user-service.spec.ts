@@ -2,22 +2,27 @@ import { UnitHelper } from '../../unit-helper';
 const unitHelper = new UnitHelper();
 import { Container } from 'typescript-ioc';
 import * as argon2 from 'argon2';
-import { PrivateInjectorInit } from '../../../routes/private-injector-init';
 import { getMockUsers, setupMockUsers } from '../models/user.model';
 import { IUserModel, UserFormatter } from '../../../models/mongo/user-repository';
 import { UsersService } from '../../../routes/user/service';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { MockMailService, mockMailReplaceSpy } from '../other/mock-mail-service';
+import { MockMailService, mockMailReplaceSpy } from '../mocks/mock-mail-service';
 import { MailService } from '../../../shared/mail-service';
 import * as qs from 'query-string';
+import { MongoConnector } from '../../../shared/mongo-connector';
+import { PrivateInjectorInit } from '../../../routes/private-injector-init';
+
 chai.use(chaiAsPromised);
+
 let users: IUserModel[] = [];
 let code: string;
+
 before(async () => {
-    await unitHelper.init();
-    Container.get(PrivateInjectorInit);
+    await unitHelper.initMongoMemoryServer();
+    Container.bind(MongoConnector).to(MongoConnector);
     Container.bind(MailService).to(MockMailService);
+    Container.get(PrivateInjectorInit);
     users = await setupMockUsers();
 });
 

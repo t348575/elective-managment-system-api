@@ -8,9 +8,10 @@ import { getSafeUserOmit, IUserModel, SafeUser } from '../../models/mongo/user-r
 import { ApiError, ErrorType, UnknownApiError } from '../../shared/error-handler';
 import { Readable } from 'stream';
 import * as argon2 from 'argon2';
-import { Inject, Singleton } from 'typescript-ioc';
 import { ITrackModel } from '../../models/mongo/track-repository';
 import { PaginationModel } from '../../models/shared/pagination-model';
+import { provideSingleton } from '../../provide-singleton';
+import { inject } from 'inversify';
 
 export interface CreateUserCSV {
     defaultRollNoAsEmail: boolean;
@@ -54,10 +55,9 @@ const scopeArray: string[] = ['teacher', 'admin', 'student'];
 const adminOnly: string[] = ['admin'];
 @Tags('users')
 @Route('users')
-@Singleton
+@provideSingleton(UsersController)
 export class UsersController extends Controller {
-    @Inject
-    private service: UsersService;
+    @inject(UsersService) private service: UsersService;
     constructor() {
         super();
     }
@@ -293,6 +293,7 @@ export class UsersController extends Controller {
                     '$lte': new Date(endTime).toISOString()
                 };
             }
+                // eslint-disable-next-line no-empty
             catch(err) {}
         }
         else if (startTime) {

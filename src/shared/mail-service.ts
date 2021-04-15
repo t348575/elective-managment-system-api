@@ -3,9 +3,9 @@ import Mail, { Attachment } from 'nodemailer/lib/mailer';
 import nodemailer, { TransportOptions } from 'nodemailer';
 import { SentMessageInfo } from 'nodemailer/lib/smtp-transport';
 import { Logger } from './logger';
-import { Singleton } from 'typescript-ioc';
+import { provideSingleton } from '../provide-singleton';
 
-@Singleton
+@provideSingleton(MailService)
 export class MailService {
     private transporter: Mail;
 

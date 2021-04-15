@@ -1,3 +1,6 @@
+import { UnitHelper } from '../../unit-helper';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const unitHelper = new UnitHelper();
 import { expect } from 'chai';
 import { stub } from 'sinon';
 import { ApiError, ErrorHandler } from '../../../shared/error-handler';

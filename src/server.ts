@@ -29,7 +29,7 @@ function shutdown() {
     Logger.log('Closed app');
     process.exit(0);
 }
-function initServer() {
+function initServer(): void {
     server.listen(port,() => {
         Logger.log(`App listening at ${process.env.serverAddress}:${port}`);
         initApp();

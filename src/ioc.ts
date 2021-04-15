@@ -1,8 +1,11 @@
-import { Container } from 'typescript-ioc';
-import { IocContainer } from '@tsoa/runtime';
+import { Container, decorate, injectable } from "inversify";
+import { buildProviderModule } from 'inversify-binding-decorators';
+import { Controller } from "tsoa";
 
-export const iocContainer: IocContainer = {
-    get: <T>(controller: { prototype: T }): T => {
-        return Container.get<T>(controller as never);
-    }
-};
+const iocContainer = new Container();
+
+decorate(injectable(), Controller);
+
+iocContainer.load(buildProviderModule());
+
+export { iocContainer };

@@ -1,9 +1,9 @@
 import redis from 'redis';
 import { Logger } from './logger';
 import constants from '../constants';
-import { Singleton } from 'typescript-ioc';
+import { provideSingleton } from '../provide-singleton';
 
-@Singleton
+@provideSingleton(RedisConnector)
 export class RedisConnector {
     public db: redis.RedisClient;
     constructor() {

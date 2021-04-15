@@ -1,23 +1,22 @@
-import { Inject } from 'typescript-ioc';
 import * as argon2 from 'argon2';
 import { UserRepository } from '../../models/mongo/user-repository';
 import { Request as ExRequest, Response as ExResponse } from 'express';
-import { IAuthTokenRequest } from '../../models/basic/auth';
 import { BaseService } from '../../models/shared/base-service';
 import { OAuthError } from '../../shared/error-handler';
 import { decipherJWT, getJWT, getSHA256, urlSafe } from '../../util/general-util';
 import constants from '../../constants';
 import { RedisConnector } from '../../shared/redis-connector';
-import { jwtToken, refreshTokenResponse, scopes, tokenResponse } from '../../models/types';
+import { IAuthTokenRequest, jwtToken, refreshTokenResponse, scopes, tokenResponse } from '../../models/types';
 import * as qs from 'querystring';
 import { TrackRepository } from '../../models/mongo/track-repository';
-import { Singleton } from 'typescript-ioc';
+import { provideSingleton } from '../../provide-singleton';
+import { inject } from 'inversify';
 
-@Singleton
+@provideSingleton(AuthService)
 export class AuthService extends BaseService<IAuthTokenRequest> {
-    @Inject protected repository: UserRepository;
-    @Inject protected redis: RedisConnector;
-    @Inject protected trackRepository: TrackRepository;
+    @inject(UserRepository) protected repository: UserRepository;
+    @inject(RedisConnector) protected redis: RedisConnector;
+    @inject(TrackRepository) protected trackRepository: TrackRepository;
     constructor() {
         super();
     }

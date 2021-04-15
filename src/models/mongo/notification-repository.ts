@@ -3,7 +3,8 @@ import { BaseFormatter } from '../../util/base-formatter';
 import { BaseRepository } from '../shared/base-repository';
 import mongoose, { Schema } from 'mongoose';
 import { MongoConnector } from '../../shared/mongo-connector';
-import { Inject, Singleton } from 'typescript-ioc';
+import { provideSingleton } from '../../provide-singleton';
+import { inject } from 'inversify';
 
 export interface INotificationModel {
     id?: string;
@@ -34,7 +35,7 @@ export class NotificationFormatter extends BaseFormatter implements INotificatio
     }
 }
 
-@Singleton
+@provideSingleton(NotificationRepository)
 export class NotificationRepository extends BaseRepository<INotificationModel> {
     protected modelName = 'notifications';
     protected schema: Schema = new Schema(
@@ -54,8 +55,7 @@ export class NotificationRepository extends BaseRepository<INotificationModel> {
     );
 
     protected formatter = NotificationFormatter;
-    @Inject
-    protected dbConnection: MongoConnector;
+    @inject(MongoConnector) protected dbConnection: MongoConnector;
     constructor() {
         super();
         super.init();

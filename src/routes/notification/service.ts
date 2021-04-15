@@ -1,17 +1,17 @@
 import { INotificationModel, NotificationRepository } from '../../models/mongo/notification-repository';
 import { BaseService } from '../../models/shared/base-service';
-import { Inject } from 'typescript-ioc';
 import { SubscribeOptions } from './controller';
 import constants from '../../constants';
 import * as webPush from 'web-push';
 import { ApiError } from '../../shared/error-handler';
 import { BatchRepository } from '../../models/mongo/batch-repository';
-import { Singleton } from 'typescript-ioc';
+import { provideSingleton } from '../../provide-singleton';
+import { inject } from 'inversify';
 
-@Singleton
+@provideSingleton(NotificationService)
 export class NotificationService extends BaseService<INotificationModel> {
-    @Inject protected repository: NotificationRepository;
-    @Inject private batchRepository: BatchRepository;
+    @inject(NotificationRepository) protected repository: NotificationRepository;
+    @inject(BatchRepository) private batchRepository: BatchRepository;
     constructor() {
         super();
         webPush.setVapidDetails(

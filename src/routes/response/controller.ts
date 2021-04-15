@@ -3,7 +3,8 @@ import { ResponseService } from './service';
 import { ErrorType } from '../../shared/error-handler';
 import { Request as ExRequest } from 'express';
 import { jwtToken } from '../../models/types';
-import { Inject, Singleton } from 'typescript-ioc';
+import { provideSingleton } from '../../provide-singleton';
+import { inject } from 'inversify';
 const studentOnly: string[] = ['student'];
 const teacherOrAdmin: string[] = ['admin', 'teacher'];
 
@@ -14,10 +15,9 @@ export interface FormResponseOptions {
 
 @Tags('form-response')
 @Route('form-response')
-@Singleton
+@provideSingleton(ResponseController)
 export class ResponseController extends Controller {
-    @Inject
-    private service: ResponseService;
+    @inject(ResponseService) private service: ResponseService;
     constructor() {
         super();
     }

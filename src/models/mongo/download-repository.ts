@@ -6,7 +6,8 @@ import { IBatchModel } from './batch-repository';
 import { scopes } from '../types';
 import { BaseRepository } from '../shared/base-repository';
 import { MongoConnector } from '../../shared/mongo-connector';
-import { Inject, Singleton } from 'typescript-ioc';
+import { provideSingleton } from '../../provide-singleton';
+import { inject } from 'inversify';
 
 export interface IDownloadModel {
     id?: string;
@@ -43,7 +44,7 @@ export class DownloadFormatter extends BaseFormatter implements IDownloadModel {
     }
 }
 
-@Singleton
+@provideSingleton(DownloadRespository)
 export class DownloadRespository extends BaseRepository<IDownloadModel> {
     protected modelName = 'downloads';
     protected schema: Schema = new Schema(
@@ -72,8 +73,7 @@ export class DownloadRespository extends BaseRepository<IDownloadModel> {
     );
 
     protected formatter = DownloadFormatter;
-    @Inject
-    protected dbConnection: MongoConnector;
+    @inject(MongoConnector) protected dbConnection: MongoConnector;
     constructor() {
         super();
         super.init();

@@ -4,8 +4,7 @@ import { BaseRepository } from '../shared/base-repository';
 import mongoose, { Schema } from 'mongoose';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { cleanQuery } from '../../util/general-util';
-import { provideSingleton } from '../../provide-singleton';
-import { inject } from 'inversify';
+import { Inject, Singleton } from 'typescript-ioc';
 
 export interface IFormModel {
     id?: string;
@@ -29,7 +28,7 @@ export class FormFormatter extends BaseFormatter implements IFormModel {
     }
 }
 
-@provideSingleton(FormsRepository)
+@Singleton
 export class FormsRepository extends BaseRepository<IFormModel> {
     protected modelName = 'forms';
     protected schema: Schema = new Schema(
@@ -44,7 +43,8 @@ export class FormsRepository extends BaseRepository<IFormModel> {
     );
 
     protected formatter = FormFormatter;
-    @inject(MongoConnector) protected dbConnection: MongoConnector;
+    @Inject
+    protected dbConnection: MongoConnector;
     constructor() {
         super();
         super.init();

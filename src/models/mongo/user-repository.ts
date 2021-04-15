@@ -7,8 +7,7 @@ import { scopes } from '../types';
 import { ApiError } from '../../shared/error-handler';
 import constants from '../../constants';
 import { IClassModel } from './class-repository';
-import { provideSingleton } from '../../provide-singleton';
-import { inject } from 'inversify';
+import { Inject, Singleton } from 'typescript-ioc';
 
 export interface IUserModel {
     id?: string;
@@ -64,7 +63,7 @@ export function getSafeUserOmit(role: scopes) {
     }
 }
 
-@provideSingleton(UserRepository)
+@Singleton
 export class UserRepository extends BaseRepository<IUserModel> {
     protected modelName = 'users';
     protected schema: Schema = new Schema(
@@ -85,7 +84,8 @@ export class UserRepository extends BaseRepository<IUserModel> {
     );
 
     protected formatter = UserFormatter;
-    @inject(MongoConnector) protected dbConnection: MongoConnector;
+    @Inject
+    protected dbConnection: MongoConnector;
     constructor() {
         super();
         super.init();

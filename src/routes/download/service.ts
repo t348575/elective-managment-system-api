@@ -6,13 +6,14 @@ import { OAuthError } from '../../shared/error-handler';
 import { Response as ExResponse } from 'express';
 import { createReadStream } from 'fs';
 import { removeTempFile } from '../../util/general-util';
-import { provideSingleton } from '../../provide-singleton';
-import { inject } from 'inversify';
+import { Inject, Singleton } from 'typescript-ioc';
 
-@provideSingleton(DownloadService)
+@Singleton
 export class DownloadService extends BaseService<IDownloadModel> {
-    @inject(DownloadRespository) protected repository: DownloadRespository;
-    @inject(UserRepository) protected userRepository: UserRepository;
+    @Inject
+    protected repository: DownloadRespository;
+    @Inject
+    protected userRepository: UserRepository;
     constructor() {
         super();
     }

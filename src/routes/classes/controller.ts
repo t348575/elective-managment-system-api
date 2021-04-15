@@ -1,13 +1,13 @@
 import { Controller, Route, Tags } from 'tsoa';
 import { ClassService } from './service';
-import { provideSingleton } from '../../provide-singleton';
-import { inject } from 'inversify';
+import { Inject, Singleton } from 'typescript-ioc';
 
-@provideSingleton(ClassController)
+@Singleton
 @Tags('classes')
 @Route('classes')
 export class ClassController extends Controller {
-    @inject(ClassService) protected service: ClassService;
+    @Inject
+    protected service: ClassService;
     constructor() {
         super();
     }

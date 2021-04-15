@@ -1,6 +1,7 @@
 import { UnitHelper } from '../../unit-helper';
 const unitHelper = new UnitHelper();
 import { Container } from 'typescript-ioc';
+import { PrivateInjectorInit } from '../../../routes/private-injector-init';
 import { setupMockUsers } from '../models/user.model';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -11,18 +12,15 @@ import { sendResponsesToForms, setupMockElectives } from '../models/electives.mo
 import * as faker from 'faker';
 import { FormFormatter, FormsRepository } from '../../../models/mongo/form-repository';
 import { NotificationService } from '../../../routes/notification/service';
-import { MockNotificationService, mockNotifyBatches } from '../mocks/mock-notification-service';
+import { MockNotificationService, mockNotifyBatches } from '../other/mock-notification-service';
 import { BatchFormatter } from '../../../models/mongo/batch-repository';
 import { PaginationModel } from '../../../models/shared/pagination-model';
 import { DownloadService } from '../../../routes/download/service';
-import { mockAddTemporaryUserLink, MockDownloadService } from '../mocks/mock-download-service';
+import { mockAddTemporaryUserLink, MockDownloadService } from '../other/mock-download-service';
 import {existsSync, unlinkSync} from 'fs';
 import * as path from 'path';
 import constants from '../../../constants';
 import csv from 'csvtojson';
-import { PrivateInjectorInit } from '../../../routes/private-injector-init';
-import { MongoConnector } from '../../../shared/mongo-connector';
-
 chai.use(chaiAsPromised);
 
 let users: IUserModel[] = [];
@@ -30,11 +28,10 @@ let electives: IElectiveModel[] = [];
 let formId: string;
 
 before(async () => {
-    await unitHelper.initMongoMemoryServer();
-    Container.bind(MongoConnector).to(MongoConnector);
+    await unitHelper.init();
+    Container.get(PrivateInjectorInit);
     Container.bind(NotificationService).to(MockNotificationService);
     Container.bind(DownloadService).to(MockDownloadService);
-    Container.get(PrivateInjectorInit);
     users = await setupMockUsers();
     electives = await setupMockElectives(users.slice(50, 56));
 });

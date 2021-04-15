@@ -1,6 +1,7 @@
 import { UnitHelper } from '../../unit-helper';
 const unitHelper = new UnitHelper();
 import { Container } from 'typescript-ioc';
+import { PrivateInjectorInit } from '../../../routes/private-injector-init';
 import { setupMockUsers } from '../models/user.model';
 import { IUserModel } from '../../../models/mongo/user-repository';
 import chai, { expect } from 'chai';
@@ -10,16 +11,10 @@ import { getMockElectives } from '../models/electives.model';
 import { PaginationModel } from '../../../models/shared/pagination-model';
 import { ElectiveFormatter, IElectiveModel } from '../../../models/mongo/elective-repository';
 import { BatchFormatter } from '../../../models/mongo/batch-repository';
-import { PrivateInjectorInit } from '../../../routes/private-injector-init';
-import { MongoConnector } from '../../../shared/mongo-connector';
-
 chai.use(chaiAsPromised);
-
 let users: IUserModel[] = [];
-
 before(async () => {
-    await unitHelper.initMongoMemoryServer();
-    Container.bind(MongoConnector).to(MongoConnector);
+    await unitHelper.init();
     Container.get(PrivateInjectorInit);
     users = await setupMockUsers('adminTeachers');
 });

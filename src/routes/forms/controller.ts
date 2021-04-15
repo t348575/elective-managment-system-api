@@ -3,8 +3,7 @@ import { FormsService } from './service';
 import { ErrorType } from '../../shared/error-handler';
 import { Request as ExRequest } from 'express';
 import { Failed, jwtToken } from '../../models/types';
-import { provideSingleton } from '../../provide-singleton';
-import { inject } from 'inversify';
+import { Inject, Singleton } from 'typescript-ioc';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
 
@@ -37,9 +36,10 @@ export interface GenerateListResponse {
 
 @Tags('forms')
 @Route('forms')
-@provideSingleton(FormsController)
+@Singleton
 export class FormsController extends Controller {
-    @inject(FormsService) private service: FormsService;
+    @Inject
+    private service: FormsService;
     constructor() {
         super();
     }

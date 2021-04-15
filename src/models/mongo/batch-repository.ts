@@ -2,6 +2,7 @@ import { BaseFormatter } from '../../util/base-formatter';
 import { BaseRepository } from '../shared/base-repository';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { Schema } from 'mongoose';
+import { Inject, Singleton } from 'typescript-ioc';
 
 export interface IBatchModel {
     id?: string;
@@ -30,7 +31,7 @@ export class BatchFormatter extends BaseFormatter implements IBatchModel {
     }
 }
 
-@provideSingleton
+@Singleton
 export class BatchRepository extends BaseRepository<IBatchModel> {
     protected modelName = 'batches';
     protected schema: Schema = new Schema(
@@ -45,7 +46,7 @@ export class BatchRepository extends BaseRepository<IBatchModel> {
     );
 
     protected formatter = BatchFormatter;
-    @inject()
+    @Inject
     protected dbConnection: MongoConnector;
     constructor() {
         super();

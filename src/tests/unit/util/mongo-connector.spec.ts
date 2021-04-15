@@ -2,15 +2,14 @@ import { UnitHelper } from '../../unit-helper';
 const unitHelper = new UnitHelper();
 import { expect } from 'chai';
 import { MongoConnector } from '../../../shared/mongo-connector';
-import { Container } from 'typescript-ioc';
 
 before(async () => {
-    await unitHelper.initMongoMemoryServer();
+    await unitHelper.init();
 });
 
 describe('MongoDB connector', () => {
     it('Should connect', async () => {
-        const connector = Container.get(MongoConnector);
+        const connector = new MongoConnector();
         expect(
             await new Promise((resolve) => {
                 setTimeout(() => {

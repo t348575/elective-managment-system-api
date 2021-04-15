@@ -269,31 +269,6 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ITrackModel": {
-        "dataType": "refObject",
-        "properties": {
-            "device": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["desktop"]},{"dataType":"enum","enums":["mobile"]},{"dataType":"enum","enums":["bot"]},{"dataType":"enum","enums":["unknown"]}],"required":true},
-            "browser": {"dataType":"string","required":true},
-            "platform": {"dataType":"string","required":true},
-            "user": {"ref":"IUserModel","required":true},
-            "ip": {"dataType":"string","required":true},
-            "id": {"dataType":"string"},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "PaginationModel_ITrackModel_": {
-        "dataType": "refObject",
-        "properties": {
-            "count": {"dataType":"double","required":true},
-            "page": {"dataType":"double","required":true},
-            "limit": {"dataType":"double","required":true},
-            "totalPages": {"dataType":"double","required":true},
-            "docs": {"dataType":"array","array":{"ref":"ITrackModel"},"required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "INotificationModel": {
         "dataType": "refObject",
         "properties": {
@@ -355,7 +330,7 @@ const models: TsoaRoute.Models = {
         "properties": {
             "status": {"dataType":"boolean","required":true},
             "downloadUri": {"dataType":"string","required":true},
-            "failed": {"dataType":"array","array":{"ref":"Failed"},"required":true},
+            "failed": {"dataType":"array","array":{"dataType":"string"},"required":true},
         },
         "additionalProperties": false,
     },
@@ -1003,39 +978,6 @@ export function RegisterRoutes(app: express.Router) {
 
 
             const promise = controller.resetPass.apply(controller, validatedArgs as any);
-            promiseHandler(controller, promise, response, undefined, next);
-        });
-        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/users/tracked-data',
-            function UsersController_getTrackedData(request: any, response: any, next: any) {
-            const args = {
-                    page: {"in":"query","name":"page","required":true,"dataType":"double"},
-                    sortBy: {"in":"query","name":"sortBy","required":true,"dataType":"union","subSchemas":[{"dataType":"enum","enums":["time"]},{"dataType":"enum","enums":["ip"]},{"dataType":"enum","enums":["device"]},{"dataType":"enum","enums":["browser"]},{"dataType":"enum","enums":["platform"]},{"dataType":"enum","enums":["createdAt"]}]},
-                    dir: {"in":"query","name":"dir","required":true,"dataType":"union","subSchemas":[{"dataType":"enum","enums":["asc"]},{"dataType":"enum","enums":["desc"]}]},
-                    startTime: {"in":"query","name":"startTime","dataType":"string"},
-                    endTime: {"in":"query","name":"endTime","dataType":"string"},
-                    ip: {"in":"query","name":"ip","dataType":"string"},
-                    pageSize: {"default":25,"in":"query","name":"pageSize","dataType":"double"},
-            };
-
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = getValidatedArgs(args, request, response);
-            } catch (err) {
-                return next(err);
-            }
-
-            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
-
-            const controller: any = container.get<UsersController>(UsersController);
-            if (typeof controller['setStatus'] === 'function') {
-                controller.setStatus(undefined);
-            }
-
-
-            const promise = controller.getTrackedData.apply(controller, validatedArgs as any);
             promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

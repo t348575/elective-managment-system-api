@@ -10,7 +10,7 @@ let integrationHelper: IntegrationHelper;
 before(async () => {
     app = supertest(importApp);
     integrationHelper = new IntegrationHelper(app);
-    await integrationHelper.initMongoMemoryServer();
+    await integrationHelper.init();
     initServer();
 });
 

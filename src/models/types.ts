@@ -34,12 +34,6 @@ export type refreshTokenResponse = {
     access_token: string;
 };
 
-export interface IAuthTokenRequest {
-    grant_type: 'password';
-    username: string;
-    password: string;
-}
-
 export type refreshToken = { refresh_token: string };
 
 export type jwtToken = {

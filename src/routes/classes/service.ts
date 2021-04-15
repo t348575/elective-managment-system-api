@@ -4,14 +4,16 @@ import { IUserModel, UserRepository } from '../../models/mongo/user-repository';
 import { IFormModel } from '../../models/mongo/form-repository';
 import { chunkArray } from '../../util/general-util';
 import { NotificationService } from '../notification/service';
-import { provideSingleton } from '../../provide-singleton';
-import { inject } from 'inversify';
+import { Inject, Singleton } from 'typescript-ioc';
 
-@provideSingleton(ClassService)
+@Singleton
 export class ClassService extends BaseService<IClassModel> {
-    @inject(ClassRepository) protected repository: ClassRepository;
-    @inject(UserRepository) protected userRepository: UserRepository;
-    @inject(NotificationService) protected notificationService: NotificationService;
+    @Inject
+    protected repository: ClassRepository;
+    @Inject
+    protected userRepository: UserRepository;
+    @Inject
+    protected notificationService: NotificationService;
     constructor() {
         super();
     }

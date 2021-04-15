@@ -3,8 +3,7 @@ import { NotificationService } from './service';
 import { ErrorType } from '../../shared/error-handler';
 import { jwtToken } from '../../models/types';
 import { Request as ExRequest } from 'express';
-import { provideSingleton } from '../../provide-singleton';
-import { inject } from 'inversify';
+import { Inject, Singleton } from 'typescript-ioc';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
 export interface SubscribeOptions {
@@ -21,9 +20,10 @@ export interface SubscribeOptions {
 
 @Tags('notifications')
 @Route('notifications')
-@provideSingleton(NotificationController)
+@Singleton
 export class NotificationController extends Controller {
-    @inject(NotificationService) private service: NotificationService;
+    @Inject
+    private service: NotificationService;
     constructor() {
         super();
     }

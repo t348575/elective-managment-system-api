@@ -5,8 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { jwtToken, refreshToken, scopes, tokenBodyType } from '../../models/types';
 import { OAuthError } from '../../shared/error-handler';
-import { provideSingleton } from '../../provide-singleton';
-import { inject } from 'inversify';
+import { Inject, Singleton } from 'typescript-ioc';
 
 type acceptedChallengeMethods = 'S256';
 type clientIds = 'api' | 'site';
@@ -15,9 +14,10 @@ type responseTypes = 'code';
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
 @Tags('oauth')
 @Route('oauth')
-@provideSingleton(AuthController)
+@Singleton
 export class AuthController extends Controller {
-    @inject(AuthService) private service: AuthService;
+    @Inject
+    private service: AuthService;
     constructor() {
         super();
     }

@@ -7,8 +7,7 @@ import { Readable } from 'stream';
 import csv from 'csvtojson';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import { IElectiveModel } from '../../models/mongo/elective-repository';
-import { provideSingleton } from '../../provide-singleton';
-import { inject } from 'inversify';
+import { Inject, Singleton } from 'typescript-ioc';
 const adminOnly: string[] = ['admin'];
 const teacherOrAdmin: string[] = ['admin', 'teacher'];
 
@@ -47,9 +46,10 @@ export interface UpdateElectiveOptions {
 
 @Tags('electives')
 @Route('electives')
-@provideSingleton(ElectivesController)
+@Singleton
 export class ElectivesController extends Controller {
-    @inject(ElectivesService) private service: ElectivesService;
+    @Inject
+    private service: ElectivesService;
     constructor() {
         super();
     }

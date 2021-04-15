@@ -18,19 +18,18 @@ import { DownloadService } from '../download/service';
 import { NotificationService } from '../notification/service';
 import { Parser } from 'json2csv';
 import { ClassService } from '../classes/service';
-import { provideSingleton } from '../../provide-singleton';
-import { inject } from 'inversify';
+import { Inject, Singleton } from 'typescript-ioc';
 
-@provideSingleton(FormsService)
+@Singleton
 export class FormsService extends BaseService<IFormModel> {
-    @inject(FormsRepository) protected repository: FormsRepository;
-    @inject(BatchRepository) protected batchRepository: BatchRepository;
-    @inject(ElectiveRepository) protected electionRepository: ElectiveRepository;
-    @inject(UserRepository) protected userRepository: UserRepository;
-    @inject(ResponseRepository) protected responseRepository: ResponseRepository;
-    @inject(DownloadService) protected downloadService: DownloadService;
-    @inject(NotificationService) protected notificationService: NotificationService;
-    @inject(ClassService) protected classService: ClassService;
+    @Inject protected repository: FormsRepository;
+    @Inject protected batchRepository: BatchRepository;
+    @Inject protected electionRepository: ElectiveRepository;
+    @Inject protected userRepository: UserRepository;
+    @Inject protected responseRepository: ResponseRepository;
+    @Inject protected downloadService: DownloadService;
+    @Inject protected notificationService: NotificationService;
+    @Inject protected classService: ClassService;
     constructor() {
         super();
     }

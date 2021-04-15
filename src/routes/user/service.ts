@@ -1,3 +1,4 @@
+import { Inject } from 'typescript-ioc';
 import { IUserModel, UserFormatter, UserRepository } from '../../models/mongo/user-repository';
 import { BaseService } from '../../models/shared/base-service';
 import { DefaultResponse, Failed, scopes } from '../../models/types';
@@ -16,24 +17,23 @@ import {
     PasswordResetRepository
 } from '../../models/mongo/password-reset-repository';
 import { UnknownApiError } from '../../shared/error-handler';
+import { Singleton } from 'typescript-ioc';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import { ITrackModel, TrackRepository } from '../../models/mongo/track-repository';
-import { provideSingleton } from '../../provide-singleton';
-import { inject } from 'inversify';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
 
-@provideSingleton(UsersService)
+@Singleton
 export class UsersService extends BaseService<IUserModel> {
     private createUserTemplate;
 
     private resetPasswordTemplate;
 
-    @inject(UserRepository) protected repository: UserRepository;
-    @inject(BatchRepository) protected batchRepo: BatchRepository;
-    @inject(PasswordResetRepository) protected passReset: PasswordResetRepository;
-    @inject(MailService) protected mailer: MailService;
-    @inject(TrackRepository) protected trackRepository: TrackRepository;
+    @Inject protected repository: UserRepository;
+    @Inject protected batchRepo: BatchRepository;
+    @Inject protected passReset: PasswordResetRepository;
+    @Inject protected mailer: MailService;
+    @Inject protected trackRepository: TrackRepository;
     constructor() {
         super();
         if (constants.environment !== 'test') {

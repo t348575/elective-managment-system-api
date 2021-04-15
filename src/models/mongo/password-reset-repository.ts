@@ -22,7 +22,7 @@ export class PasswordResetFormatter extends BaseFormatter implements IPasswordRe
     }
 }
 
-@provideSingleton
+@Singleton
 export class PasswordResetRepository extends BaseRepository<IPasswordResetModel> {
     protected modelName = 'password-reset';
     protected schema: Schema = new Schema(
@@ -40,7 +40,7 @@ export class PasswordResetRepository extends BaseRepository<IPasswordResetModel>
     );
 
     protected formatter = PasswordResetFormatter;
-    @inject()
+    @Inject
     protected dbConnection: MongoConnector;
     constructor() {
         super();

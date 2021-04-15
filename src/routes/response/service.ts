@@ -1,5 +1,6 @@
 import { BaseService } from '../../models/shared/base-service';
 import { IResponseModel, ResponseRepository } from '../../models/mongo/response-repository';
+import { Inject } from 'typescript-ioc';
 import { UserRepository } from '../../models/mongo/user-repository';
 import { FormResponseOptions } from './controller';
 import { jwtToken } from '../../models/types';
@@ -7,14 +8,13 @@ import { FormsRepository } from '../../models/mongo/form-repository';
 import { ApiError } from '../../shared/error-handler';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import mongoose from 'mongoose';
-import { provideSingleton } from '../../provide-singleton';
-import { inject } from 'inversify';
+import { Singleton } from 'typescript-ioc';
 
-@provideSingleton(ResponseService)
+@Singleton
 export class ResponseService extends BaseService<IResponseModel> {
-    @inject(ResponseRepository) protected repository: ResponseRepository;
-    @inject(UserRepository) private userRepository: UserRepository;
-    @inject(FormsRepository) private formsRepository: FormsRepository;
+    @Inject protected repository: ResponseRepository;
+    @Inject private userRepository: UserRepository;
+    @Inject private formsRepository: FormsRepository;
     constructor() {
         super();
     }

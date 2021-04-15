@@ -6,8 +6,7 @@ import { BaseRepository } from '../shared/base-repository';
 import mongoose, { Schema } from 'mongoose';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { cleanQuery } from '../../util/general-util';
-import { provideSingleton } from '../../provide-singleton';
-import { inject } from 'inversify';
+import { Inject, Singleton } from 'typescript-ioc';
 
 export interface IResponseModel {
     id?: string;
@@ -29,7 +28,7 @@ export class ResponseFormatter extends BaseFormatter implements IResponseModel {
     }
 }
 
-@provideSingleton(ResponseRepository)
+@Singleton
 export class ResponseRepository extends BaseRepository<IResponseModel> {
     protected modelName = 'responses';
     protected schema: Schema = new Schema(
@@ -43,7 +42,8 @@ export class ResponseRepository extends BaseRepository<IResponseModel> {
     );
 
     protected formatter = ResponseFormatter;
-    @inject(MongoConnector) protected dbConnection: MongoConnector;
+    @Inject
+    protected dbConnection: MongoConnector;
     constructor() {
         super();
         super.init();

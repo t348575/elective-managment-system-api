@@ -15,7 +15,6 @@ import constants from './constants';
 import useragent from 'express-useragent';
 import './routes/controller';
 import { PrivateInjectorInit } from './routes/private-injector-init';
-import { Container } from 'typescript-ioc';
 
 export const app = express();
 
@@ -124,6 +123,6 @@ app.use(function errorHandler(err: unknown, req: ExRequest, res: ExResponse, nex
     return res.status(500).json(err);
 });
 
-export function initApp(): void {
-    Container.get(PrivateInjectorInit);
+export function initApp() {
+    new PrivateInjectorInit();
 }

@@ -26,7 +26,7 @@ export class IntegrationHelper {
         this.app = app;
     }
 
-    async initMongoMemoryServer() {
+    async init() {
         this.db = new MongoMemoryServer();
         constants.mongoConnectionString = await this.db.getUri();
     }

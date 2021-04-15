@@ -118,7 +118,4 @@ export abstract class BaseRepository<EntityType> implements IBaseRepository<Enti
         }
         return newQuery;
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    test(): void {}
 }

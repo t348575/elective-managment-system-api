@@ -6,14 +6,16 @@ import { checkNumber, checkString } from '../../util/general-util';
 import { electiveAttributes, Failed } from '../../models/types';
 import { BaseService } from '../../models/shared/base-service';
 import { PaginationModel } from '../../models/shared/pagination-model';
-import { provideSingleton } from '../../provide-singleton';
-import { inject } from 'inversify';
+import { Inject, Singleton } from 'typescript-ioc';
 
-@provideSingleton(ElectivesService)
+@Singleton
 export class ElectivesService extends BaseService<IElectiveModel> {
-    @inject(ElectiveRepository) protected repository: ElectiveRepository;
-    @inject(BatchRepository) protected batchRepository: BatchRepository;
-    @inject(UserRepository) protected userRepository: UserRepository;
+    @Inject
+    protected repository: ElectiveRepository;
+    @Inject
+    protected batchRepository: BatchRepository;
+    @Inject
+    protected userRepository: UserRepository;
     constructor() {
         super();
     }

@@ -3,14 +3,14 @@ import { DownloadService } from './service';
 import { ErrorType } from '../../shared/error-handler';
 import { jwtToken } from '../../models/types';
 import { Request as ExRequest, Response as ExResponse } from 'express';
-import { provideSingleton } from '../../provide-singleton';
-import { inject } from 'inversify';
+import { Inject, Singleton } from 'typescript-ioc';
 
 @Tags('downloads')
 @Route('downloads')
-@provideSingleton(DownloadController)
+@Singleton
 export class DownloadController extends Controller {
-    @inject(DownloadService) private service: DownloadService;
+    @Inject
+    private service: DownloadService;
     constructor() {
         super();
     }

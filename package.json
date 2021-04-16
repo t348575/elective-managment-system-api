@@ -7,7 +7,7 @@
 	"main": "dist/server.js",
 	"scripts": {
 		"test": "yarn test:unit && yarn test:integration",
-		"test:unit": "yarn env:test nyc mocha --parallel -r ts-node/register ./src/tests/unit/**/*.spec.ts -t 100000",
+		"test:unit": "yarn shx mkdir -p resources\\csvTemp && yarn env:test nyc mocha --parallel -j 8 -r ts-node/register ./src/tests/unit/**/*.spec.ts -t 100000",
 		"test:integration": "yarn build:test && yarn env:test mocha --parallel -t 100000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
 		"test:integration:quick": "yarn env:test mocha --parallel -t 100000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
 		"start": "yarn start:dev",

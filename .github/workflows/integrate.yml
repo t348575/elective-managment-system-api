@@ -32,10 +32,14 @@ jobs:
         id: current-time
       - name: Discord notification success
         if: success()
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          DISCORD_EMBEDS: '[{"title":"Integration successful","color":2664261,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Event: pull request","value":"[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.number }})"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}],"timestamp":"${{ steps.current-time.outputs.time }}"}]'
-        uses: Ilshidur/action-discord@master
+        uses: hugoalh/GitHubAction.SendToDiscord@v3.0.0
+        with:
+          configuration: ".github/workflows_configuration/integration-success.json"
+          webhook_id: ${{ secrets.DISCORD_ID }}
+          webhook_token: ${{secrets.DISCORD_WEBHOOK_TOKEN}}
+          variable_join: "."
+          variable_prefix: "%"
+          variable_suffix: "%"
       - name: Discord notification failure
         if: failure()
         env:

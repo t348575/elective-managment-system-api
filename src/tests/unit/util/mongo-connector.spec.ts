@@ -21,7 +21,3 @@ describe('MongoDB connector', () => {
         await connector.db.close();
     });
 });
-
-after(async () => {
-    await unitHelper.destructor();
-});

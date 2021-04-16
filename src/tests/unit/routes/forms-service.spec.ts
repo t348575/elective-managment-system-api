@@ -133,7 +133,3 @@ describe('Forms service', () => {
     });
 
 });
-
-after(async () => {
-    await unitHelper.destructor();
-});

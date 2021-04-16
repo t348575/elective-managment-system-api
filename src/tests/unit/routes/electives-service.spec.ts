@@ -49,7 +49,3 @@ describe('Elective service', () => {
         expect(firstElement.teachers[0]).to.not.have.property('password');
     });
 });
-
-after(async () => {
-    await unitHelper.destructor();
-});

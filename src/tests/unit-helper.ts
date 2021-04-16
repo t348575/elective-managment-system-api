@@ -24,8 +24,4 @@ export class UnitHelper {
         constants.mongoConnectionString = await this.server.getUri();
         Container.get(PrivateInjectorInit);
     }
-
-    async destructor(): Promise<void> {
-        await this.server.stop();
-    }
 }

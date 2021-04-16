@@ -123,7 +123,3 @@ describe('User service', () => {
         expect(res.length).to.be.equal(0);
     });
 });
-
-after(async () => {
-    await unitHelper.destructor();
-});

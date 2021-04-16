@@ -263,11 +263,11 @@ export class FormsService extends BaseService<IFormModel> {
                     const parser = new Parser({
                         fields: ['rollNo']
                     });
+                    const notFilled = (
+                        await this.getUnresponsive(successful, Array.from(uniqueBatches.values()))
+                    ).map((e) => e.rollNo).filter(e => failed.findIndex(r => r.item === e) === -1);
                     await new Promise<null>(async (resolveSuccessful) => {
                         try {
-                            const notFilled = (
-                                await this.getUnresponsive(successful, Array.from(uniqueBatches.values()))
-                            ).map((e) => e.rollNo);
                             if (notFilled.length > 0) {
                                 const csvFile = parser.parse(notFilled.map((e) => ({ rollNo: e })));
                                 const writeFailed = createWriteStream(filePath, {
@@ -288,7 +288,7 @@ export class FormsService extends BaseService<IFormModel> {
                     await new Promise<null>((resolveFailed) => {
                         try {
                             if (failed.length > 0) {
-                                const csvFile = parser.parse(failed.map((e) => ({ rollNo: e })));
+                                const csvFile = parser.parse(failed.map((e) => ({ rollNo: e.item })));
                                 const writeFailed = createWriteStream(filePath, {
                                     encoding: 'utf8',
                                     flags: 'a'

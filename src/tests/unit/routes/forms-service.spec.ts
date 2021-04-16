@@ -16,7 +16,7 @@ import { BatchFormatter } from '../../../models/mongo/batch-repository';
 import { PaginationModel } from '../../../models/shared/pagination-model';
 import { DownloadService } from '../../../routes/download/service';
 import { mockAddTemporaryUserLink, MockDownloadService } from '../mocks/mock-download-service';
-import {existsSync, unlinkSync} from 'fs';
+import {existsSync} from 'fs';
 import * as path from 'path';
 import constants from '../../../constants';
 import csv from 'csvtojson';
@@ -119,7 +119,6 @@ describe('Forms service', () => {
             }
             expect(v.rollNo).to.equal(users[i].rollNo);
         }
-        unlinkSync(path.resolve(mockAddTemporaryUserLink.args[0][1]));
     });
 
     it('Should convert form response for elective into classes', async () => {

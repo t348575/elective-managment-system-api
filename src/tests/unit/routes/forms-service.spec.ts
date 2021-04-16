@@ -104,27 +104,33 @@ describe('Forms service', () => {
     });
 
     it('Should generate the form response list', async () => {
-
-        await sendResponsesToForms(users.slice(0, 50));
-
+        await sendResponsesToForms(users.slice(0, 49));
         const res = await formsService.generateList(formId, true, '');
-
         expect(res.failed).to.be.an('array');
-        expect(res.failed.length).to.equal(0);
         expect(res.downloadUri.indexOf(`${constants.baseUrl}/downloads/temp?file=`)).to.equal(0);
         expect(mockAddTemporaryUserLink.callCount).to.equal(1);
         expect(existsSync(path.resolve(mockAddTemporaryUserLink.args[0][1]))).to.be.true;
         const data = await csv().fromFile(path.resolve(mockAddTemporaryUserLink.args[0][1]));
         expect(data).to.be.an('array');
-        expect(data.length).to.equal(50);
         for (const [i, v] of data.entries()) {
+            // eslint-disable-next-line no-prototype-builtins
+            if (!v.hasOwnProperty('batch')) {
+                break;
+            }
             expect(v.rollNo).to.equal(users[i].rollNo);
         }
         unlinkSync(path.resolve(mockAddTemporaryUserLink.args[0][1]));
     });
 
     it('Should convert form response for elective into classes', async () => {
-
+        const res = await formsService.createClass(formId);
+        expect(res).to.haveOwnProperty('failed');
+        expect(res).to.haveOwnProperty('successful');
+        expect(res).to.haveOwnProperty('unresponsive');
+        expect(res.failed).to.be.an('array');
+        expect(res.successful).to.be.an('array');
+        expect(res.unresponsive).to.be.an('array');
+        expect(res.unresponsive.length).to.equal(1);
     });
 
 });

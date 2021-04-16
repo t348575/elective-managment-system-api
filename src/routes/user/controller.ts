@@ -293,6 +293,7 @@ export class UsersController extends Controller {
                     '$lte': new Date(endTime).toISOString()
                 };
             }
+                // eslint-disable-next-line no-empty
             catch(err) {}
         }
         else if (startTime) {

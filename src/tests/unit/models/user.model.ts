@@ -46,7 +46,11 @@ export async function setupMockBatches(count: number): Promise<string[]> {
     const batchIds: string[] = [];
     const batchRepository = Container.get(BatchRepository);
     for (let i = 0; i < count; i++) {
-        await batchRepository.create(batchStringToModel(batches[i]));
+        try {
+            await batchRepository.create(batchStringToModel(batches[i]));
+        }
+            // eslint-disable-next-line no-empty
+        catch(err) {}
         // @ts-ignore
         batchIds.push((await batchRepository.findOne({ batchString: batches[i] })).id);
     }

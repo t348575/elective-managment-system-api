@@ -1,21 +1,25 @@
-[
-    {
-        "title": "Integration successful",
-        "color": 2664261,
-        "fields": [
-            {
-                "name": "Triggered by:",
-                "value": "${{ github.actor }}"
-            },
-            {
-                "name": "Event: pull request",
-                "value": "[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.number }})"
-            },
-            {
-                "name": "Workflow",
-                "value": "[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
-            }
-        ],
-        "timestamp": "${{ steps.current-time.outputs.time }}"
-    }
-]
+{
+    "content": "",
+    "tts": false,
+    "embeds": [
+        {
+            "title": "Integration successful",
+            "color": 2664261,
+            "fields": [
+                {
+                    "name": "Triggered by:",
+                    "value": "${{ github.actor }}"
+                },
+                {
+                    "name": "Event: pull request",
+                    "value": "[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.number }})"
+                },
+                {
+                    "name": "Workflow",
+                    "value": "[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+                }
+            ],
+            "timestamp": "${{ steps.current-time.outputs.time }}"
+        }
+    ]
+}

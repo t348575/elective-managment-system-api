@@ -9,7 +9,7 @@ import { Failed, scopes } from '../../models/types';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import { ResponseRepository } from '../../models/mongo/response-repository';
 import mongoose from 'mongoose';
-import { createWriteStream } from 'fs';
+import { createWriteStream, readdirSync } from 'fs';
 import * as path from 'path';
 import { randomBytes } from 'crypto';
 import constants from '../../constants';
@@ -318,6 +318,8 @@ export class FormsService extends BaseService<IFormModel> {
             });
             file.on('error', (err) => {
                 console.log(err);
+                console.log(process.cwd());
+                console.log(readdirSync(process.cwd()));
                 reject(err);
             });
         });

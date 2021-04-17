@@ -65,6 +65,7 @@
 		}
 	},
 	"dependencies": {
+		"@fast-csv/format": "^4.3.5",
 		"@tsoa/runtime": "^3.6.1",
 		"argon2": "^0.27.1",
 		"cors": "^2.8.5",

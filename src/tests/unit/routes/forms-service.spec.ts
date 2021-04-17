@@ -106,7 +106,6 @@ describe('Forms service', () => {
     it('Should generate the form response list', async () => {
         await sendResponsesToForms(users.slice(0, 49));
         const res = await formsService.generateList(formId, true, '');
-        console.log(res);
         expect(res.failed).to.be.an('array');
         expect(res.downloadUri.indexOf(`${constants.baseUrl}/downloads/temp?file=`)).to.equal(0);
         expect(mockAddTemporaryUserLink.callCount).to.equal(1);

@@ -76,7 +76,7 @@ export class NotificationService extends BaseService<INotificationModel> {
                 const ids = await this.repository.find('', { user: user }, undefined, 0);
                 for (const v of ids) {
                     try {
-                        webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then().catch();
+                        webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then();
                     } catch (errFor) {
                         try {
                             // @ts-ignore
@@ -96,7 +96,7 @@ export class NotificationService extends BaseService<INotificationModel> {
                 const ids = await this.repository.findAndPopulate(batches);
                 for (const v of ids) {
                     try {
-                        webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then().catch();
+                        webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then();
                     } catch (errFor) {
                         try {
                             // @ts-ignore
@@ -114,7 +114,7 @@ export class NotificationService extends BaseService<INotificationModel> {
         const ids = await this.repository.find('', '', undefined, 0);
         for (const v of ids) {
             try {
-                NotificationService.initialNotification(v.sub).then().catch();
+                NotificationService.initialNotification(v.sub).then();
             } catch (err) {
                 try {
                     // @ts-ignore

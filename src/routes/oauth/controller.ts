@@ -46,7 +46,7 @@ export class AuthController extends Controller {
                 redirectUri,
                 clientId,
                 scope,
-                (<any>request).res as ExResponse
+                (request as ExRequest).res as ExResponse
             );
         } else if (idToken && codeChallenge && idToken.length > 0) {
             return this.service.autoLogin(
@@ -56,7 +56,7 @@ export class AuthController extends Controller {
                 redirectUri,
                 clientId,
                 scope,
-                (<any>request).res as ExResponse
+                (request as ExRequest).res as ExResponse
             );
         } else {
             throw new OAuthError({

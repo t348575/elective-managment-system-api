@@ -2,7 +2,7 @@ import { Body, Controller, Get, Put, Query, Request, Response, Route, Security, 
 import { ResponseService } from './service';
 import { ErrorType } from '../../shared/error-handler';
 import { Request as ExRequest } from 'express';
-import { jwtToken } from '../../models/types';
+import { jwtToken, unknownServerError, validationError } from '../../models/types';
 import { Inject, Singleton } from 'typescript-ioc';
 const studentOnly: string[] = ['student'];
 const teacherOrAdmin: string[] = ['admin', 'teacher'];
@@ -24,8 +24,8 @@ export class ResponseController extends Controller {
 
     @Put('')
     @Security('jwt', studentOnly)
-    @Response<ErrorType>(401, 'ValidationError')
-    @Response<ErrorType>(500, 'Unknown server error')
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
     public async formResponse(@Body() options: FormResponseOptions, @Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
@@ -34,8 +34,8 @@ export class ResponseController extends Controller {
 
     @Get('')
     @Security('jwt', teacherOrAdmin)
-    @Response<ErrorType>(401, 'ValidationError')
-    @Response<ErrorType>(500, 'Unknown server error')
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
     public async getResponses(@Query() id: string, @Query() pageNumber: number, @Query() limit: number) {
         return this.service.getPaginated(pageNumber, limit, '', '{"time":"desc"}', {
             form: id

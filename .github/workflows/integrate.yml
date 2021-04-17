@@ -36,7 +36,7 @@ jobs:
         with:
           configuration: ".github/workflows_configuration/integration-success.json"
           webhook_id: ${{ secrets.DISCORD_ID }}
-          webhook_token: ${{secrets.DISCORD_WEBHOOK_TOKEN}}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK }}
           variable_join: "."
           variable_prefix: "%"
           variable_suffix: "%"

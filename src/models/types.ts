@@ -62,3 +62,7 @@ export interface Failed {
     reason: string;
     error?: ErrorType;
 }
+
+export const unknownServerError = 'unknown_server_error';
+
+export const validationError = 'validation_error';

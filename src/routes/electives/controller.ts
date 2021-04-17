@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Post, Query, Request, Response, Route, Security, Tags } from 'tsoa';
 import { ElectivesService } from './service';
-import { DefaultActionResponse, electiveAttributes } from '../../models/types';
+import { DefaultActionResponse, electiveAttributes, unknownServerError, validationError } from '../../models/types';
 import { ApiError, ErrorType, UnknownApiError } from '../../shared/error-handler';
 import { Request as ExRequest } from 'express';
 import { Readable } from 'stream';
@@ -56,8 +56,8 @@ export class ElectivesController extends Controller {
 
     @Post('add')
     @Security('jwt', adminOnly)
-    @Response<ErrorType>(401, 'ValidationError')
-    @Response<ErrorType>(500, 'Unknown server error')
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
     @Response<DefaultActionResponse>(200, 'Success')
     public addElectives(@Body() options: AddElectives[]) {
         return new Promise<DefaultActionResponse>(async (resolve, reject) => {
@@ -82,8 +82,8 @@ export class ElectivesController extends Controller {
 
     @Post('add-csv')
     @Security('jwt', adminOnly)
-    @Response<ErrorType>(401, 'ValidationError')
-    @Response<ErrorType>(500, 'Unknown server error')
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
     @Response<DefaultActionResponse>(200, 'Success')
     public addElectivesCSV(@Request() request: ExRequest) {
         return new Promise<DefaultActionResponse>(async (resolve, reject) => {
@@ -130,8 +130,8 @@ export class ElectivesController extends Controller {
      */
     @Get('')
     @Security('jwt', teacherOrAdmin)
-    @Response<ErrorType>(401, 'ValidationError')
-    @Response<ErrorType>(500, 'Unknown server error')
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
     public async getElectives(
         @Query() pageNumber: number,
         @Query() limit: number,
@@ -162,8 +162,8 @@ export class ElectivesController extends Controller {
 
     @Post('')
     @Security('jwt', teacherOrAdmin)
-    @Response<ErrorType>(401, 'ValidationError')
-    @Response<ErrorType>(500, 'Unknown server error')
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
     public async updateElective(@Body() options: UpdateElectiveOptions) {
         // @ts-ignore
         options._id = options.id;
@@ -175,8 +175,8 @@ export class ElectivesController extends Controller {
 
     @Delete('')
     @Security('jwt', adminOnly)
-    @Response<ErrorType>(401, 'ValidationError')
-    @Response<ErrorType>(500, 'Unknown server error')
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
     public async deleteElective(@Query() id: string) {
         return this.service.delete(id);
     }

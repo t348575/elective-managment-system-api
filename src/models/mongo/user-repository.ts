@@ -49,7 +49,7 @@ const safeAdminRemover = ['password'];
 const safeTeacherRemover = ['password'];
 const safeStudentRemover = ['password'];
 
-export function getSafeUserOmit(role: scopes) {
+export function getSafeUserOmit(role: scopes): string[] {
     switch (role) {
         case 'teacher': {
             return safeTeacherRemover;
@@ -61,6 +61,7 @@ export function getSafeUserOmit(role: scopes) {
             return safeAdminRemover;
         }
     }
+    return [];
 }
 
 @Singleton

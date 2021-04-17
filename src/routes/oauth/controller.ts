@@ -46,7 +46,7 @@ export class AuthController extends Controller {
                 redirectUri,
                 clientId,
                 scope,
-                (<any>request).res as ExResponse
+                (request as ExRequest).res as ExResponse
             );
         } else if (idToken && codeChallenge && idToken.length > 0) {
             return this.service.autoLogin(
@@ -56,7 +56,7 @@ export class AuthController extends Controller {
                 redirectUri,
                 clientId,
                 scope,
-                (<any>request).res as ExResponse
+                (request as ExRequest).res as ExResponse
             );
         } else {
             throw new OAuthError({
@@ -69,7 +69,7 @@ export class AuthController extends Controller {
     @Hidden()
     @Get('login')
     public async login(@Request() request: ExRequest) {
-        const response = (<any>request).res as ExResponse;
+        const response = (request as ExRequest).res as ExResponse;
         return new Promise<null>((resolve, reject) => {
             fs.readFile(path.resolve(__dirname, './../../../resources/public/login.html'), (err, data) => {
                 if (err) {

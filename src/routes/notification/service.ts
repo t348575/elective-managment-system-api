@@ -1,12 +1,11 @@
 import { INotificationModel, NotificationRepository } from '../../models/mongo/notification-repository';
 import { BaseService } from '../../models/shared/base-service';
-import { Inject } from 'typescript-ioc';
+import { Singleton, Inject } from 'typescript-ioc';
 import { SubscribeOptions } from './controller';
 import constants from '../../constants';
 import * as webPush from 'web-push';
 import { ApiError } from '../../shared/error-handler';
 import { BatchRepository } from '../../models/mongo/batch-repository';
-import { Singleton } from 'typescript-ioc';
 
 @Singleton
 export class NotificationService extends BaseService<INotificationModel> {
@@ -15,7 +14,7 @@ export class NotificationService extends BaseService<INotificationModel> {
     constructor() {
         super();
         webPush.setVapidDetails(
-            'mailto:' + constants.mailAccess.username,
+            `mailto:${constants.mailAccess.username}`,
             constants.vapidKeys.publicKey,
             constants.vapidKeys.privateKey
         );
@@ -115,7 +114,7 @@ export class NotificationService extends BaseService<INotificationModel> {
         const ids = await this.repository.find('', '', undefined, 0);
         for (const v of ids) {
             try {
-                NotificationService.initialNotification(v.sub).then();
+                NotificationService.initialNotification(v.sub).then().catch();
             } catch (err) {
                 try {
                     // @ts-ignore

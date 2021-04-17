@@ -9,7 +9,7 @@ import { Failed, scopes } from '../../models/types';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import { ResponseRepository } from '../../models/mongo/response-repository';
 import mongoose from 'mongoose';
-import { createWriteStream, readdirSync } from 'fs';
+import { createWriteStream } from 'fs';
 import * as path from 'path';
 import { randomBytes } from 'crypto';
 import constants from '../../constants';
@@ -170,13 +170,14 @@ export class FormsService extends BaseService<IFormModel> {
             .split(',')
             .map((field) => field.trim())
             .filter(Boolean);
-        if (fieldArray.length)
+        if (fieldArray.length) {
             docs = docs.map((d: { [x: string]: any }) => {
                 const attrs: any = {};
                 // @ts-ignore
                 fieldArray.forEach((f) => (attrs[f] = d[f]));
                 return attrs;
             });
+        }
         return new PaginationModel<Entity>({
             count,
             page,
@@ -188,7 +189,7 @@ export class FormsService extends BaseService<IFormModel> {
 
     public generateList(id: string, closeForm: boolean, userId: string): Promise<GenerateListResponse> {
         return new Promise<GenerateListResponse>(async (resolve, reject) => {
-            const form: IFormModel = (await this.repository.findAndPopulate('', { _id: id }, 0, undefined))[0];
+            const form: IFormModel = (await this.repository.findAndPopulate('', { _id: id }, 0))[0];
             const name = randomBytes(8).toString('hex');
             const filePath = path.join(__dirname, constants.directories.csvTemporary, `${name}.csv`);
             const file = createWriteStream(filePath, {
@@ -274,7 +275,7 @@ export class FormsService extends BaseService<IFormModel> {
                                     encoding: 'utf8',
                                     flags: 'a'
                                 });
-                                writeFailed.write('\n\nUnresponsive students:\n' + csvFile, () => {
+                                writeFailed.write(`\n\nUnresponsive students:\n${csvFile}`, () => {
                                     writeFailed.close();
                                     resolveSuccessful(null);
                                 });
@@ -293,7 +294,7 @@ export class FormsService extends BaseService<IFormModel> {
                                     encoding: 'utf8',
                                     flags: 'a'
                                 });
-                                writeFailed.write('\n\nGeneration failed for students:\n' + csvFile, () => {
+                                writeFailed.write(`\n\nGeneration failed for students:\n${csvFile}`, () => {
                                     writeFailed.close();
                                     resolveFailed(null);
                                 });
@@ -323,7 +324,7 @@ export class FormsService extends BaseService<IFormModel> {
     }
 
     public async createClass(formId: string) {
-        const form: IFormModel = (await this.repository.findAndPopulate('', { _id: formId }, 0, undefined))[0];
+        const form: IFormModel = (await this.repository.findAndPopulate('', { _id: formId }, 0))[0];
         const electiveCountMap = new Map<string, { count: number; users: IUserModel[] }>();
         const failed: string[] = [];
         const successful: string[] = [];
@@ -343,8 +344,7 @@ export class FormsService extends BaseService<IFormModel> {
             {
                 form: mongoose.Types.ObjectId(formId)
             },
-            0,
-            undefined
+            0
         );
         await this.repository.update(formId, {
             end: form.end,

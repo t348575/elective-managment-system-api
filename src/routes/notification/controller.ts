@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Put, Request, Response, Route, Security, Tags, Query } from 'tsoa';
 import { NotificationService } from './service';
 import { ErrorType } from '../../shared/error-handler';
-import { jwtToken } from '../../models/types';
+import { jwtToken, unknownServerError, validationError } from '../../models/types';
 import { Request as ExRequest } from 'express';
 import { Inject, Singleton } from 'typescript-ioc';
 
@@ -30,8 +30,8 @@ export class NotificationController extends Controller {
 
     @Put('subscribe')
     @Security('jwt', scopeArray)
-    @Response<ErrorType>(401, 'ValidationError')
-    @Response<ErrorType>(500, 'Unknown server error')
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
     public async subscribe(@Body() options: SubscribeOptions, @Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
@@ -40,8 +40,8 @@ export class NotificationController extends Controller {
 
     @Post('unsubscribe')
     @Security('jwt', scopeArray)
-    @Response<ErrorType>(401, 'ValidationError')
-    @Response<ErrorType>(500, 'Unknown server error')
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
     public async unsubscribe(@Body() options: SubscribeOptions, @Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
@@ -50,8 +50,8 @@ export class NotificationController extends Controller {
 
     @Get('isSubscribed')
     @Security('jwt', scopeArray)
-    @Response<ErrorType>(401, 'ValidationError')
-    @Response<ErrorType>(500, 'Unknown server error')
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
     public async isSubscribed(
         @Query('name') name: string,
         @Request() request: ExRequest

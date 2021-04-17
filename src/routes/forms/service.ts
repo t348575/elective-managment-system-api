@@ -193,7 +193,7 @@ export class FormsService extends BaseService<IFormModel> {
             const filePath = path.join(__dirname, constants.directories.csvTemporary, `${name}.csv`);
             const file = createWriteStream(filePath, {
                 encoding: 'utf8',
-                flags: 'a'
+                flags: 'w+'
             });
             const electiveCountMap = new Map<string, number>();
             const failed: Failed[] = [];
@@ -317,6 +317,7 @@ export class FormsService extends BaseService<IFormModel> {
                 })();
             });
             file.on('error', (err) => {
+                console.log('here');
                 reject(err);
             });
         });

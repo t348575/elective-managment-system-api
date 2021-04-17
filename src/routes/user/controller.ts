@@ -293,9 +293,8 @@ export class UsersController extends Controller {
                     '$lte': new Date(endTime).toISOString()
                 };
             }
-            catch(err) {
-                console.log(err);
-            }
+                // eslint-disable-next-line no-empty
+            catch(err) {}
         }
         else if (startTime) {
             query.createdAt = {

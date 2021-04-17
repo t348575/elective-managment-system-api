@@ -9,7 +9,7 @@ import { Failed, scopes } from '../../models/types';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import { ResponseRepository } from '../../models/mongo/response-repository';
 import mongoose from 'mongoose';
-import { createWriteStream } from 'fs';
+import { createWriteStream, readdirSync } from 'fs';
 import * as path from 'path';
 import { randomBytes } from 'crypto';
 import constants from '../../constants';
@@ -19,12 +19,6 @@ import { NotificationService } from '../notification/service';
 import { Parser } from 'json2csv';
 import { ClassService } from '../classes/service';
 import { Inject, Singleton } from 'typescript-ioc';
-
-export interface AssignedElective {
-    rollNo: string;
-    batch: string;
-    electives: string[];
-}
 
 @Singleton
 export class FormsService extends BaseService<IFormModel> {
@@ -40,7 +34,7 @@ export class FormsService extends BaseService<IFormModel> {
         super();
     }
 
-    public async createForm(options: CreateFormOptions) {
+    public async createForm(options: CreateFormOptions): Promise<IFormModel> {
         try {
             const now = new Date();
             const batches = [];
@@ -140,7 +134,8 @@ export class FormsService extends BaseService<IFormModel> {
                     return e.electives.length > 0;
                 });
             }
-            case 'admin': {
+        case 'teacher':
+        case 'admin': {
                 return this.repository.findActive({
                     end: { $gte: new Date() },
                     active: true
@@ -155,7 +150,7 @@ export class FormsService extends BaseService<IFormModel> {
         // @ts-ignore
         delete options.id;
         // @ts-ignore
-        return this.repository.findAndUpdate({ _id: options._id }, options);
+        return this.repository.findAndUpdate({ _id: mongoose.Types.ObjectId(options._id) }, options);
     }
 
     public async getPaginated<Entity>(
@@ -198,7 +193,7 @@ export class FormsService extends BaseService<IFormModel> {
             const filePath = path.join(__dirname, constants.directories.csvTemporary, `${name}.csv`);
             const file = createWriteStream(filePath, {
                 encoding: 'utf8',
-                flags: 'a'
+                flags: 'w+'
             });
             const electiveCountMap = new Map<string, number>();
             const failed: Failed[] = [];
@@ -268,11 +263,11 @@ export class FormsService extends BaseService<IFormModel> {
                     const parser = new Parser({
                         fields: ['rollNo']
                     });
+                    const notFilled = (
+                        await this.getUnresponsive(successful, Array.from(uniqueBatches.values()))
+                    ).map((e) => e.rollNo).filter(e => failed.findIndex(r => r.item === e) === -1);
                     await new Promise<null>(async (resolveSuccessful) => {
                         try {
-                            const notFilled = (
-                                await this.getUnresponsive(successful, Array.from(uniqueBatches.values()))
-                            ).map((e) => e.rollNo);
                             if (notFilled.length > 0) {
                                 const csvFile = parser.parse(notFilled.map((e) => ({ rollNo: e })));
                                 const writeFailed = createWriteStream(filePath, {
@@ -293,7 +288,7 @@ export class FormsService extends BaseService<IFormModel> {
                     await new Promise<null>((resolveFailed) => {
                         try {
                             if (failed.length > 0) {
-                                const csvFile = parser.parse(failed.map((e) => ({ rollNo: e })));
+                                const csvFile = parser.parse(failed.map((e) => ({ rollNo: e.item })));
                                 const writeFailed = createWriteStream(filePath, {
                                     encoding: 'utf8',
                                     flags: 'a'

@@ -34,7 +34,8 @@ export class ClassService extends BaseService<IClassModel> {
                             // @ts-ignore
                             batch: batch.id,
                             students: chunk,
-                            teacher: elective.teachers[i]
+                            // @ts-ignore
+                            teacher: elective.teachers[i].id
                         });
                         await this.userRepository.addClassToStudents(chunk, classId);
                         this.notificationService

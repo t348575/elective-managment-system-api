@@ -17,7 +17,7 @@ export abstract class BaseFormatter {
                     this[key] = ImmutabilityHelper.copy(args[key]);
                     if (args[key] instanceof Date) {
                         // @ts-ignore
-                        this[key] = args[key];
+                        this[key] = args[key].toISOString();
                     }
                 }
             }

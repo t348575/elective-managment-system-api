@@ -191,6 +191,7 @@ export class FormsService extends BaseService<IFormModel> {
             const form: IFormModel = (await this.repository.findAndPopulate('', { _id: id }, 0, undefined))[0];
             const name = randomBytes(8).toString('hex');
             const filePath = path.join(__dirname, constants.directories.csvTemporary, `${name}.csv`);
+            console.log(filePath);
             const file = createWriteStream(filePath, {
                 encoding: 'utf8',
                 flags: 'a'

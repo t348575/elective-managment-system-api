@@ -109,7 +109,9 @@ describe('Forms service', () => {
         expect(res.failed).to.be.an('array');
         expect(res.downloadUri.indexOf(`${constants.baseUrl}/downloads/temp?file=`)).to.equal(0);
         expect(mockAddTemporaryUserLink.callCount).to.equal(1);
+        console.log('a');
         expect(existsSync(path.resolve(mockAddTemporaryUserLink.args[0][1]))).to.be.true;
+        console.log('b');
         const data = await csv().fromFile(path.resolve(mockAddTemporaryUserLink.args[0][1]));
         expect(data).to.be.an('array');
         for (const [i, v] of data.entries()) {

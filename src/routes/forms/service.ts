@@ -317,7 +317,7 @@ export class FormsService extends BaseService<IFormModel> {
                 })();
             });
             file.on('error', (err) => {
-                console.log('here');
+                console.log(err);
                 reject(err);
             });
         });

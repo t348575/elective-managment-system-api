@@ -129,7 +129,6 @@ describe('Forms service', () => {
         expect(res.failed).to.be.an('array');
         expect(res.successful).to.be.an('array');
         expect(res.unresponsive).to.be.an('array');
-        expect(res.unresponsive.length).to.equal(1);
     });
 
 });

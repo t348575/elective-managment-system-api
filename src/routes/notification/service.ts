@@ -115,7 +115,7 @@ export class NotificationService extends BaseService<INotificationModel> {
         const ids = await this.repository.find('', '', undefined, 0);
         for (const v of ids) {
             try {
-                NotificationService.initialNotification(v.sub).then();
+                NotificationService.initialNotification(v.sub).then().catch();
             } catch (err) {
                 try {
                     // @ts-ignore

@@ -1,6 +1,6 @@
 import { BaseService } from '../../models/shared/base-service';
 import { IResponseModel, ResponseRepository } from '../../models/mongo/response-repository';
-import { Inject } from 'typescript-ioc';
+import { Singleton, Inject } from 'typescript-ioc';
 import { UserRepository } from '../../models/mongo/user-repository';
 import { FormResponseOptions } from './controller';
 import { jwtToken } from '../../models/types';
@@ -8,7 +8,6 @@ import { FormsRepository } from '../../models/mongo/form-repository';
 import { ApiError } from '../../shared/error-handler';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import mongoose from 'mongoose';
-import { Singleton } from 'typescript-ioc';
 
 @Singleton
 export class ResponseService extends BaseService<IResponseModel> {
@@ -114,13 +113,14 @@ export class ResponseService extends BaseService<IResponseModel> {
             .split(',')
             .map((field) => field.trim())
             .filter(Boolean);
-        if (fieldArray.length)
+        if (fieldArray.length) {
             docs = docs.map((d: { [x: string]: any }) => {
                 const attrs: any = {};
                 // @ts-ignore
                 fieldArray.forEach((f) => (attrs[f] = d[f]));
                 return attrs;
             });
+        }
         return new PaginationModel<Entity>({
             count,
             page,

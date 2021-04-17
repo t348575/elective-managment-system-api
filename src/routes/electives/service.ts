@@ -210,13 +210,14 @@ export class ElectivesService extends BaseService<IElectiveModel> {
             .split(',')
             .map((field) => field.trim())
             .filter(Boolean);
-        if (fieldArray.length)
+        if (fieldArray.length) {
             docs = docs.map((d: { [x: string]: any }) => {
                 const attrs: any = {};
                 // @ts-ignore
                 fieldArray.forEach((f) => (attrs[f] = d[f]));
                 return attrs;
             });
+        }
         return new PaginationModel<Entity>({
             count,
             page,

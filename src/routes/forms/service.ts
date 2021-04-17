@@ -9,7 +9,7 @@ import { Failed, scopes } from '../../models/types';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import { ResponseRepository } from '../../models/mongo/response-repository';
 import mongoose from 'mongoose';
-import { createWriteStream, readdirSync } from 'fs';
+import { createWriteStream } from 'fs';
 import * as path from 'path';
 import { randomBytes } from 'crypto';
 import constants from '../../constants';

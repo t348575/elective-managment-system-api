@@ -1,4 +1,4 @@
-import { Inject } from 'typescript-ioc';
+import { Singleton, Inject } from 'typescript-ioc';
 import * as argon2 from 'argon2';
 import { UserRepository } from '../../models/mongo/user-repository';
 import { Request as ExRequest, Response as ExResponse } from 'express';
@@ -11,7 +11,8 @@ import { RedisConnector } from '../../shared/redis-connector';
 import { jwtToken, refreshTokenResponse, scopes, tokenResponse } from '../../models/types';
 import * as qs from 'querystring';
 import { TrackRepository } from '../../models/mongo/track-repository';
-import { Singleton } from 'typescript-ioc';
+
+const userDoesNotExist = 'User does not exist';
 
 @Singleton
 export class AuthService extends BaseService<IAuthTokenRequest> {
@@ -64,9 +65,7 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                                                                 response.json({ code: jwt.jwt });
                                                                 resolve(null);
                                                             } else {
-                                                                response.redirect(
-                                                                    redirectUri + '?' + qs.stringify({ code: jwt.jwt })
-                                                                );
+                                                                response.redirect(`${redirectUri}?${qs.stringify({ code: jwt.jwt })}`);
                                                                 resolve(null);
                                                             }
                                                         } else {
@@ -116,7 +115,7 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                                 return reject(
                                     new OAuthError({
                                         name: 'access_denied',
-                                        error_description: 'User does not exist'
+                                        error_description: userDoesNotExist
                                     })
                                 );
                             });
@@ -134,7 +133,7 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                         return reject(
                             new OAuthError({
                                 name: 'access_denied',
-                                error_description: 'User does not exist'
+                                error_description: userDoesNotExist
                             })
                         );
                     }
@@ -185,16 +184,14 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                                                         response.json({ code: jwt.jwt });
                                                         resolve(null);
                                                     } else {
-                                                        response.redirect(
-                                                            redirectUri + '?' + qs.stringify({ code: jwt.jwt })
-                                                        );
+                                                        response.redirect(`${redirectUri}?${qs.stringify({ code: jwt.jwt })}`);
                                                         resolve(null);
                                                     }
                                                 } else {
                                                     return reject(
                                                         new OAuthError({
                                                             name: 'access_denied',
-                                                            error_description: 'User does not exist'
+                                                            error_description: userDoesNotExist
                                                         })
                                                     );
                                                 }
@@ -347,16 +344,8 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                             scope
                         );
                         await this.redis.setex(`idToken::${id}::${idToken.expiry}`, idToken.expiry, idToken.jwt);
-                        await this.redis.setex(
-                            `accessToken::${id}::${accessToken.expiry}`,
-                            accessToken.expiry,
-                            accessToken.jwt
-                        );
-                        await this.redis.setex(
-                            `refreshToken::${id}::${refreshToken.expiry}`,
-                            refreshToken.expiry,
-                            refreshToken.jwt
-                        );
+                        await this.redis.setex(`accessToken::${id}::${accessToken.expiry}`, accessToken.expiry, accessToken.jwt);
+                        await this.redis.setex(`refreshToken::${id}::${refreshToken.expiry}`, refreshToken.expiry, refreshToken.jwt);
                         resolve({
                             id_token: idToken.jwt,
                             access_token: accessToken.jwt,
@@ -414,7 +403,7 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
         });
     }
 
-    public logout(jwtAccess: jwtToken, jwtId: jwtToken, jwtRefresh: jwtToken, response: ExResponse): Promise<null> {
+    public logout(jwtAccess: jwtToken, jwtId: jwtToken, jwtRefresh: jwtToken): Promise<null> {
         return new Promise<null>((resolve, reject) => {
             this.repository
                 .getById(jwtAccess.id)
@@ -423,7 +412,6 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                         await this.redis.remove(`accessToken::${jwtAccess.id}::${jwtAccess.exp}`);
                         await this.redis.remove(`refreshToken::${jwtAccess.id}::${jwtRefresh.exp}`);
                         await this.redis.remove(`idToken::${jwtAccess.id}::${jwtId.exp}`);
-                        response.redirect(constants.baseUrl);
                         resolve(null);
                     } catch (err) {
                         reject(err);

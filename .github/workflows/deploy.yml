@@ -1,0 +1,75 @@
+name: Node CD
+on:
+  push:
+    branches: [master]
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@master
+      - name: Setup node
+        uses: actions/setup-node@master
+        with:
+          node-version: '15'
+      - name: Setup sonar-scanner
+        uses: warchant/setup-sonar-scanner@v3
+      - name: Setup cache
+        uses: c-hive/gha-yarn-cache@v1
+      - name: Install dependencies
+        run: yarn install
+      - name: Run tests
+        run: yarn test:unit
+      - name: Run sonar-scanner
+        run: sonar-scanner
+              -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+  deploy:
+    needs: [prepare]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup repository
+        uses: actions/checkout@v2
+      - name: Setup docker
+        uses: docker/setup-buildx-action@v1
+      - name: Add insecure registries
+        run: |
+              sudo rm -rf /etc/docker/daemon.json
+              echo '{"experimental":false,"insecure-registries":["amrita-elective.tk:5000"]}\n' | sudo tee -a /etc/docker/daemon.json
+              sudo systemctl restart docker
+      - name: Login to private registry
+        uses: docker/login-action@v1
+        with:
+          registry: amrita-elective.tk:5000
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PWD }}
+      - name: Build container
+        run: docker build -t amrita-elective.tk:5000/api .
+      - name: Push to registry
+        run: docker push amrita-elective.tk:5000/api
+      - name: Webhook to pull & run new image
+        uses: fjogeleit/http-request-action@v1.8.0
+        id: startContainer
+        with:
+          url: "http://amrita-elective.tk:4000/new-api-container"
+          method: 'POST'
+          data: ${{ secrets.EC2_LOGIN }}
+          timeout: 300000
+      - name: set time
+        uses: gerred/actions/current-time@master
+        id: current-time
+      - if: ${{ steps.startContainer.outputs.response == '"OK"' }}
+        name: Discord notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_EMBEDS: '[{"title":"Deployment successful","color":2664261,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}],"timestamp":"${{ steps.current-time.outputs.time }}"}]'
+        uses: Ilshidur/action-discord@master
+      - if: ${{ steps.startContainer.outputs.response != '"OK"' }}
+        name: Discord notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_EMBEDS: '[{"title":"Deployment failed","color":12845619,"fields":[{"name":"Triggered by:","value":"${{ github.actor }}"},{"name":"Workflow","value":"[${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}],"timestamp":"${{ steps.current-time.outputs.time }}"}]'
+        uses: Ilshidur/action-discord@master
+      - if: ${{ steps.startContainer.outputs.response == '"OK"' }}
+        run: exit 0
+      - if: ${{ steps.startContainer.outputs.response != '"OK"' }}
+        run: exit 1

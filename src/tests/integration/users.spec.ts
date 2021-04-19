@@ -1,11 +1,18 @@
 import { expect } from 'chai';
 import supertest from 'supertest';
-import { server as importApp } from '../../server';
+import { initServer, server as importApp } from '../../server';
 import { IntegrationHelper } from '../integration-helper';
 import testingConstants from '../testing-constants';
 
-const app = supertest(importApp);
-const integrationHelper = new IntegrationHelper(app);
+let app: supertest.SuperTest<supertest.Test>;
+let integrationHelper: IntegrationHelper;
+
+before(async () => {
+    app = supertest(importApp);
+    integrationHelper = new IntegrationHelper(app);
+    await integrationHelper.initMongoMemoryServer();
+    initServer();
+});
 
 describe(testingConstants.users.name, () => {
     describe(testingConstants.users.basicRoute, () => {

@@ -2,30 +2,33 @@ import { UnitHelper } from '../../unit-helper';
 const unitHelper = new UnitHelper();
 import { Container } from 'typescript-ioc';
 import * as argon2 from 'argon2';
-import { PrivateInjectorInit } from '../../../routes/private-injector-init';
 import { getMockUsers, setupMockUsers } from '../models/user.model';
 import { IUserModel, UserFormatter } from '../../../models/mongo/user-repository';
 import { UsersService } from '../../../routes/user/service';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { MockMailService, replaceSpy } from '../other/mock-mail-service';
+import { MockMailService, mockMailReplaceSpy } from '../mocks/mock-mail-service';
 import { MailService } from '../../../shared/mail-service';
 import * as qs from 'query-string';
+
 chai.use(chaiAsPromised);
+
 let users: IUserModel[] = [];
 let code: string;
+
 before(async () => {
-    await unitHelper.init();
-    Container.get(PrivateInjectorInit);
+    await unitHelper.initMongoMemoryServer();
     Container.bind(MailService).to(MockMailService);
     users = await setupMockUsers();
 });
 
 describe('User service', () => {
     afterEach(() => {
-        replaceSpy.resetHistory();
+        mockMailReplaceSpy.resetHistory();
     });
+
     const userService = Container.get(UsersService);
+
     it('Should return basic user details', async () => {
         for (const v of users) {
             // @ts-ignore
@@ -42,7 +45,7 @@ describe('User service', () => {
         const res = await userService.createUsers(getMockUsers(), { defaultRollNoAsEmail: false });
         expect(res).to.be.an('array');
         expect(res.length).to.be.equal(0);
-        expect(replaceSpy.callCount).is.equal(1);
+        expect(mockMailReplaceSpy.callCount).is.equal(1);
     });
 
     it('Update password works', async () => {
@@ -59,11 +62,11 @@ describe('User service', () => {
         const res = await userService.requestReset(users[0].username);
         expect(res).to.have.property('status');
         expect(res.status).to.be.true;
-        expect(qs.parseUrl(replaceSpy.args[0][1][0].url).query.code).to.be.a('string');
+        expect(qs.parseUrl(mockMailReplaceSpy.args[0][1][0].url).query.code).to.be.a('string');
         // @ts-ignore
-        expect(qs.parseUrl(replaceSpy.args[0][1][0].url).query.code.length).to.be.equal(64);
+        expect(qs.parseUrl(mockMailReplaceSpy.args[0][1][0].url).query.code.length).to.be.equal(64);
         // @ts-ignore
-        code = qs.parseUrl(replaceSpy.args[0][1][0].url).query.code;
+        code = qs.parseUrl(mockMailReplaceSpy.args[0][1][0].url).query.code;
     });
 
     it('Password reset code should exist', async () => {

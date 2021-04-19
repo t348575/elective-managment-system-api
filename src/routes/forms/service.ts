@@ -5,7 +5,7 @@ import { CreateFormOptions, GenerateListResponse, UpdateFormOptions } from './co
 import { ElectiveRepository, IElectiveModel } from '../../models/mongo/elective-repository';
 import { ApiError, UnknownApiError } from '../../shared/error-handler';
 import { IUserModel, UserRepository } from '../../models/mongo/user-repository';
-import { scopes } from '../../models/types';
+import { Failed, scopes } from '../../models/types';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import { ResponseRepository } from '../../models/mongo/response-repository';
 import mongoose from 'mongoose';
@@ -19,12 +19,6 @@ import { NotificationService } from '../notification/service';
 import { Parser } from 'json2csv';
 import { ClassService } from '../classes/service';
 import { Inject, Singleton } from 'typescript-ioc';
-
-export interface AssignedElective {
-    rollNo: string;
-    batch: string;
-    electives: string[];
-}
 
 @Singleton
 export class FormsService extends BaseService<IFormModel> {
@@ -40,7 +34,7 @@ export class FormsService extends BaseService<IFormModel> {
         super();
     }
 
-    public async createForm(options: CreateFormOptions) {
+    public async createForm(options: CreateFormOptions): Promise<IFormModel> {
         try {
             const now = new Date();
             const batches = [];
@@ -140,7 +134,8 @@ export class FormsService extends BaseService<IFormModel> {
                     return e.electives.length > 0;
                 });
             }
-            case 'admin': {
+        case 'teacher':
+        case 'admin': {
                 return this.repository.findActive({
                     end: { $gte: new Date() },
                     active: true
@@ -155,7 +150,7 @@ export class FormsService extends BaseService<IFormModel> {
         // @ts-ignore
         delete options.id;
         // @ts-ignore
-        return this.repository.findAndUpdate({ _id: options._id }, options);
+        return this.repository.findAndUpdate({ _id: mongoose.Types.ObjectId(options._id) }, options);
     }
 
     public async getPaginated<Entity>(
@@ -175,13 +170,14 @@ export class FormsService extends BaseService<IFormModel> {
             .split(',')
             .map((field) => field.trim())
             .filter(Boolean);
-        if (fieldArray.length)
+        if (fieldArray.length) {
             docs = docs.map((d: { [x: string]: any }) => {
                 const attrs: any = {};
                 // @ts-ignore
                 fieldArray.forEach((f) => (attrs[f] = d[f]));
                 return attrs;
             });
+        }
         return new PaginationModel<Entity>({
             count,
             page,
@@ -193,15 +189,15 @@ export class FormsService extends BaseService<IFormModel> {
 
     public generateList(id: string, closeForm: boolean, userId: string): Promise<GenerateListResponse> {
         return new Promise<GenerateListResponse>(async (resolve, reject) => {
-            const form: IFormModel = (await this.repository.findAndPopulate('', { _id: id }, 0, undefined))[0];
+            const form: IFormModel = (await this.repository.findAndPopulate('', { _id: id }, 0))[0];
             const name = randomBytes(8).toString('hex');
             const filePath = path.join(__dirname, constants.directories.csvTemporary, `${name}.csv`);
             const file = createWriteStream(filePath, {
                 encoding: 'utf8',
-                flags: 'a'
+                flags: 'w+'
             });
             const electiveCountMap = new Map<string, number>();
-            const failed: string[] = [];
+            const failed: Failed[] = [];
             const successful: string[] = [];
             const uniqueBatches = new Set<string>();
             for (const elective of form.electives) {
@@ -227,7 +223,10 @@ export class FormsService extends BaseService<IFormModel> {
                         };
                     }
                 }
-                failed.push(rollNo);
+                failed.push({
+                    item: rollNo,
+                    reason: 'no_space'
+                });
                 return {
                     elective: '',
                     version: 0
@@ -265,18 +264,18 @@ export class FormsService extends BaseService<IFormModel> {
                     const parser = new Parser({
                         fields: ['rollNo']
                     });
+                    const notFilled = (
+                        await this.getUnresponsive(successful, Array.from(uniqueBatches.values()))
+                    ).map((e) => e.rollNo).filter(e => failed.findIndex(r => r.item === e) === -1);
                     await new Promise<null>(async (resolveSuccessful) => {
                         try {
-                            const notFilled = (
-                                await this.getUnresponsive(successful, Array.from(uniqueBatches.values()))
-                            ).map((e) => e.rollNo);
                             if (notFilled.length > 0) {
                                 const csvFile = parser.parse(notFilled.map((e) => ({ rollNo: e })));
                                 const writeFailed = createWriteStream(filePath, {
                                     encoding: 'utf8',
                                     flags: 'a'
                                 });
-                                writeFailed.write('\n\nUnresponsive students:\n' + csvFile, () => {
+                                writeFailed.write(`\n\nUnresponsive students:\n${csvFile}`, () => {
                                     writeFailed.close();
                                     resolveSuccessful(null);
                                 });
@@ -290,12 +289,12 @@ export class FormsService extends BaseService<IFormModel> {
                     await new Promise<null>((resolveFailed) => {
                         try {
                             if (failed.length > 0) {
-                                const csvFile = parser.parse(failed.map((e) => ({ rollNo: e })));
+                                const csvFile = parser.parse(failed.map((e) => ({ rollNo: e.item })));
                                 const writeFailed = createWriteStream(filePath, {
                                     encoding: 'utf8',
                                     flags: 'a'
                                 });
-                                writeFailed.write('\n\nGeneration failed for students:\n' + csvFile, () => {
+                                writeFailed.write(`\n\nGeneration failed for students:\n${csvFile}`, () => {
                                     writeFailed.close();
                                     resolveFailed(null);
                                 });
@@ -307,7 +306,7 @@ export class FormsService extends BaseService<IFormModel> {
                         }
                     });
                     try {
-                        const link = await this.downloadService.addTemporaryUserLink([userId], filePath);
+                        const link = await this.downloadService.addTemporaryUserLink(userId, filePath);
                         resolve({
                             status: failed.length === 0,
                             downloadUri: `${constants.baseUrl}/downloads/temp?file=${link}`,
@@ -325,7 +324,7 @@ export class FormsService extends BaseService<IFormModel> {
     }
 
     public async createClass(formId: string) {
-        const form: IFormModel = (await this.repository.findAndPopulate('', { _id: formId }, 0, undefined))[0];
+        const form: IFormModel = (await this.repository.findAndPopulate('', { _id: formId }, 0))[0];
         const electiveCountMap = new Map<string, { count: number; users: IUserModel[] }>();
         const failed: string[] = [];
         const successful: string[] = [];
@@ -345,8 +344,7 @@ export class FormsService extends BaseService<IFormModel> {
             {
                 form: mongoose.Types.ObjectId(formId)
             },
-            0,
-            undefined
+            0
         );
         await this.repository.update(formId, {
             end: form.end,

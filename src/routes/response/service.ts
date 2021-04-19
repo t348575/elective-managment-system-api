@@ -1,6 +1,6 @@
 import { BaseService } from '../../models/shared/base-service';
 import { IResponseModel, ResponseRepository } from '../../models/mongo/response-repository';
-import { Inject } from 'typescript-ioc';
+import { Singleton, Inject } from 'typescript-ioc';
 import { UserRepository } from '../../models/mongo/user-repository';
 import { FormResponseOptions } from './controller';
 import { jwtToken } from '../../models/types';
@@ -8,7 +8,6 @@ import { FormsRepository } from '../../models/mongo/form-repository';
 import { ApiError } from '../../shared/error-handler';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import mongoose from 'mongoose';
-import { Singleton } from 'typescript-ioc';
 
 @Singleton
 export class ResponseService extends BaseService<IResponseModel> {
@@ -28,12 +27,11 @@ export class ResponseService extends BaseService<IResponseModel> {
                     message: 'A response has already been submitted for the selected form'
                 });
             } else {
-                const s = new Set(options.electives);
-                options.electives = Array.from(s.values());
+                options.electives = [...new Set(options.electives)];
                 const user = await this.userRepository.getById(token.id);
                 const form = (await this.formsRepository.findActive({ end: { $gte: new Date() } })).filter((e) => {
                     // @ts-ignore
-                    e.electives = e.electives.filter((v) => v.batches.indexOf(user.batch?.id) > -1);
+                    e.electives = e.electives.filter((v) => v.batches.indexOf(user.batch) > -1);
                     return e.electives.length > 0;
                 });
                 const idx = form.findIndex((e) => e.id === options.id);
@@ -115,13 +113,14 @@ export class ResponseService extends BaseService<IResponseModel> {
             .split(',')
             .map((field) => field.trim())
             .filter(Boolean);
-        if (fieldArray.length)
+        if (fieldArray.length) {
             docs = docs.map((d: { [x: string]: any }) => {
                 const attrs: any = {};
                 // @ts-ignore
                 fieldArray.forEach((f) => (attrs[f] = d[f]));
                 return attrs;
             });
+        }
         return new PaginationModel<Entity>({
             count,
             page,

@@ -1,0 +1,16 @@
+name: Notfiy
+on:
+  push:
+    branches-ignore:
+      - master
+
+jobs:
+  notify_discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify commit
+        uses: sarisia/actions-status-discord@v1.8.5
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "commit"
+

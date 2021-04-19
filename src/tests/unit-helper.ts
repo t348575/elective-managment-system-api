@@ -8,7 +8,7 @@ import { PrivateInjectorInit } from '../routes/private-injector-init';
 import {Container} from 'typescript-ioc';
 
 dotenv.config({
-    path: path.resolve(process.cwd(), process.env.NODE_ENV + '.env')
+    path: path.resolve(process.cwd(), `${process.env.NODE_ENV}.env`)
 });
 export class UnitHelper {
 

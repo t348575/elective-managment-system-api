@@ -5,8 +5,8 @@ import { Singleton } from 'typescript-ioc';
 
 @Singleton
 export class MongoConnector {
-    public db: mongoose.Connection;
-    private connectionString: string;
+    public readonly db: mongoose.Connection;
+    private readonly connectionString: string;
     constructor() {
         if (constants.environment === 'debug') {
             mongoose.set(constants.environment, Logger.shouldLog);

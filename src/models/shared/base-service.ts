@@ -27,13 +27,14 @@ export abstract class BaseService<EntityModel> {
             .split(',')
             .map((field) => field.trim())
             .filter(Boolean);
-        if (fieldArray.length)
+        if (fieldArray.length) {
             docs = docs.map((d: { [x: string]: any }) => {
                 const attrs: any = {};
                 // @ts-ignore
                 fieldArray.forEach((f) => (attrs[f] = d[f]));
                 return attrs;
             });
+        }
         return new PaginationModel<EntityModel>({
             count,
             page,
@@ -55,6 +56,8 @@ export abstract class BaseService<EntityModel> {
 
     public async delete(id: string): Promise<void> {
         const res = await this.repository.delete(id);
-        if (!res.n) throw new ApiError(constants.errorTypes.notFound);
+        if (!res.n) {
+            throw new ApiError(constants.errorTypes.notFound);
+        }
     }
 }

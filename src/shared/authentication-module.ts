@@ -10,6 +10,10 @@ const invalidRefreshToken = new OAuthError({
 });
 
 const redis = new RedisConnector();
+
+const jwtDoesNotContainScope = 'JWT does not contain required scope';
+const tokenNoExist = 'Token does not exist';
+
 export function expressAuthentication(req: express.Request, securityName: string, scopes: string[]): Promise<any> {
     switch (securityName) {
         case 'userId':
@@ -32,7 +36,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                                 reject(
                                     new OAuthError({
                                         name: 'invalid_scope',
-                                        error_description: 'JWT does not contain required scope'
+                                        error_description: jwtDoesNotContainScope
                                     })
                                 );
                             }
@@ -51,7 +55,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                                                         reject(
                                                             new OAuthError({
                                                                 name: 'invalid_scope',
-                                                                error_description: 'JWT does not contain required scope'
+                                                                error_description: jwtDoesNotContainScope
                                                             })
                                                         );
                                                     }
@@ -67,7 +71,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                                                         reject(
                                                             new OAuthError({
                                                                 name: 'access_denied',
-                                                                error_description: 'Token does not exist'
+                                                                error_description: tokenNoExist
                                                             })
                                                         );
                                                     }
@@ -107,7 +111,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                                                         reject(
                                                             new OAuthError({
                                                                 name: 'invalid_scope',
-                                                                error_description: 'JWT does not contain required scope'
+                                                                error_description: jwtDoesNotContainScope
                                                             })
                                                         );
                                                     }
@@ -129,7 +133,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                                                                         new OAuthError({
                                                                             name: 'invalid_scope',
                                                                             error_description:
-                                                                                'JWT does not contain required scope'
+                                                                                jwtDoesNotContainScope
                                                                         })
                                                                     );
                                                                 }
@@ -147,7 +151,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                                                                     reject(
                                                                         new OAuthError({
                                                                             name: 'access_denied',
-                                                                            error_description: 'Token does not exist'
+                                                                            error_description: tokenNoExist
                                                                         })
                                                                     );
                                                                 }
@@ -165,7 +169,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                                                     reject(
                                                         new OAuthError({
                                                             name: 'access_denied',
-                                                            error_description: 'Token does not exist'
+                                                            error_description: tokenNoExist
                                                         })
                                                     );
                                                 }
@@ -193,7 +197,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                                 reject(
                                     new OAuthError({
                                         name: 'access_denied',
-                                        error_description: 'Token does not exist'
+                                        error_description: tokenNoExist
                                     })
                                 );
                             }
@@ -235,7 +239,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                             reject(
                                 new OAuthError({
                                     name: 'access_denied',
-                                    error_description: 'Token does not exist'
+                                    error_description: tokenNoExist
                                 })
                             );
                         }

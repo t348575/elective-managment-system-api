@@ -11,11 +11,18 @@ export class ImmutabilityHelper {
     public static immute<T>(variable: any): T {
         let copy: T;
         const variableType: string = ImmutabilityHelper.getType(variable);
-        if (variable instanceof mongoose.Types.ObjectId) copy = variable.toString();
-        else if (variableType === 'object') copy = { ...variable };
-        else if (variableType === 'array') copy = variable.slice();
-        else copy = variable;
-
+        if (variable instanceof mongoose.Types.ObjectId) {
+            copy = variable.toString();
+        }
+        else if (variableType === 'object') {
+            copy = { ...variable };
+        }
+        else if (variableType === 'array') {
+            copy = variable.slice();
+        }
+        else {
+            copy = variable;
+        }
         return copy as T;
     }
 
@@ -27,11 +34,21 @@ export class ImmutabilityHelper {
             const loopable = !!(valueType === 'object' || valueType === 'array');
             const loopHandler = (index: string | number) => {
                 value[index] = ImmutabilityHelper.immute(value[index]);
-                if (loopable) loop(value[index]);
+                if (loopable) {
+                    loop(value[index]);
+                }
             };
 
-            if (valueType === 'object') for (const index in value) loopHandler(index);
-            if (valueType === 'array') for (let index = 0; index < value.length; index++) loopHandler(index);
+            if (valueType === 'object') {
+                for (const index in value) {
+                    loopHandler(index);
+                }
+            }
+            if (valueType === 'array') {
+                for (let index = 0; index < value.length; index++) {
+                    loopHandler(index);
+                }
+            }
         };
 
         loop(result);

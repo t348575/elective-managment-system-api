@@ -1,4 +1,4 @@
-import { Inject } from 'typescript-ioc';
+import { Singleton, Inject } from 'typescript-ioc';
 import { IUserModel, UserFormatter, UserRepository } from '../../models/mongo/user-repository';
 import { BaseService } from '../../models/shared/base-service';
 import { DefaultResponse, Failed, scopes } from '../../models/types';
@@ -17,7 +17,6 @@ import {
     PasswordResetRepository
 } from '../../models/mongo/password-reset-repository';
 import { UnknownApiError } from '../../shared/error-handler';
-import { Singleton } from 'typescript-ioc';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import { ITrackModel, TrackRepository } from '../../models/mongo/track-repository';
 
@@ -25,9 +24,9 @@ const scopeArray: string[] = ['teacher', 'admin', 'student'];
 
 @Singleton
 export class UsersService extends BaseService<IUserModel> {
-    private createUserTemplate;
+    private readonly createUserTemplate;
 
-    private resetPasswordTemplate;
+    private readonly resetPasswordTemplate;
 
     @Inject protected repository: UserRepository;
     @Inject protected batchRepo: BatchRepository;
@@ -251,7 +250,7 @@ export class UsersService extends BaseService<IUserModel> {
                     try {
                         await this.repository.delete(v);
                     } catch (err) {
-                        if (err?.statusCode == 404) {
+                        if (err?.statusCode === 404) {
                             failed.push({
                                 item: v,
                                 reason: 'not_found',
@@ -316,11 +315,7 @@ export class UsersService extends BaseService<IUserModel> {
             if (checkString(obj, 'username')) {
                 return obj['username'];
             } else {
-                return (
-                    obj['rollNo'].toLowerCase() +
-                    '@' +
-                    (obj['role'] === 'student' ? constants.emailSuffix.student : constants.emailSuffix.teacher)
-                );
+                return `${obj['rollNo'].toLowerCase()}@${obj['role'] === 'student' ? constants.emailSuffix.student : constants.emailSuffix.teacher}`;
             }
         }
         return obj['username'];
@@ -343,13 +338,14 @@ export class UsersService extends BaseService<IUserModel> {
         .split(',')
         .map((field) => field.trim())
         .filter(Boolean);
-        if (fieldArray.length)
+        if (fieldArray.length) {
             docs = docs.map((d: { [x: string]: any }) => {
                 const attrs: any = {};
                 // @ts-ignore
                 fieldArray.forEach((f) => (attrs[f] = d[f]));
                 return attrs;
             });
+        }
         return new PaginationModel<ITrackModel>({
             count,
             page,

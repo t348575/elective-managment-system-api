@@ -10,7 +10,7 @@ import path from 'path';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import constants from '../constants';
 dotenv.config({
-    path: path.resolve(process.cwd(), process.env.NODE_ENV + '.env')
+    path: path.resolve(process.cwd(), `${process.env.NODE_ENV}.env`)
 });
 export class IntegrationHelper {
     public app: SuperTest<any>;

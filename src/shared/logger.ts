@@ -23,27 +23,39 @@ export class Logger {
     }
 
     public static log(...args: any[]): void {
-        if (Logger.shouldLog) Logger.console.debug(Logger.formatArgs(args));
+        if (Logger.shouldLog) {
+            Logger.console.debug(Logger.formatArgs(args));
+        }
     }
 
     public static warn(...args: any[]): void {
-        if (Logger.shouldLog) Logger.console.warn(Logger.formatArgs(args));
+        if (Logger.shouldLog) {
+            Logger.console.warn(Logger.formatArgs(args));
+        }
     }
 
     public static error(...args: any[]): void {
-        if (Logger.shouldLog) Logger.console.error(Logger.formatArgs(args));
+        if (Logger.shouldLog) {
+            Logger.console.error(Logger.formatArgs(args));
+        }
     }
 
     public static info(...args: any[]): void {
-        if (Logger.shouldLog) Logger.console.info(Logger.formatArgs(args));
+        if (Logger.shouldLog) {
+            Logger.console.info(Logger.formatArgs(args));
+        }
     }
 
     public static verbose(...args: any[]): void {
-        if (Logger.shouldLog) Logger.console.verbose(Logger.formatArgs(args));
+        if (Logger.shouldLog) {
+            Logger.console.verbose(Logger.formatArgs(args));
+        }
     }
 
     private static formatArgs(args: any[]): string {
-        if (args.length <= 1) args = args[0];
+        if (args.length <= 1) {
+            args = args[0];
+        }
         return JSON.stringify(args, null, 4);
     }
 }

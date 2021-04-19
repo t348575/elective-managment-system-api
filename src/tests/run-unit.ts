@@ -33,11 +33,11 @@ function crawl(dir: string): Promise<void> {
             const innerFiles = readdirSync(dir);
             for (const v of innerFiles) {
                 try {
-                    await crawl(dir + '/' + v);
+                    await crawl(`${dir}/${v}`);
                 }
                 catch(err) {
                     if (v.indexOf('.spec.ts') > -1) {
-                        files.push(dir + '/' + v);
+                        files.push(`${dir}/${v}`);
                     }
                 }
             }

@@ -6,7 +6,7 @@ import constants from './constants';
 import { Logger } from './shared/logger';
 import { setConstants } from './util/general-util';
 dotenv.config({
-    path: path.resolve(process.cwd(), process.env.NODE_ENV + '.env')
+    path: path.resolve(process.cwd(), `${process.env.NODE_ENV}.env`)
 });
 setConstants();
 // @ts-ignore

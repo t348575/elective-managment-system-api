@@ -19,12 +19,18 @@ export const cleanQuery = (
     query: string | any = '',
     customFormatter?: (key: string, value: any) => any
 ): { [key: string]: any } => {
-    if (typeof query !== 'string') return query instanceof Object ? query : {};
+    if (typeof query !== 'string') {
+        return query instanceof Object ? query : {};
+    }
 
     const defaultFormatter = (key: string, value: any) => {
-        if (isId(key)) return value;
+        if (isId(key)) {
+            return value;
+        }
         value = safeParse(value, value);
-        if (typeof value === 'string') return new RegExp(value, 'i');
+        if (typeof value === 'string') {
+            return new RegExp(value, 'i');
+        }
         return value;
     };
 

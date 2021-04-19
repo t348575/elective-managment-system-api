@@ -6,7 +6,9 @@ export abstract class BaseFormatter {
     public _id: string;
 
     protected format(args: any = {}): void {
-        if (typeof args.toJSON === 'function') args = args.toJSON();
+        if (typeof args.toJSON === 'function') {
+            args = args.toJSON();
+        }
         Object.keys(args).forEach((key: string) => {
             if (args[key] !== undefined) {
                 if (args[key] instanceof mongoose.Types.ObjectId) {

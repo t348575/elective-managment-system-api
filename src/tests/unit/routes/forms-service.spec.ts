@@ -47,13 +47,14 @@ describe('Forms service', () => {
             end: endDate.toISOString(),
             numElectives: 1,
             // @ts-ignore
-            electives: electives.map(e => e.id)
+            electives: electives.map(e => e.id),
+            shouldSelectAll: false
         });
         expect(res).to.be.instanceof(FormFormatter);
         expect(res.active).to.be.true;
         expect(res.start).to.be.equal(startDate.toISOString());
         expect(res.end).to.be.equal(endDate.toISOString());
-        expect(res.num).to.be.equal(1);
+        expect(res.shouldSelect).to.be.equal(1);
         expect(res.electives).to.be.an('array');
         expect(res.electives.length).to.be.equal(5);
         expect(mockNotifyBatches.callCount).to.equal(1);

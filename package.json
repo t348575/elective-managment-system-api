@@ -19,7 +19,6 @@
 		"build:tsoa": "yarn clean && yarn build:routes && yarn build:swagger && yarn copy",
 		"build:test": "yarn build:routes && tsc",
 		"build:prod": "yarn clean && yarn build:routes && yarn build:swagger && tsc",
-		"build:prod:jenkins": "yarn build:routes && yarn build:swagger && tsc",
 		"build": "yarn build:prod",
 		"lint": "eslint . --ext .ts --quiet",
 		"lint:fix": "eslint . --fix --ext .ts --quiet && yarn prettier",

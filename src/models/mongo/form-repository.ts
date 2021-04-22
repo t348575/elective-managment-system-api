@@ -10,7 +10,8 @@ export interface IFormModel {
     id?: string;
     start: Date;
     end: Date;
-    num: number;
+    shouldSelect: number;
+    selectAllAtForm: boolean;
     electives: IElectiveModel[];
     active: boolean;
 }
@@ -18,7 +19,8 @@ export interface IFormModel {
 export class FormFormatter extends BaseFormatter implements IFormModel {
     electives: IElectiveModel[];
     end: Date;
-    num: number;
+    shouldSelect: number;
+    selectAllAtForm: boolean;
     start: Date;
     id: string;
     active: boolean;
@@ -35,7 +37,8 @@ export class FormsRepository extends BaseRepository<IFormModel> {
         {
             start: { type: Date, required: true },
             end: { type: Date, required: true },
-            num: { type: Number, required: true },
+            shouldSelect: { type: Number, required: true },
+            selectAllAtForm: { type: Number, required: true },
             active: { type: Boolean, required: true },
             electives: [{ type: mongoose.Schema.Types.ObjectId, ref: 'electives' }]
         },

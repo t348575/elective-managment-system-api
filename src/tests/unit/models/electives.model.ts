@@ -108,7 +108,7 @@ export async function sendResponsesToForms(users: IUserModel[]): Promise<void> {
     for (const v of users) {
         // @ts-ignore
         const form = (await formsService.getActiveForms(v.id,'student'))[0];
-        const chosen = form.electives.slice(0, form.num).map(e => e.id);
+        const chosen = form.electives.slice(0, form.shouldSelect).map(e => e.id);
         await responseService.respondToForm({
             // @ts-ignore
             id: form.id,

@@ -47,7 +47,8 @@ describe('Forms service', () => {
             end: endDate.toISOString(),
             numElectives: 1,
             // @ts-ignore
-            electives: electives.map(e => e.id)
+            electives: electives.map(e => e.id),
+            shouldSelectAll: false
         });
         expect(res).to.be.instanceof(FormFormatter);
         expect(res.active).to.be.true;

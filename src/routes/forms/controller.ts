@@ -17,6 +17,7 @@ export interface CreateFormOptions {
     start: string;
     end: string;
     numElectives: number;
+    shouldSelectAll: boolean;
     electives: string[];
 }
 

@@ -81,7 +81,8 @@ export class FormsService extends BaseService<IFormModel> {
                 end: options.end,
                 // @ts-ignore
                 electives: options.electives,
-                num: options.numElectives,
+                shouldSelect: options.numElectives,
+                selectAllAtForm: options.shouldSelectAll,
                 active: true
             });
             const s = new Set(batches);

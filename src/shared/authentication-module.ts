@@ -132,8 +132,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                                                                     reject(
                                                                         new OAuthError({
                                                                             name: 'invalid_scope',
-                                                                            error_description:
-                                                                                jwtDoesNotContainScope
+                                                                            error_description: jwtDoesNotContainScope
                                                                         })
                                                                     );
                                                                 }

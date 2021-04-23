@@ -129,8 +129,7 @@ export class NotificationService extends BaseService<INotificationModel> {
         try {
             await this.repository.findOne({ user, device });
             return { subscribed: true };
-        }
-        catch(err) {
+        } catch (err) {
             return { subscribed: false };
         }
     }

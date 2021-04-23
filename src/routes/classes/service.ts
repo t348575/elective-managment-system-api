@@ -5,6 +5,7 @@ import { IFormModel } from '../../models/mongo/form-repository';
 import { chunkArray } from '../../util/general-util';
 import { NotificationService } from '../notification/service';
 import { Inject, Singleton } from 'typescript-ioc';
+import { PaginationModel } from '../../models/shared/pagination-model';
 
 @Singleton
 export class ClassService extends BaseService<IClassModel> {
@@ -59,5 +60,43 @@ export class ClassService extends BaseService<IClassModel> {
                 }
             }
         }
+    }
+
+    public async getPaginated<Entity>(
+        page: number,
+        limit: number,
+        fields: string,
+        sort: string,
+        query: any
+    ): Promise<PaginationModel<Entity>> {
+        const skip: number = (Math.max(1, page) - 1) * limit;
+        // eslint-disable-next-line prefer-const
+        let [count, docs] = await Promise.all([
+            this.repository.count(query),
+            this.repository.findAndPopulate(skip, limit, sort, query)
+        ]);
+        const fieldArray = (fields || '')
+            .split(',')
+            .map((field) => field.trim())
+            .filter(Boolean);
+        if (fieldArray.length) {
+            docs = docs.map((d: { [x: string]: any }) => {
+                const attrs: any = {};
+                // @ts-ignore
+                fieldArray.forEach((f) => (attrs[f] = d[f]));
+                return attrs;
+            });
+        }
+        return new PaginationModel<Entity>({
+            count,
+            page,
+            limit,
+            docs,
+            totalPages: Math.ceil(count / limit)
+        });
+    }
+
+    public async getActiveClasses(userId: string) {
+        return this.userRepository.getClasses(userId);
     }
 }

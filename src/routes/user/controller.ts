@@ -286,30 +286,28 @@ export class UsersController extends Controller {
         @Query('page') page: number,
         @Query('sortBy') sortBy: 'time' | 'ip' | 'device' | 'browser' | 'platform' | 'createdAt',
         @Query('dir') dir: 'asc' | 'desc',
-        @Query('startTime') startTime ?: string,
-        @Query('endTime') endTime ?: string,
-        @Query('ip') ip ?: string,
-        @Query('pageSize') pageSize = 25,
+        @Query('startTime') startTime?: string,
+        @Query('endTime') endTime?: string,
+        @Query('ip') ip?: string,
+        @Query('pageSize') pageSize = 25
     ): Promise<PaginationModel<ITrackModel>> {
         const query: any = {};
         if (startTime && endTime) {
             try {
                 query.createdAt = {
-                    '$gte': new Date(startTime).toISOString(),
-                    '$lte': new Date(endTime).toISOString()
+                    $gte: new Date(startTime).toISOString(),
+                    $lte: new Date(endTime).toISOString()
                 };
-            }
+            } catch (err) {
                 // eslint-disable-next-line no-empty
-            catch(err) {}
-        }
-        else if (startTime) {
+            }
+        } else if (startTime) {
             query.createdAt = {
-                '$gte': new Date(startTime).toISOString()
+                $gte: new Date(startTime).toISOString()
             };
-        }
-        else if (endTime) {
+        } else if (endTime) {
             query.createdAt = {
-                '$lte': new Date(endTime).toISOString()
+                $lte: new Date(endTime).toISOString()
             };
         }
         if (ip) {

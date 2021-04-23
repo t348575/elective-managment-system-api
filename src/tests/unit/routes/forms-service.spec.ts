@@ -16,7 +16,7 @@ import { BatchFormatter } from '../../../models/mongo/batch-repository';
 import { PaginationModel } from '../../../models/shared/pagination-model';
 import { DownloadService } from '../../../routes/download/service';
 import { mockAddTemporaryUserLink, MockDownloadService } from '../mocks/mock-download-service';
-import {existsSync} from 'fs';
+import { existsSync } from 'fs';
 import * as path from 'path';
 import constants from '../../../constants';
 import csv from 'csvtojson';
@@ -47,7 +47,7 @@ describe('Forms service', () => {
             end: endDate.toISOString(),
             numElectives: 1,
             // @ts-ignore
-            electives: electives.map(e => e.id),
+            electives: electives.map((e) => e.id),
             shouldSelectAll: false
         });
         expect(res).to.be.instanceof(FormFormatter);
@@ -58,7 +58,7 @@ describe('Forms service', () => {
         expect(res.electives).to.be.an('array');
         expect(res.electives.length).to.be.equal(5);
         expect(mockNotifyBatches.callCount).to.equal(1);
-        const batches = electives.map(e => e.batches);
+        const batches = electives.map((e) => e.batches);
         const finalBatches = [];
         for (const v of batches) {
             finalBatches.push(...v);
@@ -74,12 +74,12 @@ describe('Forms service', () => {
     });
 
     it('Should get active forms', async () => {
-        const electivesForBatch = electives.filter(e => e.batches.findIndex(r => users[0].batch === r) > -1);
+        const electivesForBatch = electives.filter((e) => e.batches.findIndex((r) => users[0].batch === r) > -1);
         // @ts-ignore
         const res = await formsService.getActiveForms(users[0].id, 'student');
         expect(res).to.be.an('array');
         expect(res[0]).to.be.instanceof(FormFormatter);
-        expect(res[0].electives.map(e => e.id)).to.eql([...new Set(electivesForBatch.map(e => e.id))]);
+        expect(res[0].electives.map((e) => e.id)).to.eql([...new Set(electivesForBatch.map((e) => e.id))]);
         // @ts-ignore
         formId = res[0].id;
     });
@@ -91,7 +91,7 @@ describe('Forms service', () => {
             id: formId,
             end: endDate.toISOString()
         });
-        const res = await Container.get(FormsRepository).findOne({_id: formId});
+        const res = await Container.get(FormsRepository).findOne({ _id: formId });
         expect(res).to.be.instanceof(FormFormatter);
         expect(res.end).to.equal(endDate.toISOString());
     });
@@ -131,5 +131,4 @@ describe('Forms service', () => {
         expect(res.successful).to.be.an('array');
         expect(res.unresponsive).to.be.an('array');
     });
-
 });

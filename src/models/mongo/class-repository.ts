@@ -6,6 +6,7 @@ import mongoose, { Schema } from 'mongoose';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { IElectiveModel } from './elective-repository';
 import { Inject, Singleton } from 'typescript-ioc';
+import { cleanQuery } from '../../util/general-util';
 
 export interface IClassModel {
     id?: string;
@@ -35,7 +36,7 @@ export class ClassRepository extends BaseRepository<IClassModel> {
             elective: { type: mongoose.Schema.Types.ObjectId, ref: 'electives' },
             batch: { type: mongoose.Schema.Types.ObjectId, ref: 'batches' },
             students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
-            teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'users' }
+            teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
         },
         { collection: this.modelName }
     );
@@ -65,5 +66,23 @@ export class ClassRepository extends BaseRepository<IClassModel> {
         session.endSession();
         // @ts-ignore
         return classId.id;
+    }
+
+    public async findAndPopulate(skip = 0, limit = 250, sort: string, query: any): Promise<ClassFormatter[]> {
+        const sortObject = cleanQuery(sort, this.sortQueryFormatter);
+        return (
+            await this.documentModel
+                .find(this.cleanWhereQuery(query))
+                .sort(Object.keys(sortObject).map((key) => [key, sortObject[key]]))
+                .skip(skip)
+                .limit(limit)
+                .populate('elective')
+                .populate('batch')
+                .populate('teacher')
+                .populate({
+                    path: 'teachers',
+                    select: 'name username _id rollNo role classes'
+                })
+        ).map((item) => new this.formatter(item));
     }
 }

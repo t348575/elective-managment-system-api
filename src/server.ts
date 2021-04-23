@@ -17,10 +17,13 @@ let server: http.Server | https.Server;
 if (constants.environment === 'test') {
     server = http.createServer(app);
 } else {
-    server = https.createServer({
-        cert: constants.publicKey,
-        key: constants.privateKey
-    }, app);
+    server = https.createServer(
+        {
+            cert: constants.publicKey,
+            key: constants.privateKey
+        },
+        app
+    );
     initServer();
 }
 process.on('SIGINT', shutdown);
@@ -30,7 +33,7 @@ function shutdown() {
     process.exit(0);
 }
 function initServer() {
-    server.listen(port,() => {
+    server.listen(port, () => {
         Logger.log(`App listening at ${process.env.serverAddress}:${port}`);
         initApp();
     });

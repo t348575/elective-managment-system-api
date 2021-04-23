@@ -160,7 +160,7 @@ export class UsersService extends BaseService<IUserModel> {
                                     {
                                         username: user.username,
                                         expireAt: expireAt.toLocaleString(),
-                                        url: `${constants.baseUrl}/resetPassword?code=${code}`
+                                        url: `${constants.baseUrl}/app/resetPassword?code=${code}`
                                     }
                                 ],
                                 'Reset password - Amrita EMS',
@@ -315,7 +315,9 @@ export class UsersService extends BaseService<IUserModel> {
             if (checkString(obj, 'username')) {
                 return obj['username'];
             } else {
-                return `${obj['rollNo'].toLowerCase()}@${obj['role'] === 'student' ? constants.emailSuffix.student : constants.emailSuffix.teacher}`;
+                return `${obj['rollNo'].toLowerCase()}@${
+                    obj['role'] === 'student' ? constants.emailSuffix.student : constants.emailSuffix.teacher
+                }`;
             }
         }
         return obj['username'];
@@ -335,9 +337,9 @@ export class UsersService extends BaseService<IUserModel> {
             this.trackRepository.findAndPopulate(skip, limit, sort, query)
         ]);
         const fieldArray = (fields || '')
-        .split(',')
-        .map((field) => field.trim())
-        .filter(Boolean);
+            .split(',')
+            .map((field) => field.trim())
+            .filter(Boolean);
         if (fieldArray.length) {
             docs = docs.map((d: { [x: string]: any }) => {
                 const attrs: any = {};

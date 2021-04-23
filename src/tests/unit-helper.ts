@@ -5,13 +5,12 @@ import { setConstants } from '../util/general-util';
 import dotenv from 'dotenv';
 import path from 'path';
 import { PrivateInjectorInit } from '../routes/private-injector-init';
-import {Container} from 'typescript-ioc';
+import { Container } from 'typescript-ioc';
 
 dotenv.config({
     path: path.resolve(process.cwd(), `${process.env.NODE_ENV}.env`)
 });
 export class UnitHelper {
-
     public server: MongoMemoryServer;
 
     constructor() {

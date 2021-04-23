@@ -1,6 +1,12 @@
-import { Controller, Route, Tags } from 'tsoa';
+import { Controller, Get, Query, Response, Route, Security, Tags, Request } from 'tsoa';
+import { Request as ExRequest } from 'express';
 import { ClassService } from './service';
 import { Inject, Singleton } from 'typescript-ioc';
+import { ErrorType } from '../../shared/error-handler';
+import { jwtToken, unknownServerError, validationError } from '../../models/types';
+
+const teacherOrAdmin: string[] = ['admin', 'teacher'];
+const studentOnly: string[] = ['student'];
 
 @Singleton
 @Tags('classes')
@@ -10,5 +16,30 @@ export class ClassController extends Controller {
     protected service: ClassService;
     constructor() {
         super();
+    }
+
+    @Get('')
+    @Security('jwt', teacherOrAdmin)
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
+    public async getClasses(
+        @Query('sortBy') sortBy: 'batch' | 'teacher' | 'elective',
+        @Query('dir') dir: 'asc' | 'desc',
+        @Query('page') page: number,
+        @Query('batch') batch?: string,
+        @Query('teacher') teacher?: string,
+        @Query('pageSize') pageSize = 25
+    ) {
+        return this.service.getPaginated(page, pageSize, '', JSON.stringify({ [sortBy]: dir }), { batch, teacher, active: true });
+    }
+
+    @Get('active')
+    @Security('jwt', studentOnly)
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
+    public async getActiveClasses(@Request() request: ExRequest) {
+        // @ts-ignore
+        const accessToken = request.user as jwtToken;
+        return this.service.getActiveClasses(accessToken.id);
     }
 }

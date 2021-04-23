@@ -65,7 +65,9 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                                                                 response.json({ code: jwt.jwt });
                                                                 resolve(null);
                                                             } else {
-                                                                response.redirect(`${redirectUri}?${qs.stringify({ code: jwt.jwt })}`);
+                                                                response.redirect(
+                                                                    `${redirectUri}?${qs.stringify({ code: jwt.jwt })}`
+                                                                );
                                                                 resolve(null);
                                                             }
                                                         } else {
@@ -184,7 +186,9 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                                                         response.json({ code: jwt.jwt });
                                                         resolve(null);
                                                     } else {
-                                                        response.redirect(`${redirectUri}?${qs.stringify({ code: jwt.jwt })}`);
+                                                        response.redirect(
+                                                            `${redirectUri}?${qs.stringify({ code: jwt.jwt })}`
+                                                        );
                                                         resolve(null);
                                                     }
                                                 } else {
@@ -344,8 +348,16 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                             scope
                         );
                         await this.redis.setex(`idToken::${id}::${idToken.expiry}`, idToken.expiry, idToken.jwt);
-                        await this.redis.setex(`accessToken::${id}::${accessToken.expiry}`, accessToken.expiry, accessToken.jwt);
-                        await this.redis.setex(`refreshToken::${id}::${refreshToken.expiry}`, refreshToken.expiry, refreshToken.jwt);
+                        await this.redis.setex(
+                            `accessToken::${id}::${accessToken.expiry}`,
+                            accessToken.expiry,
+                            accessToken.jwt
+                        );
+                        await this.redis.setex(
+                            `refreshToken::${id}::${refreshToken.expiry}`,
+                            refreshToken.expiry,
+                            refreshToken.jwt
+                        );
                         resolve({
                             id_token: idToken.jwt,
                             access_token: accessToken.jwt,

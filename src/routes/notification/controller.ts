@@ -52,10 +52,7 @@ export class NotificationController extends Controller {
     @Security('jwt', scopeArray)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async isSubscribed(
-        @Query('name') name: string,
-        @Request() request: ExRequest
-    ) {
+    public async isSubscribed(@Query('name') name: string, @Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.isSubscribed(name, accessToken.id);

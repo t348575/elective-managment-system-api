@@ -6,7 +6,6 @@ import { Failed, jwtToken, unknownServerError, validationError } from '../../mod
 import { Inject, Singleton } from 'typescript-ioc';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
-
 const adminOnly: string[] = ['admin'];
 const teacherOrAdmin: string[] = ['admin', 'teacher'];
 

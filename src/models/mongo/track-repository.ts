@@ -64,14 +64,14 @@ export class TrackRepository extends BaseRepository<ITrackModel> {
         const sortObject = cleanQuery(sort, this.sortQueryFormatter);
         return (
             await this.documentModel
-            .find(this.cleanWhereQuery(query))
-            .sort(Object.keys(sortObject).map((key) => [key, sortObject[key]]))
-            .skip(skip)
-            .limit(limit)
-            .populate({
-                path: 'user',
-                select: 'name username _id rollNo role'
-            })
+                .find(this.cleanWhereQuery(query))
+                .sort(Object.keys(sortObject).map((key) => [key, sortObject[key]]))
+                .skip(skip)
+                .limit(limit)
+                .populate({
+                    path: 'user',
+                    select: 'name username _id rollNo role'
+                })
         ).map((item) => new this.formatter(item));
     }
 }

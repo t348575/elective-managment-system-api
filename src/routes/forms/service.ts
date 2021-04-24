@@ -82,8 +82,7 @@ export class FormsService extends BaseService<IFormModel> {
                 // @ts-ignore
                 electives: options.electives,
                 shouldSelect: options.numElectives,
-                selectAllAtForm: options.shouldSelectAll,
-                active: true
+                selectAllAtForm: options.shouldSelectAll
             });
             const s = new Set(batches);
             this.notificationService
@@ -122,13 +121,10 @@ export class FormsService extends BaseService<IFormModel> {
         switch (scope) {
             case 'student': {
                 const user = await this.userRepository.getPopulated(id, 'student');
-                const forms = (await this.repository.findActive({
-                    end: { $gte: new Date() },
-                    active: true
-                })).filter((e) => {
+                const forms = (await this.repository.findActive({ end: { $gte: new Date() } })).filter((e) => {
                     e.electives = e.electives.filter(
                         // @ts-ignore
-                        (v) => v.batches.indexOf(user.batch?.id) > -1
+                        (v) => v.batches.findIndex(r => r.id === user.batch?.id) > -1
                     );
                     return e.electives.length > 0;
                 });
@@ -139,20 +135,23 @@ export class FormsService extends BaseService<IFormModel> {
             case 'teacher':
             case 'admin': {
                 return this.repository.findActive({
-                    end: { $gte: new Date() },
-                    active: true
+                    end: { $gte: new Date() }
                 });
             }
         }
     }
 
     public async updateForm(options: UpdateFormOptions) {
+        if (options.electives) {
+            // @ts-ignore
+            // options.electives = options.electives.map(e => mongoose.Types.ObjectId(e));
+        }
         // @ts-ignore
         options._id = options.id;
         // @ts-ignore
         delete options.id;
         // @ts-ignore
-        return this.repository.findAndUpdate({ _id: mongoose.Types.ObjectId(options._id) }, options);
+        return this.repository.update(options._id, options);
     }
 
     public async getPaginated<Entity>(

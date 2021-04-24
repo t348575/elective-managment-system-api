@@ -28,10 +28,12 @@ export class ResponseService extends BaseService<IResponseModel> {
                 });
             } else {
                 options.electives = [...new Set(options.electives)];
-                const user = await this.userRepository.getById(token.id);
+                const user = await this.userRepository.getPopulated(token.id, 'student');
                 const form = (await this.formsRepository.findActive({ end: { $gte: new Date() } })).filter((e) => {
-                    // @ts-ignore
-                    e.electives = e.electives.filter((v) => v.batches.indexOf(user.batch) > -1);
+                    e.electives = e.electives.filter(
+                        // @ts-ignore
+                        (v) => v.batches.findIndex(r => r.id === user.batch?.id) > -1
+                    );
                     return e.electives.length > 0;
                 });
                 const idx = form.findIndex((e) => e.id === options.id);

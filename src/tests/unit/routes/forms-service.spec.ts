@@ -51,7 +51,6 @@ describe('Forms service', () => {
             shouldSelectAll: false
         });
         expect(res).to.be.instanceof(FormFormatter);
-        expect(res.active).to.be.true;
         expect(res.start).to.be.equal(startDate.toISOString());
         expect(res.end).to.be.equal(endDate.toISOString());
         expect(res.shouldSelect).to.be.equal(1);

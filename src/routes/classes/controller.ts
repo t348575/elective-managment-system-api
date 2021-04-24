@@ -4,6 +4,8 @@ import { ClassService } from './service';
 import { Inject, Singleton } from 'typescript-ioc';
 import { ErrorType } from '../../shared/error-handler';
 import { jwtToken, unknownServerError, validationError } from '../../models/types';
+import { PaginationModel } from '../../models/shared/pagination-model';
+import { IClassModel } from '../../models/mongo/class-repository';
 
 const teacherOrAdmin: string[] = ['admin', 'teacher'];
 const studentOnly: string[] = ['student'];

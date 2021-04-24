@@ -81,7 +81,8 @@ export class FormsService extends BaseService<IFormModel> {
                 end: options.end,
                 // @ts-ignore
                 electives: options.electives,
-                num: options.numElectives,
+                shouldSelect: options.numElectives,
+                selectAllAtForm: options.shouldSelectAll,
                 active: true
             });
             const s = new Set(batches);
@@ -134,8 +135,8 @@ export class FormsService extends BaseService<IFormModel> {
                     return e.electives.length > 0;
                 });
             }
-        case 'teacher':
-        case 'admin': {
+            case 'teacher':
+            case 'admin': {
                 return this.repository.findActive({
                     end: { $gte: new Date() },
                     active: true
@@ -264,9 +265,9 @@ export class FormsService extends BaseService<IFormModel> {
                     const parser = new Parser({
                         fields: ['rollNo']
                     });
-                    const notFilled = (
-                        await this.getUnresponsive(successful, Array.from(uniqueBatches.values()))
-                    ).map((e) => e.rollNo).filter(e => failed.findIndex(r => r.item === e) === -1);
+                    const notFilled = (await this.getUnresponsive(successful, Array.from(uniqueBatches.values())))
+                        .map((e) => e.rollNo)
+                        .filter((e) => failed.findIndex((r) => r.item === e) === -1);
                     await new Promise<null>(async (resolveSuccessful) => {
                         try {
                             if (notFilled.length > 0) {

@@ -46,7 +46,10 @@ export class ResponseService extends BaseService<IResponseModel> {
                             });
                         }
                     }
-                    if (options.electives.length !== form[idx].num) {
+                    if (
+                        (form[idx].selectAllAtForm && options.electives.length !== validElectives.length) ||
+                        (!form[idx].selectAllAtForm && options.electives.length < form[idx].shouldSelect)
+                    ) {
                         throw new ApiError({
                             statusCode: 401,
                             name: 'elective_num_incorrect',

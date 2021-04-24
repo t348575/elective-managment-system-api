@@ -13,14 +13,11 @@ export class ImmutabilityHelper {
         const variableType: string = ImmutabilityHelper.getType(variable);
         if (variable instanceof mongoose.Types.ObjectId) {
             copy = variable.toString();
-        }
-        else if (variableType === 'object') {
+        } else if (variableType === 'object') {
             copy = { ...variable };
-        }
-        else if (variableType === 'array') {
+        } else if (variableType === 'array') {
             copy = variable.slice();
-        }
-        else {
+        } else {
             copy = variable;
         }
         return copy as T;

@@ -71,7 +71,7 @@ export class FormsController extends Controller {
     }
 
     @Get('')
-    @Security('jwt', adminOnly)
+    @Security('jwt', teacherOrAdmin)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
     public async allForms(@Query() pageNumber: number, @Query() limit: number) {

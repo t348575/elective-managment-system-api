@@ -395,6 +395,18 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PaginationModel_IClassModel_": {
+        "dataType": "refObject",
+        "properties": {
+            "count": {"dataType":"double","required":true},
+            "page": {"dataType":"double","required":true},
+            "limit": {"dataType":"double","required":true},
+            "totalPages": {"dataType":"double","required":true},
+            "docs": {"dataType":"array","array":{"ref":"IClassModel"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "UserFormatter": {
         "dataType": "refObject",
         "properties": {
@@ -1228,7 +1240,7 @@ export function RegisterRoutes(app: express.Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/forms',
-            authenticateMiddleware([{"jwt":["admin"]}]),
+            authenticateMiddleware([{"jwt":["admin","teacher"]}]),
             function FormsController_allForms(request: any, response: any, next: any) {
             const args = {
                     pageNumber: {"in":"query","name":"pageNumber","required":true,"dataType":"double"},
@@ -1516,6 +1528,34 @@ export function RegisterRoutes(app: express.Router) {
 
 
             const promise = controller.getActiveClasses.apply(controller, validatedArgs as any);
+            promiseHandler(controller, promise, response, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.delete('/classes',
+            authenticateMiddleware([{"jwt":["admin"]}]),
+            function ClassController_deleteClasses(request: any, response: any, next: any) {
+            const args = {
+                    classes: {"in":"body","name":"classes","required":true,"dataType":"array","array":{"dataType":"string"}},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+            } catch (err) {
+                return next(err);
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+            const controller: any = container.get<ClassController>(ClassController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+
+            const promise = controller.deleteClasses.apply(controller, validatedArgs as any);
             promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

@@ -144,7 +144,7 @@ export class ElectivesController extends Controller {
         if (name || courseCode) {
             if (name) {
                 // @ts-ignore
-                queryObj.name = name;
+                queryObj.name = { '$regex': name };
             }
             if (courseCode) {
                 // @ts-ignore

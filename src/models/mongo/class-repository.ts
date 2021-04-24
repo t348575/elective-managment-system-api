@@ -36,7 +36,7 @@ export class ClassRepository extends BaseRepository<IClassModel> {
             elective: { type: mongoose.Schema.Types.ObjectId, ref: 'electives' },
             batch: { type: mongoose.Schema.Types.ObjectId, ref: 'batches' },
             students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
-            teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
+            teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'users' }
         },
         { collection: this.modelName }
     );

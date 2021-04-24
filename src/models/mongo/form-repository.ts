@@ -59,18 +59,20 @@ export class FormsRepository extends BaseRepository<IFormModel> {
     }
 
     public async findActive(query: any): Promise<IFormModel[]> {
-        return (await this.documentModel.find(query).populate({
-            path: 'electives',
-            populate: [
-                {
-                    path: 'batches'
-                },
-                {
-                    path: 'teachers',
-                    select: 'name username _id rollNo role classes'
-                }
-            ]
-        })).map((item) => new this.formatter(item));
+        return (
+            await this.documentModel.find(query).populate({
+                path: 'electives',
+                populate: [
+                    {
+                        path: 'batches'
+                    },
+                    {
+                        path: 'teachers',
+                        select: 'name username _id rollNo role classes'
+                    }
+                ]
+            })
+        ).map((item) => new this.formatter(item));
     }
 
     public async findAndPopulate(sort: string, query: any, skip = 0, limit = 250): Promise<FormFormatter[]> {

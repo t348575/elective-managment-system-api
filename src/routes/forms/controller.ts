@@ -4,7 +4,6 @@ import { ErrorType } from '../../shared/error-handler';
 import { Request as ExRequest } from 'express';
 import { Failed, jwtToken, unknownServerError, validationError } from '../../models/types';
 import { Inject, Singleton } from 'typescript-ioc';
-import { IElectiveModel } from '../../models/mongo/elective-repository';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
 const adminOnly: string[] = ['admin'];
@@ -23,11 +22,11 @@ export interface CreateFormOptions {
 
 export interface UpdateFormOptions {
     id: string;
-    start ?: string;
-    end ?: string;
-    shouldSelect ?: number;
-    selectAllAtForm ?: boolean;
-    electives ?: string[];
+    start?: string;
+    end?: string;
+    shouldSelect?: number;
+    selectAllAtForm?: boolean;
+    electives?: string[];
 }
 
 export interface GenerateListResponse {

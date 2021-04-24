@@ -32,7 +32,7 @@ export class ResponseService extends BaseService<IResponseModel> {
                 const form = (await this.formsRepository.findActive({ end: { $gte: new Date() } })).filter((e) => {
                     e.electives = e.electives.filter(
                         // @ts-ignore
-                        (v) => v.batches.findIndex(r => r.id === user.batch?.id) > -1
+                        (v) => v.batches.findIndex((r) => r.id === user.batch?.id) > -1
                     );
                     return e.electives.length > 0;
                 });

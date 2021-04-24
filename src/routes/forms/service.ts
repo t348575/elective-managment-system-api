@@ -124,13 +124,16 @@ export class FormsService extends BaseService<IFormModel> {
                 const forms = (await this.repository.findActive({ end: { $gte: new Date() } })).filter((e) => {
                     e.electives = e.electives.filter(
                         // @ts-ignore
-                        (v) => v.batches.findIndex(r => r.id === user.batch?.id) > -1
+                        (v) => v.batches.findIndex((r) => r.id === user.batch?.id) > -1
                     );
                     return e.electives.length > 0;
                 });
-                const responses = await this.responseRepository.find('', { user: mongoose.Types.ObjectId(id), form: { '$in': [...(forms.map(e => mongoose.Types.ObjectId(e.id)))] } });
+                const responses = await this.responseRepository.find('', {
+                    user: mongoose.Types.ObjectId(id),
+                    form: { $in: [...forms.map((e) => mongoose.Types.ObjectId(e.id))] }
+                });
                 // @ts-ignore
-                return forms.filter(r => responses.findIndex(e => e.form === r.id) === -1);
+                return forms.filter((r) => responses.findIndex((e) => e.form === r.id) === -1);
             }
             case 'teacher':
             case 'admin': {

@@ -330,7 +330,7 @@ export class UsersService extends BaseService<IUserModel> {
         sort: string,
         query: any
     ): Promise<PaginationModel<ITrackModel>> {
-        const skip: number = (Math.max(1, page) - 1) * limit;
+        const skip: number = Math.max(0, page) * limit;
         // eslint-disable-next-line prefer-const
         let [count, docs] = await Promise.all([
             this.trackRepository.count(query),

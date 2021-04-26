@@ -1,4 +1,4 @@
-import { AddElectives } from './controller';
+import { AddElectives, UpdateElectiveOptions } from './controller';
 import { ElectiveRepository, IElectiveModel } from '../../models/mongo/elective-repository';
 import { BatchRepository, batchStringToModel } from '../../models/mongo/batch-repository';
 import { UserRepository } from '../../models/mongo/user-repository';
@@ -7,6 +7,7 @@ import { electiveAttributes, Failed } from '../../models/types';
 import { BaseService } from '../../models/shared/base-service';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import { Inject, Singleton } from 'typescript-ioc';
+import { ApiError } from '../../shared/error-handler';
 
 @Singleton
 export class ElectivesService extends BaseService<IElectiveModel> {
@@ -200,7 +201,7 @@ export class ElectivesService extends BaseService<IElectiveModel> {
         sort: string,
         query: any
     ): Promise<PaginationModel<Entity>> {
-        const skip: number = (Math.max(1, page) - 1) * limit;
+        const skip: number = Math.max(0, page) * limit;
         // eslint-disable-next-line prefer-const
         let [count, docs] = await Promise.all([
             this.repository.count(query),
@@ -225,5 +226,57 @@ export class ElectivesService extends BaseService<IElectiveModel> {
             docs,
             totalPages: Math.ceil(count / limit)
         });
+    }
+
+    public async updateElective(id: string, model: UpdateElectiveOptions) {
+        const batchIds = [];
+        const teacherIds = [];
+        if (model.batches) {
+            for (const v of model.batches) {
+                const batch = batchStringToModel(v);
+                try {
+                    await this.batchRepository.create({
+                        year: batch.year,
+                        numYears: batch.numYears,
+                        degree: batch.degree,
+                        course: batch.course,
+                        batchString: batch.batchString
+                    });
+                    // eslint-disable-next-line no-empty
+                } catch (err) {}
+                // @ts-ignore
+                batchIds.push((await this.batchRepository.findOne({ batchString: batch.batchString })).id.toString());
+            }
+            model.batches = batchIds;
+        }
+        if (model.teachers) {
+            try {
+                for (const v of model.teachers) {
+                    teacherIds.push(
+                        // @ts-ignore
+                        (
+                            await this.userRepository.findOne({
+                                role: 'teacher',
+                                rollNo: v.toLowerCase()
+                            })
+                        ).id.toString()
+                    );
+                }
+            }
+            catch(err) {
+                throw new ApiError({
+                    statusCode: 400,
+                    name: 'teacher_no_exist',
+                    message: err?.mesage
+                });
+            }
+            model.teachers = teacherIds;
+        }
+        // @ts-ignore
+        await this.update(id, model);
+    }
+
+    public getUserBatch(id: string) {
+        return this.userRepository.getPopulated(id, 'student');
     }
 }

@@ -29,7 +29,7 @@ export class ResponseService extends BaseService<IResponseModel> {
             } else {
                 options.electives = [...new Set(options.electives)];
                 const user = await this.userRepository.getPopulated(token.id, 'student');
-                const form = (await this.formsRepository.findActive({ end: { $gte: new Date() } })).filter((e) => {
+                const form = (await this.formsRepository.findActive()).filter((e) => {
                     e.electives = e.electives.filter(
                         // @ts-ignore
                         (v) => v.batches.findIndex((r) => r.id === user.batch?.id) > -1
@@ -108,7 +108,7 @@ export class ResponseService extends BaseService<IResponseModel> {
         sort: string,
         query: any
     ): Promise<PaginationModel<Entity>> {
-        const skip: number = (Math.max(1, page) - 1) * limit;
+        const skip: number = Math.max(0, page) * limit;
         // eslint-disable-next-line prefer-const
         let [count, docs] = await Promise.all([
             this.repository.count(query),

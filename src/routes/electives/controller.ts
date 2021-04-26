@@ -147,7 +147,7 @@ export class ElectivesController extends Controller {
         @Query() fields?: string,
         @Query() sortBy?: string,
         @Query() courseCode?: string,
-        @Query() name?: string,
+        @Query() name?: string
     ): Promise<PaginationModel<IElectiveModel>> {
         // @ts-ignore
         const accessToken = request.user as jwtToken;

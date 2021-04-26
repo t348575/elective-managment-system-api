@@ -385,7 +385,12 @@ export class FormsService extends BaseService<IFormModel> {
     }
 
     private async getUnresponsive(responsive: string[], batches: string[]) {
-        const totalUsers = await this.userRepository.find('', { batch: { $in: batches }, role: 'student' }, undefined, 0);
+        const totalUsers = await this.userRepository.find(
+            '',
+            { batch: { $in: batches }, role: 'student' },
+            undefined,
+            0
+        );
         return totalUsers.filter((e) => responsive.indexOf(e.rollNo) === -1);
     }
 }

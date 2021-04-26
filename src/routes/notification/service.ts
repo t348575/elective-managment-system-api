@@ -1,16 +1,18 @@
 import { INotificationModel, NotificationRepository } from '../../models/mongo/notification-repository';
 import { BaseService } from '../../models/shared/base-service';
 import { Singleton, Inject } from 'typescript-ioc';
-import { SubscribeOptions } from './controller';
+import { customNotifyOptions, SubscribeOptions } from './controller';
 import constants from '../../constants';
 import * as webPush from 'web-push';
 import { ApiError } from '../../shared/error-handler';
 import { BatchRepository } from '../../models/mongo/batch-repository';
+import { UserRepository } from '../../models/mongo/user-repository';
 
 @Singleton
 export class NotificationService extends BaseService<INotificationModel> {
     @Inject protected repository: NotificationRepository;
     @Inject private batchRepository: BatchRepository;
+    @Inject private userRepository: UserRepository;
     constructor() {
         super();
         webPush.setVapidDetails(
@@ -110,11 +112,11 @@ export class NotificationService extends BaseService<INotificationModel> {
         }
     }
 
-    public async notifyAll() {
+    public async notifyAll(notificationPayload: { notification: any }) {
         const ids = await this.repository.find('', '', undefined, 0);
         for (const v of ids) {
             try {
-                NotificationService.initialNotification(v.sub).then();
+                webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then();
             } catch (err) {
                 try {
                     // @ts-ignore
@@ -131,6 +133,85 @@ export class NotificationService extends BaseService<INotificationModel> {
             return { subscribed: true };
         } catch (err) {
             return { subscribed: false };
+        }
+    }
+
+    public async customNotify(options: customNotifyOptions): Promise<boolean> {
+        try {
+            let batchIds: string[] = [];
+            let query = {};
+            if (options.batches.length > 0) {
+                // @ts-ignore
+                batchIds = [
+                    ...(await this.batchRepository.find('', { batchString: { $in: options.batches } })).map((e) => e.id)
+                ];
+            }
+            if (batchIds.length > 0) {
+                // @ts-ignore
+                query.batch = {
+                    $in: batchIds
+                };
+            }
+            if (options.users.length > 0) {
+                // @ts-ignore
+                query.rollNo = {
+                    $in: options.users
+                };
+            }
+            if (options.role) {
+                console.log(options.role);
+                query = {
+                    role: options.role
+                };
+            }
+            if (options.notifyAll) {
+                query = {};
+            }
+            console.log(options);
+            console.log(query);
+            const users = await this.userRepository.find('', query, undefined, 0);
+            const items = ['name', 'rollNo', 'username'];
+            if (options.replaceItems) {
+                for (const v of users) {
+                    let title = options.title;
+                    let body = options.body;
+                    for (const k in items) {
+                        // @ts-ignore
+                        title = title.replace(new RegExp(`{{${items[k]}}}`, 'gmi'), v[items[k]]);
+                        // @ts-ignore
+                        body = body.replace(new RegExp(`{{${items[k]}}}`, 'gmi'), v[items[k]]);
+                    }
+                    // @ts-ignore
+                    this.notifyUsers([v.id], {
+                        notification: {
+                            title,
+                            body,
+                            vibrate: [100, 50, 100],
+                            requireInteraction: true
+                        }
+                    })
+                        .then()
+                        .catch();
+                }
+            } else {
+                this.notifyUsers(
+                    // @ts-ignore
+                    users.map((e) => e.id),
+                    {
+                        notification: {
+                            title: options.title,
+                            body: options.body,
+                            vibrate: [100, 50, 100],
+                            requireInteraction: true
+                        }
+                    }
+                )
+                    .then()
+                    .catch();
+            }
+            return true;
+        } catch (err) {
+            return false;
         }
     }
 

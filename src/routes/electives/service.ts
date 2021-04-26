@@ -1,12 +1,13 @@
-import { AddElectives } from './controller';
+import { AddElectives, UpdateElectiveOptions } from './controller';
 import { ElectiveRepository, IElectiveModel } from '../../models/mongo/elective-repository';
 import { BatchRepository, batchStringToModel } from '../../models/mongo/batch-repository';
 import { UserRepository } from '../../models/mongo/user-repository';
 import { checkNumber, checkString } from '../../util/general-util';
-import { electiveAttributes, Failed } from "../../models/types";
+import { electiveAttributes, Failed } from '../../models/types';
 import { BaseService } from '../../models/shared/base-service';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import { Inject, Singleton } from 'typescript-ioc';
+import { ApiError } from '../../shared/error-handler';
 
 @Singleton
 export class ElectivesService extends BaseService<IElectiveModel> {
@@ -124,7 +125,7 @@ export class ElectivesService extends BaseService<IElectiveModel> {
                         if (!checkString(v, 'teachers')) {
                             failed.push({
                                 item: v,
-                                reason: 'checkString(v, \'teachers\'): invalid'
+                                reason: "checkString(v, 'teachers'): invalid"
                             });
                             continue;
                         }
@@ -132,8 +133,7 @@ export class ElectivesService extends BaseService<IElectiveModel> {
                             const attributes: string[] = v.attributes.split(',');
                             const batches: string[] = v.batches.split(',');
                             const teachers: string[] = v.teachers.split(',');
-                            if (attributes.length === 0 ||
-                                (attributes.length > 0 && attributes.length % 2 !== 0)) {
+                            if (attributes.length === 0 || (attributes.length > 0 && attributes.length % 2 !== 0)) {
                                 failed.push({
                                     item: v,
                                     reason: 'attributes: invalid'
@@ -155,7 +155,7 @@ export class ElectivesService extends BaseService<IElectiveModel> {
                                 continue;
                             }
                             const parsedAttributes: electiveAttributes = [];
-                            const n = attributes.length / 2;
+                            const n = attributes.length;
                             for (let i = 0; i < n; i += 2) {
                                 parsedAttributes.push({
                                     key: attributes[i],
@@ -172,8 +172,7 @@ export class ElectivesService extends BaseService<IElectiveModel> {
                                 batches,
                                 teachers
                             });
-                        }
-                        catch(err) {
+                        } catch (err) {
                             failed.push({
                                 item: v,
                                 reason: 'unknown',
@@ -181,7 +180,11 @@ export class ElectivesService extends BaseService<IElectiveModel> {
                             });
                         }
                     } catch (err) {
-                        failed.push(v);
+                        failed.push({
+                            item: v,
+                            reason: 'unknown',
+                            error: err
+                        });
                     }
                 }
                 resolve(failed);
@@ -198,7 +201,7 @@ export class ElectivesService extends BaseService<IElectiveModel> {
         sort: string,
         query: any
     ): Promise<PaginationModel<Entity>> {
-        const skip: number = (Math.max(1, page) - 1) * limit;
+        const skip: number = Math.max(0, page) * limit;
         // eslint-disable-next-line prefer-const
         let [count, docs] = await Promise.all([
             this.repository.count(query),
@@ -208,13 +211,14 @@ export class ElectivesService extends BaseService<IElectiveModel> {
             .split(',')
             .map((field) => field.trim())
             .filter(Boolean);
-        if (fieldArray.length)
+        if (fieldArray.length) {
             docs = docs.map((d: { [x: string]: any }) => {
                 const attrs: any = {};
                 // @ts-ignore
                 fieldArray.forEach((f) => (attrs[f] = d[f]));
                 return attrs;
             });
+        }
         return new PaginationModel<Entity>({
             count,
             page,
@@ -222,5 +226,56 @@ export class ElectivesService extends BaseService<IElectiveModel> {
             docs,
             totalPages: Math.ceil(count / limit)
         });
+    }
+
+    public async updateElective(id: string, model: UpdateElectiveOptions) {
+        const batchIds = [];
+        const teacherIds = [];
+        if (model.batches) {
+            for (const v of model.batches) {
+                const batch = batchStringToModel(v);
+                try {
+                    await this.batchRepository.create({
+                        year: batch.year,
+                        numYears: batch.numYears,
+                        degree: batch.degree,
+                        course: batch.course,
+                        batchString: batch.batchString
+                    });
+                    // eslint-disable-next-line no-empty
+                } catch (err) {}
+                // @ts-ignore
+                batchIds.push((await this.batchRepository.findOne({ batchString: batch.batchString })).id.toString());
+            }
+            model.batches = batchIds;
+        }
+        if (model.teachers) {
+            try {
+                for (const v of model.teachers) {
+                    teacherIds.push(
+                        // @ts-ignore
+                        (
+                            await this.userRepository.findOne({
+                                role: 'teacher',
+                                rollNo: v.toLowerCase()
+                            })
+                        ).id.toString()
+                    );
+                }
+            } catch (err) {
+                throw new ApiError({
+                    statusCode: 400,
+                    name: 'teacher_no_exist',
+                    message: err?.mesage
+                });
+            }
+            model.teachers = teacherIds;
+        }
+        // @ts-ignore
+        await this.update(id, model);
+    }
+
+    public getUserBatch(id: string) {
+        return this.userRepository.getPopulated(id, 'student');
     }
 }

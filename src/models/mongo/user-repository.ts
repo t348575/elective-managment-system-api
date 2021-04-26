@@ -49,7 +49,7 @@ const safeAdminRemover = ['password'];
 const safeTeacherRemover = ['password'];
 const safeStudentRemover = ['password'];
 
-export function getSafeUserOmit(role: scopes) {
+export function getSafeUserOmit(role: scopes): string[] {
     switch (role) {
         case 'teacher': {
             return safeTeacherRemover;
@@ -61,6 +61,7 @@ export function getSafeUserOmit(role: scopes) {
             return safeAdminRemover;
         }
     }
+    return [];
 }
 
 @Singleton
@@ -138,5 +139,22 @@ export class UserRepository extends BaseRepository<IUserModel> {
             }
         });
         session.endSession();
+    }
+
+    public async getClasses(id: string) {
+        // @ts-ignore
+        const document: Document = await this.documentModel
+            .findOne({
+                _id: mongoose.Types.ObjectId(id)
+            })
+            .populate('classes')
+            .populate('elective')
+            .populate('batch')
+            .populate({
+                path: 'teacher',
+                select: 'name username _id rollNo role classes'
+            });
+        if (!document) throw new ApiError(constants.errorTypes.notFound);
+        return new this.formatter(document);
     }
 }

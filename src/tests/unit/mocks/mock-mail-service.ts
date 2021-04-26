@@ -48,4 +48,4 @@ export class MockMailService {
         });
     }
 }
-export const replaceSpy = spy(MockMailService.prototype, 'replaceAndSendEmail');
+export const mockMailReplaceSpy = spy(MockMailService.prototype, 'replaceAndSendEmail');

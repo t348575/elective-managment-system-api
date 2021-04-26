@@ -1,23 +1,20 @@
-import 'reflect-metadata';
 import express, { Response as ExResponse, Request as ExRequest, NextFunction } from 'express';
 import { ValidateError } from '@tsoa/runtime';
 import swaggerUi from 'swagger-ui-express';
-import bodyParser from 'body-parser';
 import * as path from 'path';
 import morgan from 'morgan';
 import { RegisterRoutes } from './routes/routes';
 import { Logger } from './shared/logger';
 import { ApiError, ErrorHandler, OAuthError } from './shared/error-handler';
 import cors from 'cors';
-import * as fs from 'fs';
 import multer from 'multer';
 import './models/types';
 import helmet from 'helmet';
 import constants from './constants';
 import useragent from 'express-useragent';
-// routes
 import './routes/controller';
 import { PrivateInjectorInit } from './routes/private-injector-init';
+import { Container } from 'typescript-ioc';
 
 export const app = express();
 
@@ -28,7 +25,11 @@ if (constants.environment === 'debug') {
 }
 
 if (constants.environment === 'production') {
-    app.use(helmet());
+    app.use(
+        helmet({
+            hsts: false
+        })
+    );
 }
 
 if (constants.environment === 'debug') {
@@ -51,12 +52,12 @@ if (constants.environment === 'debug') {
 app.use(useragent.express());
 
 app.use(
-    bodyParser.urlencoded({
+    express.urlencoded({
         extended: true,
         limit: '55mb'
     })
 );
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.use(
     multer({
@@ -75,10 +76,6 @@ app.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
             }
         })
     );
-});
-
-app.use('/swagger', (req, res) => {
-    return res.send(fs.readFileSync(path.join(__dirname, 'swagger.json')));
 });
 
 app.use('/app', express.static(path.resolve(__dirname, './../resources/public')));
@@ -126,4 +123,6 @@ app.use(function errorHandler(err: unknown, req: ExRequest, res: ExResponse, nex
     return res.status(500).json(err);
 });
 
-new PrivateInjectorInit();
+export function initApp() {
+    Container.get(PrivateInjectorInit);
+}

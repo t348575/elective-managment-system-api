@@ -7,7 +7,7 @@ import { Singleton } from 'typescript-ioc';
 
 @Singleton
 export class MailService {
-    private transporter: Mail;
+    private readonly transporter: Mail;
 
     constructor() {
         this.transporter = nodemailer.createTransport({

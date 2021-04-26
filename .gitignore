@@ -114,7 +114,11 @@ dist
 package-lock.json
 BatchRun.ffs_batch
 
-sonar-project.properties
 .scannerwork/report-task.txt
 .scannerwork/.sonar_lock
 .scannerwork
+debug.env
+production.env
+debug.env
+production.env
+src/routes/routes.ts

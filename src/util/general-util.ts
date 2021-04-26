@@ -190,6 +190,9 @@ export function setConstants() {
     constants.publicKey = Buffer.from(process.env.publicKey, 'base64').toString();
 
     // @ts-ignore
+    constants.baseUrl = process.env.serverAddress;
+
+    // @ts-ignore
     constants.vapidKeys.privateKey = process.env.vapidKeyPrivateKey;
     // @ts-ignore
     constants.vapidKeys.publicKey = process.env.vapidKeyPublicKey;

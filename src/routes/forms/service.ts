@@ -121,7 +121,7 @@ export class FormsService extends BaseService<IFormModel> {
         switch (scope) {
             case 'student': {
                 const user = await this.userRepository.getPopulated(id, 'student');
-                const forms = (await this.repository.findActive({ end: { $gte: new Date() } })).filter((e) => {
+                const forms = (await this.repository.findActive()).filter((e) => {
                     e.electives = e.electives.filter(
                         // @ts-ignore
                         (v) => v.batches.findIndex((r) => r.id === user.batch?.id) > -1
@@ -137,9 +137,7 @@ export class FormsService extends BaseService<IFormModel> {
             }
             case 'teacher':
             case 'admin': {
-                return this.repository.findActive({
-                    end: { $gte: new Date() }
-                });
+                return this.repository.findActive();
             }
         }
     }
@@ -164,7 +162,7 @@ export class FormsService extends BaseService<IFormModel> {
         sort: string,
         query: any
     ): Promise<PaginationModel<Entity>> {
-        const skip: number = (Math.max(1, page) - 1) * limit;
+        const skip: number = Math.max(0, page) * limit;
         // eslint-disable-next-line prefer-const
         let [count, docs] = await Promise.all([
             this.repository.count(query),
@@ -387,7 +385,7 @@ export class FormsService extends BaseService<IFormModel> {
     }
 
     private async getUnresponsive(responsive: string[], batches: string[]) {
-        const totalUsers = await this.userRepository.find('', { batch: { $in: batches } }, undefined, 0);
+        const totalUsers = await this.userRepository.find('', { batch: { $in: batches }, role: 'student' }, undefined, 0);
         return totalUsers.filter((e) => responsive.indexOf(e.rollNo) === -1);
     }
 }

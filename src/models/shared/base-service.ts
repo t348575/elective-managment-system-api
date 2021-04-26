@@ -17,7 +17,7 @@ export abstract class BaseService<EntityModel> {
         sort: string,
         query: any
     ): Promise<PaginationModel<EntityModel>> {
-        const skip: number = (Math.max(1, page) - 1) * limit;
+        const skip: number = Math.max(0, page) * limit;
         // eslint-disable-next-line prefer-const
         let [count, docs] = await Promise.all([
             this.repository.count(query),

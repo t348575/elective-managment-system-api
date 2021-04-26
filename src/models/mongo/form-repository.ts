@@ -13,6 +13,7 @@ export interface IFormModel {
     shouldSelect: number;
     selectAllAtForm: boolean;
     electives: IElectiveModel[];
+    active: boolean;
 }
 
 export class FormFormatter extends BaseFormatter implements IFormModel {
@@ -22,6 +23,7 @@ export class FormFormatter extends BaseFormatter implements IFormModel {
     selectAllAtForm: boolean;
     start: Date;
     id: string;
+    active: boolean;
     constructor(args: any) {
         super();
         this.format(args);
@@ -37,7 +39,8 @@ export class FormsRepository extends BaseRepository<IFormModel> {
             end: { type: Date, required: true },
             shouldSelect: { type: Number, required: true },
             selectAllAtForm: { type: Number, required: true },
-            electives: [{ type: mongoose.Schema.Types.ObjectId, ref: 'electives' }]
+            electives: [{ type: mongoose.Schema.Types.ObjectId, ref: 'electives' }],
+            active: { type: Boolean, required: true, default: true }
         },
         { collection: this.modelName }
     );
@@ -58,9 +61,9 @@ export class FormsRepository extends BaseRepository<IFormModel> {
         });
     }
 
-    public async findActive(query: any): Promise<IFormModel[]> {
+    public async findActive(): Promise<IFormModel[]> {
         return (
-            await this.documentModel.find(query).populate({
+            await this.documentModel.find({ end: { $gte: new Date() }, active: true }).populate({
                 path: 'electives',
                 populate: [
                     {

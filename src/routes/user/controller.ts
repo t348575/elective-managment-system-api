@@ -284,7 +284,7 @@ export class UsersController extends Controller {
     @Response<ErrorType>(500, unknownServerError)
     public async getTrackedData(
         @Query('page') page: number,
-        @Query('sortBy') sortBy: 'time' | 'ip' | 'device' | 'browser' | 'platform' | 'createdAt',
+        @Query('sortBy') sortBy: 'ip' | 'device' | 'browser' | 'platform' | 'createdAt',
         @Query('dir') dir: 'asc' | 'desc',
         @Query('startTime') startTime?: string,
         @Query('endTime') endTime?: string,

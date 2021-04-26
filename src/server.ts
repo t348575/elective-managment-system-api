@@ -6,21 +6,25 @@ import constants from './constants';
 import { Logger } from './shared/logger';
 import { setConstants } from './util/general-util';
 dotenv.config({
-    path: path.resolve(process.cwd(), process.env.NODE_ENV + '.env')
+    path: path.resolve(process.cwd(), `${process.env.NODE_ENV}.env`)
 });
 setConstants();
 // @ts-ignore
 const port = parseInt(process.env.port, 10) || 8080;
 Logger.init();
-import { app } from './app';
+import { app, initApp } from './app';
 let server: http.Server | https.Server;
 if (constants.environment === 'test') {
     server = http.createServer(app);
 } else {
-    server = https.createServer({
-        cert: constants.publicKey,
-        key: constants.privateKey
-    }, app);
+    server = https.createServer(
+        {
+            cert: constants.publicKey,
+            key: constants.privateKey
+        },
+        app
+    );
+    initServer();
 }
 process.on('SIGINT', shutdown);
 function shutdown() {
@@ -28,7 +32,10 @@ function shutdown() {
     Logger.log('Closed app');
     process.exit(0);
 }
-
-server.listen(port, '0.0.0.0',() => Logger.log(`App listening at ${process.env.serverAddress}:${port}`));
-
-export { server };
+function initServer() {
+    server.listen(port, () => {
+        Logger.log(`App listening at ${process.env.serverAddress}:${port}`);
+        initApp();
+    });
+}
+export { server, initServer };

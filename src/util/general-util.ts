@@ -19,12 +19,18 @@ export const cleanQuery = (
     query: string | any = '',
     customFormatter?: (key: string, value: any) => any
 ): { [key: string]: any } => {
-    if (typeof query !== 'string') return query instanceof Object ? query : {};
+    if (typeof query !== 'string') {
+        return query instanceof Object ? query : {};
+    }
 
     const defaultFormatter = (key: string, value: any) => {
-        if (isId(key)) return value;
+        if (isId(key)) {
+            return value;
+        }
         value = safeParse(value, value);
-        if (typeof value === 'string') return new RegExp(value, 'i');
+        if (typeof value === 'string') {
+            return new RegExp(value, 'i');
+        }
         return value;
     };
 
@@ -182,6 +188,9 @@ export function setConstants() {
     constants.privateKey = Buffer.from(process.env.privateKey, 'base64').toString();
     // @ts-ignore
     constants.publicKey = Buffer.from(process.env.publicKey, 'base64').toString();
+
+    // @ts-ignore
+    constants.baseUrl = process.env.serverAddress;
 
     // @ts-ignore
     constants.vapidKeys.privateKey = process.env.vapidKeyPrivateKey;

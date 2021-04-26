@@ -17,7 +17,9 @@ export class ApiError extends Error implements ErrorType {
     constructor(errorType: ErrorType) {
         super(errorType.message);
         this.name = errorType.name;
-        if (errorType.statusCode) this.statusCode = errorType.statusCode;
+        if (errorType.statusCode) {
+            this.statusCode = errorType.statusCode;
+        }
         this.fields = errorType.fields;
     }
 }
@@ -67,7 +69,9 @@ export class ErrorHandler {
         Object.keys(constants.errorTypes).forEach((errorTypeKey) => {
             // @ts-ignore
             const errorType = constants.errorTypes[errorTypeKey];
-            if (errorType.statusCode === normalizedError.statusCode) normalizedError.name = errorType.name;
+            if (errorType.statusCode === normalizedError.statusCode) {
+                normalizedError.name = errorType.name;
+            }
         });
         return normalizedError;
     }

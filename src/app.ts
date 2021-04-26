@@ -1,7 +1,6 @@
 import express, { Response as ExResponse, Request as ExRequest, NextFunction } from 'express';
 import { ValidateError } from '@tsoa/runtime';
 import swaggerUi from 'swagger-ui-express';
-import bodyParser from 'body-parser';
 import * as path from 'path';
 import morgan from 'morgan';
 import { RegisterRoutes } from './routes/routes';
@@ -15,6 +14,7 @@ import constants from './constants';
 import useragent from 'express-useragent';
 import './routes/controller';
 import { PrivateInjectorInit } from './routes/private-injector-init';
+import { Container } from 'typescript-ioc';
 
 export const app = express();
 
@@ -52,12 +52,12 @@ if (constants.environment === 'debug') {
 app.use(useragent.express());
 
 app.use(
-    bodyParser.urlencoded({
+    express.urlencoded({
         extended: true,
         limit: '55mb'
     })
 );
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.use(
     multer({
@@ -123,4 +123,6 @@ app.use(function errorHandler(err: unknown, req: ExRequest, res: ExResponse, nex
     return res.status(500).json(err);
 });
 
-new PrivateInjectorInit();
+export function initApp() {
+    Container.get(PrivateInjectorInit);
+}

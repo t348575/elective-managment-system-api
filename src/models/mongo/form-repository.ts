@@ -10,7 +10,8 @@ export interface IFormModel {
     id?: string;
     start: Date;
     end: Date;
-    num: number;
+    shouldSelect: number;
+    selectAllAtForm: boolean;
     electives: IElectiveModel[];
     active: boolean;
 }
@@ -18,7 +19,8 @@ export interface IFormModel {
 export class FormFormatter extends BaseFormatter implements IFormModel {
     electives: IElectiveModel[];
     end: Date;
-    num: number;
+    shouldSelect: number;
+    selectAllAtForm: boolean;
     start: Date;
     id: string;
     active: boolean;
@@ -35,9 +37,10 @@ export class FormsRepository extends BaseRepository<IFormModel> {
         {
             start: { type: Date, required: true },
             end: { type: Date, required: true },
-            num: { type: Number, required: true },
-            active: { type: Boolean, required: true },
-            electives: [{ type: mongoose.Schema.Types.ObjectId, ref: 'electives' }]
+            shouldSelect: { type: Number, required: true },
+            selectAllAtForm: { type: Number, required: true },
+            electives: [{ type: mongoose.Schema.Types.ObjectId, ref: 'electives' }],
+            active: { type: Boolean, required: true, default: true }
         },
         { collection: this.modelName }
     );
@@ -58,8 +61,21 @@ export class FormsRepository extends BaseRepository<IFormModel> {
         });
     }
 
-    public async findActive(query: any): Promise<IFormModel[]> {
-        return (await this.documentModel.find(query).populate('electives')).map((item) => new this.formatter(item));
+    public async findActive(): Promise<IFormModel[]> {
+        return (
+            await this.documentModel.find({ end: { $gte: new Date() }, active: true }).populate({
+                path: 'electives',
+                populate: [
+                    {
+                        path: 'batches'
+                    },
+                    {
+                        path: 'teachers',
+                        select: 'name username _id rollNo role classes'
+                    }
+                ]
+            })
+        ).map((item) => new this.formatter(item));
     }
 
     public async findAndPopulate(sort: string, query: any, skip = 0, limit = 250): Promise<FormFormatter[]> {

@@ -1,4 +1,4 @@
-import { Inject } from 'typescript-ioc';
+import { Singleton, Inject } from 'typescript-ioc';
 import { IUserModel, UserFormatter, UserRepository } from '../../models/mongo/user-repository';
 import { BaseService } from '../../models/shared/base-service';
 import { DefaultResponse, Failed, scopes } from '../../models/types';
@@ -17,20 +17,22 @@ import {
     PasswordResetRepository
 } from '../../models/mongo/password-reset-repository';
 import { UnknownApiError } from '../../shared/error-handler';
-import { Singleton } from 'typescript-ioc';
+import { PaginationModel } from '../../models/shared/pagination-model';
+import { ITrackModel, TrackRepository } from '../../models/mongo/track-repository';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
 
 @Singleton
 export class UsersService extends BaseService<IUserModel> {
-    private createUserTemplate;
+    private readonly createUserTemplate;
 
-    private resetPasswordTemplate;
+    private readonly resetPasswordTemplate;
 
     @Inject protected repository: UserRepository;
     @Inject protected batchRepo: BatchRepository;
     @Inject protected passReset: PasswordResetRepository;
     @Inject protected mailer: MailService;
+    @Inject protected trackRepository: TrackRepository;
     constructor() {
         super();
         if (constants.environment !== 'test') {
@@ -158,7 +160,7 @@ export class UsersService extends BaseService<IUserModel> {
                                     {
                                         username: user.username,
                                         expireAt: expireAt.toLocaleString(),
-                                        url: `${constants.baseUrl}/resetPassword?code=${code}`
+                                        url: `${constants.baseUrl}/app/resetPassword?code=${code}`
                                     }
                                 ],
                                 'Reset password - Amrita EMS',
@@ -248,7 +250,7 @@ export class UsersService extends BaseService<IUserModel> {
                     try {
                         await this.repository.delete(v);
                     } catch (err) {
-                        if (err?.statusCode == 404) {
+                        if (err?.statusCode === 404) {
                             failed.push({
                                 item: v,
                                 reason: 'not_found',
@@ -313,13 +315,45 @@ export class UsersService extends BaseService<IUserModel> {
             if (checkString(obj, 'username')) {
                 return obj['username'];
             } else {
-                return (
-                    obj['rollNo'].toLowerCase() +
-                    '@' +
-                    (obj['role'] === 'student' ? constants.emailSuffix.student : constants.emailSuffix.teacher)
-                );
+                return `${obj['rollNo'].toLowerCase()}@${
+                    obj['role'] === 'student' ? constants.emailSuffix.student : constants.emailSuffix.teacher
+                }`;
             }
         }
         return obj['username'];
+    }
+
+    public async getTrackedDataPaginated(
+        page: number,
+        limit: number,
+        fields: string,
+        sort: string,
+        query: any
+    ): Promise<PaginationModel<ITrackModel>> {
+        const skip: number = Math.max(0, page) * limit;
+        // eslint-disable-next-line prefer-const
+        let [count, docs] = await Promise.all([
+            this.trackRepository.count(query),
+            this.trackRepository.findAndPopulate(skip, limit, sort, query)
+        ]);
+        const fieldArray = (fields || '')
+            .split(',')
+            .map((field) => field.trim())
+            .filter(Boolean);
+        if (fieldArray.length) {
+            docs = docs.map((d: { [x: string]: any }) => {
+                const attrs: any = {};
+                // @ts-ignore
+                fieldArray.forEach((f) => (attrs[f] = d[f]));
+                return attrs;
+            });
+        }
+        return new PaginationModel<ITrackModel>({
+            count,
+            page,
+            limit,
+            docs,
+            totalPages: Math.ceil(count / limit)
+        });
     }
 }

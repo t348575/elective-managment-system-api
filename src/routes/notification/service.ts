@@ -16,7 +16,7 @@ export class NotificationService extends BaseService<INotificationModel> {
     constructor() {
         super();
         webPush.setVapidDetails(
-            'mailto:' + constants.mailAccess.username,
+            `mailto:${constants.mailAccess.username}`,
             constants.vapidKeys.publicKey,
             constants.vapidKeys.privateKey
         );
@@ -78,7 +78,7 @@ export class NotificationService extends BaseService<INotificationModel> {
                 const ids = await this.repository.find('', { user: user }, undefined, 0);
                 for (const v of ids) {
                     try {
-                        webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then().catch();
+                        webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then();
                     } catch (errFor) {
                         try {
                             // @ts-ignore
@@ -98,7 +98,7 @@ export class NotificationService extends BaseService<INotificationModel> {
                 const ids = await this.repository.findAndPopulate(batches);
                 for (const v of ids) {
                     try {
-                        webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then().catch();
+                        webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then();
                     } catch (errFor) {
                         try {
                             // @ts-ignore
@@ -131,8 +131,7 @@ export class NotificationService extends BaseService<INotificationModel> {
         try {
             await this.repository.findOne({ user, device });
             return { subscribed: true };
-        }
-        catch(err) {
+        } catch (err) {
             return { subscribed: false };
         }
     }

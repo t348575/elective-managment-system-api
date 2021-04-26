@@ -7,8 +7,10 @@ import * as qs from 'query-string';
 import { setConstants } from '../util/general-util';
 import dotenv from 'dotenv';
 import path from 'path';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import constants from '../constants';
 dotenv.config({
-    path: path.resolve(process.cwd(), process.env.NODE_ENV + '.env')
+    path: path.resolve(process.cwd(), `${process.env.NODE_ENV}.env`)
 });
 export class IntegrationHelper {
     public app: SuperTest<any>;
@@ -17,9 +19,16 @@ export class IntegrationHelper {
     public access_token: string;
     public refresh_token: string;
 
+    public db: MongoMemoryServer;
+
     constructor(app: SuperTest<any>) {
         setConstants();
         this.app = app;
+    }
+
+    async initMongoMemoryServer() {
+        this.db = new MongoMemoryServer();
+        constants.mongoConnectionString = await this.db.getUri();
     }
 
     async login() {

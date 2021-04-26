@@ -1,6 +1,6 @@
 import { BaseService } from '../../models/shared/base-service';
 import { IResponseModel, ResponseRepository } from '../../models/mongo/response-repository';
-import { Inject } from 'typescript-ioc';
+import { Singleton, Inject } from 'typescript-ioc';
 import { UserRepository } from '../../models/mongo/user-repository';
 import { FormResponseOptions } from './controller';
 import { jwtToken } from '../../models/types';
@@ -8,7 +8,6 @@ import { FormsRepository } from '../../models/mongo/form-repository';
 import { ApiError } from '../../shared/error-handler';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import mongoose from 'mongoose';
-import { Singleton } from 'typescript-ioc';
 
 @Singleton
 export class ResponseService extends BaseService<IResponseModel> {
@@ -28,12 +27,13 @@ export class ResponseService extends BaseService<IResponseModel> {
                     message: 'A response has already been submitted for the selected form'
                 });
             } else {
-                const s = new Set(options.electives);
-                options.electives = Array.from(s.values());
-                const user = await this.userRepository.getById(token.id);
-                const form = (await this.formsRepository.findActive({ end: { $gte: new Date() } })).filter((e) => {
-                    // @ts-ignore
-                    e.electives = e.electives.filter((v) => v.batches.indexOf(user.batch?.id) > -1);
+                options.electives = [...new Set(options.electives)];
+                const user = await this.userRepository.getPopulated(token.id, 'student');
+                const form = (await this.formsRepository.findActive()).filter((e) => {
+                    e.electives = e.electives.filter(
+                        // @ts-ignore
+                        (v) => v.batches.findIndex((r) => r.id === user.batch?.id) > -1
+                    );
                     return e.electives.length > 0;
                 });
                 const idx = form.findIndex((e) => e.id === options.id);
@@ -48,7 +48,10 @@ export class ResponseService extends BaseService<IResponseModel> {
                             });
                         }
                     }
-                    if (options.electives.length !== form[idx].num) {
+                    if (
+                        (form[idx].selectAllAtForm && options.electives.length !== validElectives.length) ||
+                        (!form[idx].selectAllAtForm && options.electives.length < form[idx].shouldSelect)
+                    ) {
                         throw new ApiError({
                             statusCode: 401,
                             name: 'elective_num_incorrect',
@@ -105,7 +108,7 @@ export class ResponseService extends BaseService<IResponseModel> {
         sort: string,
         query: any
     ): Promise<PaginationModel<Entity>> {
-        const skip: number = (Math.max(1, page) - 1) * limit;
+        const skip: number = Math.max(0, page) * limit;
         // eslint-disable-next-line prefer-const
         let [count, docs] = await Promise.all([
             this.repository.count(query),
@@ -115,13 +118,14 @@ export class ResponseService extends BaseService<IResponseModel> {
             .split(',')
             .map((field) => field.trim())
             .filter(Boolean);
-        if (fieldArray.length)
+        if (fieldArray.length) {
             docs = docs.map((d: { [x: string]: any }) => {
                 const attrs: any = {};
                 // @ts-ignore
                 fieldArray.forEach((f) => (attrs[f] = d[f]));
                 return attrs;
             });
+        }
         return new PaginationModel<Entity>({
             count,
             page,

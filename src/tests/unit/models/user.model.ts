@@ -42,28 +42,34 @@ function getRollNo(scope: scopes, num: number): string {
     }
 }
 export async function setupMockBatches(count: number): Promise<string[]> {
-    const batches: string[] = [];
+    const batches = getMockBatches(count);
+    const batchIds: string[] = [];
     const batchRepository = Container.get(BatchRepository);
     for (let i = 0; i < count; i++) {
-        const year = faker.date.past(faker.datatype.number({ min: 1, max: 6 })).getFullYear();
-        const fromNow = new Date().getFullYear() - year;
-        const str = `${year}-${fromNow}-BTECH-CSE`;
         try {
-            await batchRepository.create(batchStringToModel(str));
+            await batchRepository.create(batchStringToModel(batches[i]));
+        } catch (err) {
             // eslint-disable-next-line no-empty
-        } catch (err) {}
+        }
         // @ts-ignore
-        batches.push((await batchRepository.findOne({ batchString: str })).id);
+        batchIds.push((await batchRepository.findOne({ batchString: batches[i] })).id);
     }
-    return batches;
+    return batchIds;
 }
 
 export function getMockBatches(count: number): string[] {
-    const batches = [];
-    for (let i = 0; i < count; i++) {
+    let batches: string[] = [];
+    let i = 0;
+    while (i < count) {
         const year = faker.date.past(faker.datatype.number({ min: 1, max: 6 })).getFullYear();
         const fromNow = new Date().getFullYear() - year;
         batches.push(`${year}-${fromNow}-BTECH-CSE`);
+        i++;
+        const temp: string[] = [...new Set(batches)];
+        if (temp.length !== i) {
+            i--;
+            batches = temp;
+        }
     }
     return batches;
 }
@@ -78,7 +84,7 @@ export async function setupMockUsers(mode: 'all' | 'adminOnly' | 'adminTeachers'
             const batches = await setupMockBatches(5);
             for (i = 0, j = 0; i < 50; i++) {
                 users.push(await userRepository.create(getMockUser('student', i, batches[j])));
-                if (i % 10 === 0) {
+                if (i % 10 === 0 && i !== 0) {
                     j++;
                 }
             }

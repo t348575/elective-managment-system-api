@@ -42,8 +42,8 @@ export class NotificationController extends Controller {
 
     @Put('subscribe')
     @Security('jwt', scopeArray)
-    @Response<ErrorType>(401, 'ValidationError')
-    @Response<ErrorType>(500, 'Unknown server error')
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
     public async subscribe(@Body() options: SubscribeOptions, @Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
@@ -52,8 +52,8 @@ export class NotificationController extends Controller {
 
     @Post('unsubscribe')
     @Security('jwt', scopeArray)
-    @Response<ErrorType>(401, 'ValidationError')
-    @Response<ErrorType>(500, 'Unknown server error')
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
     public async unsubscribe(@Body() options: SubscribeOptions, @Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
@@ -62,12 +62,9 @@ export class NotificationController extends Controller {
 
     @Get('isSubscribed')
     @Security('jwt', scopeArray)
-    @Response<ErrorType>(401, 'ValidationError')
-    @Response<ErrorType>(500, 'Unknown server error')
-    public async isSubscribed(
-        @Query('name') name: string,
-        @Request() request: ExRequest
-    ) {
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
+    public async isSubscribed(@Query('name') name: string, @Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.isSubscribed(name, accessToken.id);

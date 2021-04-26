@@ -27,7 +27,6 @@ export interface UpdateFormOptions {
     shouldSelect?: number;
     selectAllAtForm?: boolean;
     electives?: string[];
-    active?:boolean;
 }
 
 export interface GenerateListResponse {

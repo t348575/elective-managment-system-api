@@ -122,3 +122,5 @@ production.env
 debug.env
 production.env
 src/routes/routes.ts
+debug.env
+production.env

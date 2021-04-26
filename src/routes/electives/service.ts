@@ -262,8 +262,7 @@ export class ElectivesService extends BaseService<IElectiveModel> {
                         ).id.toString()
                     );
                 }
-            }
-            catch(err) {
+            } catch (err) {
                 throw new ApiError({
                     statusCode: 400,
                     name: 'teacher_no_exist',

@@ -23,7 +23,7 @@ export interface SubscribeOptions {
 export interface customNotifyOptions {
     batches: string[];
     users: string[];
-    role ?: scopes;
+    role?: scopes;
     notifyAll: boolean;
     title: string;
     body: string;
@@ -74,9 +74,7 @@ export class NotificationController extends Controller {
     @Security('jwt', adminOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async customNotify(
-        @Body() options: customNotifyOptions
-    ) {
+    public async customNotify(@Body() options: customNotifyOptions) {
         return this.service.customNotify(options);
     }
 }

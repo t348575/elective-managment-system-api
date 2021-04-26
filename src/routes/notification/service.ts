@@ -142,18 +142,20 @@ export class NotificationService extends BaseService<INotificationModel> {
             let query = {};
             if (options.batches.length > 0) {
                 // @ts-ignore
-                batchIds = [...(await this.batchRepository.find('', { batchString: { '$in': options.batches } })).map(e => e.id)];
+                batchIds = [
+                    ...(await this.batchRepository.find('', { batchString: { $in: options.batches } })).map((e) => e.id)
+                ];
             }
             if (batchIds.length > 0) {
                 // @ts-ignore
                 query.batch = {
-                    '$in': batchIds
+                    $in: batchIds
                 };
             }
             if (options.users.length > 0) {
                 // @ts-ignore
                 query.rollNo = {
-                    '$in': options.users
+                    $in: options.users
                 };
             }
             if (options.role) {
@@ -185,36 +187,39 @@ export class NotificationService extends BaseService<INotificationModel> {
                             title,
                             body,
                             vibrate: [100, 50, 100],
-                            requireInteraction: true,
+                            requireInteraction: true
                         }
-                    }).then().catch();
+                    })
+                        .then()
+                        .catch();
                 }
-            }
-            else {
-                // @ts-ignore
-                this.notifyUsers(users.map(e => e.id), {
-                    notification: {
-                        title: options.title,
-                        body: options.body,
-                        vibrate: [100, 50, 100],
-                        requireInteraction: true,
+            } else {
+                this.notifyUsers(
+                    // @ts-ignore
+                    users.map((e) => e.id),
+                    {
+                        notification: {
+                            title: options.title,
+                            body: options.body,
+                            vibrate: [100, 50, 100],
+                            requireInteraction: true
+                        }
                     }
-                }).then().catch();
+                )
+                    .then()
+                    .catch();
             }
             return true;
-        }
-        catch(err) {
+        } catch (err) {
             return false;
         }
     }
 
-    private static async initialNotification(
-        sub: {
-            endpoint: string;
-            expirationTime: number | null;
-            keys: { p256dh: string; auth: string };
-        }
-    ) {
+    private static async initialNotification(sub: {
+        endpoint: string;
+        expirationTime: number | null;
+        keys: { p256dh: string; auth: string };
+    }) {
         const notificationPayload = {
             notification: {
                 title: 'Welcome to Amrita EMS!',

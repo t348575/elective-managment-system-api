@@ -453,8 +453,8 @@ export class FormsService extends BaseService<IFormModel> {
         }
         return selections.filter((e) => {
             if (e.elective) {
-                // @ts-ignore
                 return (
+                    // @ts-ignore
                     form.explicit.findIndex((r) => r.user.id === e.user.id && r.elective.id === e.elective.id) === -1
                 );
             }

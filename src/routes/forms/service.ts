@@ -1,7 +1,7 @@
 import { FormsRepository, IFormModel } from '../../models/mongo/form-repository';
 import { BaseService } from '../../models/shared/base-service';
 import { BatchRepository } from '../../models/mongo/batch-repository';
-import { CreateFormOptions, GenerateListResponse, UpdateFormOptions } from './controller';
+import { AddExplicitOptions, CreateFormOptions, GenerateListResponse, UpdateFormOptions } from './controller';
 import { ElectiveRepository, IElectiveModel } from '../../models/mongo/elective-repository';
 import { ApiError, UnknownApiError } from '../../shared/error-handler';
 import { IUserModel, UserRepository } from '../../models/mongo/user-repository';
@@ -82,7 +82,8 @@ export class FormsService extends BaseService<IFormModel> {
                 // @ts-ignore
                 electives: options.electives,
                 shouldSelect: options.numElectives,
-                selectAllAtForm: options.shouldSelectAll
+                selectAllAtForm: options.shouldSelectAll,
+                explicit: []
             });
             const s = new Set(batches);
             this.notificationService
@@ -385,12 +386,79 @@ export class FormsService extends BaseService<IFormModel> {
     }
 
     private async getUnresponsive(responsive: string[], batches: string[]) {
-        const totalUsers = await this.userRepository.find(
+        const totalUsers = await this.userRepository.findAndPopulate(
             '',
             { batch: { $in: batches }, role: 'student' },
-            undefined,
-            0
+            0,
+            undefined
         );
         return totalUsers.filter((e) => responsive.indexOf(e.rollNo) === -1);
+    }
+
+    public async setExplicit(options: AddExplicitOptions) {
+        return this.repository.setExplicit(options.id, options.options);
+    }
+
+    public async rawList(id: string) {
+        const form: IFormModel = (await this.repository.findAndPopulate('', { _id: id }, 0))[0];
+        const uniqueBatches = new Set<string>();
+        const electiveCountMap = new Map<string, number>();
+        for (const elective of form.electives) {
+            for (const batch of elective.batches) {
+                electiveCountMap.set(batch.batchString + elective.courseCode + elective.version, 0);
+                // @ts-ignore
+                uniqueBatches.add(batch.id);
+            }
+        }
+        const responses = await this.responseRepository.findAndPopulate(
+            '{"time":"asc"}',
+            { form: mongoose.Types.ObjectId(id) },
+            0,
+            undefined
+        );
+        const failed: string[] = [];
+        const successful: string[] = [];
+        const selections: { user: IUserModel; elective: IElectiveModel | undefined }[] = [];
+        for (const v of form.explicit) {
+            selections.push({ user: v.user, elective: v.elective });
+            successful.push(v.user.rollNo);
+        }
+        for (const v of responses) {
+            let hasPushed = false;
+            for (const ele of v.responses) {
+                const selection = electiveCountMap.get(v.user.batch?.batchString + ele.courseCode + ele.version);
+                if (
+                    selection !== undefined &&
+                    selection !== null &&
+                    selection < ele.strength &&
+                    form.explicit.findIndex((e) => e.user.id === v.user.id && ele.id === e.elective.id) === -1
+                ) {
+                    electiveCountMap.set(v.user.batch?.batchString + ele.courseCode + ele.version, selection + 1);
+                    selections.push({ user: v.user, elective: ele });
+                    successful.push(v.user.rollNo);
+                    hasPushed = true;
+                    break;
+                }
+            }
+            if (!hasPushed) {
+                selections.push({ user: v.user, elective: undefined });
+                failed.push(v.user.rollNo);
+            }
+        }
+        const notFilled = (await this.getUnresponsive(successful, Array.from(uniqueBatches.values()))).filter(
+            (e) => failed.indexOf(e.rollNo) === -1
+        );
+        for (const v of notFilled) {
+            selections.push({ user: v, elective: undefined });
+        }
+        return selections.filter((e) => {
+            if (e.elective) {
+                return (
+                    // @ts-ignore
+                    form.explicit.findIndex((r) => r.user.id === e.user.id && r.elective.id === e.elective.id) === -1
+                );
+            }
+            return true;
+        });
     }
 }

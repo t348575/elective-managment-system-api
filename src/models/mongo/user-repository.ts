@@ -8,6 +8,7 @@ import { ApiError } from '../../shared/error-handler';
 import constants from '../../constants';
 import { IClassModel } from './class-repository';
 import { Inject, Singleton } from 'typescript-ioc';
+import { cleanQuery } from '../../util/general-util';
 
 export interface IUserModel {
     id?: string;
@@ -156,5 +157,18 @@ export class UserRepository extends BaseRepository<IUserModel> {
             });
         if (!document) throw new ApiError(constants.errorTypes.notFound);
         return new this.formatter(document);
+    }
+
+    public async findAndPopulate(sort: string, query: any, skip = 0, limit = 250): Promise<UserFormatter[]> {
+        const sortObject = cleanQuery(sort, this.sortQueryFormatter);
+        return (
+            await this.documentModel
+                .find(this.cleanWhereQuery(query))
+                .sort(Object.keys(sortObject).map((key) => [key, sortObject[key]]))
+                .skip(skip)
+                .select('name username _id rollNo role classes batch')
+                .limit(limit)
+                .populate('batch')
+        ).map((item) => new this.formatter(item));
     }
 }

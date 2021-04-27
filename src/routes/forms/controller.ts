@@ -36,6 +36,11 @@ export interface GenerateListResponse {
     failed: Failed[];
 }
 
+export interface AddExplicitOptions {
+    id: string;
+    options: { user: string; elective: string }[];
+}
+
 @Tags('forms')
 @Route('forms')
 @Singleton
@@ -94,6 +99,14 @@ export class FormsController extends Controller {
         return this.service.generateList(id, closeForm, accessToken.id);
     }
 
+    @Get('raw-list')
+    @Security('jwt', teacherOrAdmin)
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
+    public async genRawList(@Query() id: string) {
+        return this.service.rawList(id);
+    }
+
     @Post('create-classes')
     @Security('jwt', adminOnly)
     @Response<ErrorType>(401, validationError)
@@ -116,5 +129,13 @@ export class FormsController extends Controller {
     @Response<ErrorType>(500, unknownServerError)
     public async deleteForm(@Query() id: string) {
         return this.service.delete(id);
+    }
+
+    @Put('explicit')
+    @Security('jwt', teacherOrAdmin)
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
+    public async setExplicit(@Body() options: AddExplicitOptions) {
+        await this.service.setExplicit(options);
     }
 }

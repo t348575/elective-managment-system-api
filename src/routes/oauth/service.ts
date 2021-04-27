@@ -11,6 +11,7 @@ import { RedisConnector } from '../../shared/redis-connector';
 import { jwtToken, refreshTokenResponse, scopes, tokenResponse } from '../../models/types';
 import * as qs from 'querystring';
 import { TrackRepository } from '../../models/mongo/track-repository';
+import { getClientIp } from 'request-ip';
 
 const userDoesNotExist = 'User does not exist';
 
@@ -270,10 +271,7 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                                                     browser: req.useragent?.browser || 'unknown',
                                                     platform: req.useragent?.platform || 'unknown',
                                                     // @ts-ignore
-                                                    ip:
-                                                        req.ip ||
-                                                        req.headers['x-forwarded-for'] ||
-                                                        req.socket.remoteAddress,
+                                                    ip: getClientIp(req),
                                                     // @ts-ignore
                                                     user: jwtObject.id
                                                 })

@@ -5,6 +5,7 @@ import mongoose, { Schema } from 'mongoose';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { cleanQuery } from '../../util/general-util';
 import { Inject, Singleton } from 'typescript-ioc';
+import { IUserModel } from './user-repository';
 
 export interface IFormModel {
     id?: string;
@@ -14,6 +15,10 @@ export interface IFormModel {
     selectAllAtForm: boolean;
     electives: IElectiveModel[];
     active: boolean;
+    explicit: {
+        user: IUserModel;
+        elective: IElectiveModel;
+    }[];
 }
 
 export class FormFormatter extends BaseFormatter implements IFormModel {
@@ -24,6 +29,10 @@ export class FormFormatter extends BaseFormatter implements IFormModel {
     start: Date;
     id: string;
     active: boolean;
+    explicit: {
+        user: IUserModel;
+        elective: IElectiveModel;
+    }[];
     constructor(args: any) {
         super();
         this.format(args);
@@ -40,7 +49,11 @@ export class FormsRepository extends BaseRepository<IFormModel> {
             shouldSelect: { type: Number, required: true },
             selectAllAtForm: { type: Number, required: true },
             electives: [{ type: mongoose.Schema.Types.ObjectId, ref: 'electives' }],
-            active: { type: Boolean, required: true, default: true }
+            active: { type: Boolean, required: true, default: true },
+            explicit: {
+                user: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
+                elective: { type: mongoose.Schema.Types.ObjectId, ref: 'electives' }
+            }
         },
         { collection: this.modelName }
     );
@@ -63,18 +76,27 @@ export class FormsRepository extends BaseRepository<IFormModel> {
 
     public async findActive(): Promise<IFormModel[]> {
         return (
-            await this.documentModel.find({ end: { $gte: new Date() }, active: true }).populate({
-                path: 'electives',
-                populate: [
-                    {
-                        path: 'batches'
-                    },
-                    {
-                        path: 'teachers',
-                        select: 'name username _id rollNo role classes'
-                    }
-                ]
-            })
+            await this.documentModel
+                .find({ end: { $gte: new Date() }, active: true })
+                .populate({
+                    path: 'electives',
+                    populate: [
+                        {
+                            path: 'batches'
+                        },
+                        {
+                            path: 'teachers',
+                            select: 'name username _id rollNo role classes'
+                        }
+                    ]
+                })
+                .populate({
+                    path: 'explicit.elective'
+                })
+                .populate({
+                    path: 'explicit.user',
+                    select: 'name username _id rollNo role batch'
+                })
         ).map((item) => new this.formatter(item));
     }
 
@@ -98,6 +120,17 @@ export class FormsRepository extends BaseRepository<IFormModel> {
                         }
                     ]
                 })
+                .populate({
+                    path: 'explicit.elective'
+                })
+                .populate({
+                    path: 'explicit.user',
+                    select: 'name username _id rollNo role batch'
+                })
         ).map((item) => new this.formatter(item));
+    }
+
+    public async setExplicit(id: string, options: { user: string; elective: string }[]) {
+        return this.documentModel.findByIdAndUpdate(id, { explicit: options });
     }
 }

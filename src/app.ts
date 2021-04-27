@@ -18,7 +18,7 @@ import { Container } from 'typescript-ioc';
 
 export const app = express();
 
-app.set('trust proxy', true);
+app.enable('trust proxy');
 
 if (constants.environment === 'debug') {
     app.use(cors());

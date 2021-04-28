@@ -205,7 +205,7 @@ export class FormsService extends BaseService<IFormModel> {
             const uniqueBatches = new Set<string>();
             for (const elective of form.electives) {
                 for (const batch of elective.batches) {
-                    electiveCountMap.set(batch.batchString + elective.courseCode + elective.version, 0);
+                    electiveCountMap.set(elective.courseCode + elective.version, 0);
                     // @ts-ignore
                     uniqueBatches.add(batch.id);
                 }
@@ -216,9 +216,9 @@ export class FormsService extends BaseService<IFormModel> {
                 responses: IElectiveModel[]
             ): { elective: string; version: number } => {
                 for (const ele of responses) {
-                    const selection = electiveCountMap.get(batch + ele.courseCode + ele.version);
+                    const selection = electiveCountMap.get(ele.courseCode + ele.version);
                     if (selection !== undefined && selection !== null && selection < ele.strength) {
-                        electiveCountMap.set(batch + ele.courseCode + ele.version, selection + 1);
+                        electiveCountMap.set(ele.courseCode + ele.version, selection + 1);
                         successful.push(rollNo);
                         return {
                             elective: ele.courseCode,
@@ -359,12 +359,12 @@ export class FormsService extends BaseService<IFormModel> {
         for (const v of users) {
             let status = false;
             for (const ele of v.responses) {
-                const selection = electiveCountMap.get(v.user.batch?.batchString + ele.courseCode + ele.version);
+                const selection = electiveCountMap.get(ele.courseCode + ele.version);
                 if (selection !== undefined && selection !== null && selection.count < ele.strength) {
                     // @ts-ignore
-                    electiveCountMap.get(v.user.batch?.batchString + ele.courseCode + ele.version).count++;
+                    electiveCountMap.get(ele.courseCode + ele.version).count++;
                     // @ts-ignore
-                    electiveCountMap.get(v.user.batch?.batchString + ele.courseCode + ele.version).users.push(v.user);
+                    electiveCountMap.get(ele.courseCode + ele.version).users.push(v.user);
                     successful.push(v.user.rollNo);
                     status = true;
                     break;
@@ -399,13 +399,18 @@ export class FormsService extends BaseService<IFormModel> {
         return this.repository.setExplicit(options.id, options.options);
     }
 
-    public async rawList(id: string) {
+    public async rawList(
+        id: string
+    ): Promise<{
+        selections: { user: IUserModel; elective: IElectiveModel | undefined }[];
+        vacancy: { elective: string; vacancy: number }[];
+    }> {
         const form: IFormModel = (await this.repository.findAndPopulate('', { _id: id }, 0))[0];
         const uniqueBatches = new Set<string>();
         const electiveCountMap = new Map<string, number>();
         for (const elective of form.electives) {
             for (const batch of elective.batches) {
-                electiveCountMap.set(batch.batchString + elective.courseCode + elective.version, 0);
+                electiveCountMap.set(elective.courseCode + elective.version, 0);
                 // @ts-ignore
                 uniqueBatches.add(batch.id);
             }
@@ -426,14 +431,14 @@ export class FormsService extends BaseService<IFormModel> {
         for (const v of responses) {
             let hasPushed = false;
             for (const ele of v.responses) {
-                const selection = electiveCountMap.get(v.user.batch?.batchString + ele.courseCode + ele.version);
+                const selection = electiveCountMap.get(ele.courseCode + ele.version);
                 if (
                     selection !== undefined &&
                     selection !== null &&
                     selection < ele.strength &&
                     form.explicit.findIndex((e) => e.user.id === v.user.id && ele.id === e.elective.id) === -1
                 ) {
-                    electiveCountMap.set(v.user.batch?.batchString + ele.courseCode + ele.version, selection + 1);
+                    electiveCountMap.set(ele.courseCode + ele.version, selection + 1);
                     selections.push({ user: v.user, elective: ele });
                     successful.push(v.user.rollNo);
                     hasPushed = true;
@@ -451,14 +456,26 @@ export class FormsService extends BaseService<IFormModel> {
         for (const v of notFilled) {
             selections.push({ user: v, elective: undefined });
         }
-        return selections.filter((e) => {
-            if (e.elective) {
-                return (
-                    // @ts-ignore
-                    form.explicit.findIndex((r) => r.user.id === e.user.id && r.elective.id === e.elective.id) === -1
-                );
-            }
-            return true;
+        // @ts-ignore
+        const electiveVacancy: { elective: string; vacancy: number }[] = [...electiveCountMap].map((e) => {
+            const ele = form.electives[form.electives.findIndex((r) => r.courseCode + r.version === e[0])];
+            return {
+                elective: ele,
+                vacancy: ele.strength - e[1]
+            };
         });
+        return {
+            selections: selections.filter((e) => {
+                if (e.elective) {
+                    return (
+                        // @ts-ignore
+                        form.explicit.findIndex((r) => r.user.id === e.user.id && r.elective.id === e.elective.id) ===
+                        -1
+                    );
+                }
+                return true;
+            }),
+            vacancy: electiveVacancy
+        };
     }
 }

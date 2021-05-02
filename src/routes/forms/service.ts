@@ -282,6 +282,9 @@ export class FormsService extends BaseService<IFormModel> {
             electives: form.electives.map((e) => e.id),
             active: false
         });
+        for (const v of form.electives) {
+            electiveCountMap.set(v.courseCode + v.version, { count: 0, users: [] });
+        }
         for (const v of selections) {
             if (v.electives.length > 0) {
                 successful.push(v.user.rollNo);
@@ -290,8 +293,6 @@ export class FormsService extends BaseService<IFormModel> {
                     if (item) {
                         item.count++;
                         item.users.push(v.user);
-                    } else {
-                        electiveCountMap.set(k.courseCode + k.version, { count: 0, users: [v.user] });
                     }
                 }
             }

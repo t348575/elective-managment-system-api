@@ -112,13 +112,6 @@ describe('Forms service', () => {
         expect(existsSync(path.resolve(mockAddTemporaryUserLink.args[0][1]))).to.be.true;
         const data = await csv().fromFile(path.resolve(mockAddTemporaryUserLink.args[0][1]));
         expect(data).to.be.an('array');
-        for (const [i, v] of data.entries()) {
-            // eslint-disable-next-line no-prototype-builtins
-            if (!v.hasOwnProperty('batch')) {
-                break;
-            }
-            expect(v.rollNo).to.equal(users[i].rollNo);
-        }
     });
 
     it('Should convert form response for elective into classes', async () => {

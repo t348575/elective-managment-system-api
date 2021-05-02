@@ -10,17 +10,25 @@ import { cleanQuery } from '../../util/general-util';
 
 export interface IClassModel {
     id?: string;
-    batch: IBatchModel;
+    batches: IBatchModel[];
     elective: IElectiveModel;
     students: IUserModel[];
     teacher: IUserModel;
+    files: {
+        file: string;
+        createdAt: Date;
+    }[];
 }
 
 export class ClassFormatter extends BaseFormatter implements IClassModel {
-    batch: IBatchModel;
+    batches: IBatchModel[];
     elective: IElectiveModel;
     students: IUserModel[];
     teacher: IUserModel;
+    files: {
+        file: string;
+        createdAt: Date;
+    }[];
     id: string;
     constructor(args: any) {
         super();
@@ -34,9 +42,15 @@ export class ClassRepository extends BaseRepository<IClassModel> {
     protected schema: Schema = new Schema(
         {
             elective: { type: mongoose.Schema.Types.ObjectId, ref: 'electives' },
-            batch: { type: mongoose.Schema.Types.ObjectId, ref: 'batches' },
+            batches: [{ type: mongoose.Schema.Types.ObjectId, ref: 'batches' }],
             students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
-            teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'users' }
+            teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
+            files: [
+                {
+                    file: { type: mongoose.Schema.Types.ObjectId, ref: 'downloads' },
+                    createdAt: { type: Date, required: true }
+                }
+            ]
         },
         { collection: this.modelName }
     );
@@ -68,6 +82,14 @@ export class ClassRepository extends BaseRepository<IClassModel> {
         return classId.id;
     }
 
+    public async removeClass(classId: string) {
+        const session = await this.documentModel.startSession();
+        await session.withTransaction(async () => {
+            await this.delete(classId);
+        });
+        session.endSession();
+    }
+
     public async findAndPopulate(skip = 0, limit = 250, sort: string, query: any): Promise<ClassFormatter[]> {
         const sortObject = cleanQuery(sort, this.sortQueryFormatter);
         return (
@@ -78,11 +100,24 @@ export class ClassRepository extends BaseRepository<IClassModel> {
                 .limit(limit)
                 .populate('elective')
                 .populate('batch')
-                .populate('teacher')
                 .populate({
-                    path: 'teachers',
+                    path: 'teacher',
                     select: 'name username _id rollNo role classes'
                 })
         ).map((item) => new this.formatter(item));
+    }
+
+    public async getStudents(id: string) {
+        return (
+            await this.documentModel.find(this.cleanWhereQuery({ _id: id })).populate({
+                path: 'students',
+                select: 'name username _id rollNo role classes batch',
+                populate: [
+                    {
+                        path: 'batch'
+                    }
+                ]
+            })
+        ).map((item) => new this.formatter(item))[0].students;
     }
 }

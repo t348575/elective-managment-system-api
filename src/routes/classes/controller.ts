@@ -59,9 +59,7 @@ export class ClassController extends Controller {
     @Security('jwt', teacherOrAdmin)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async getStudents(
-        @Query() id: string
-    ) {
+    public async getStudents(@Query() id: string) {
         return this.service.getStudents(id);
     }
 
@@ -69,9 +67,7 @@ export class ClassController extends Controller {
     @Security('jwt', adminOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async deleteClasses(
-        @Query('class') classes: string
-    ): Promise<void> {
+    public async deleteClasses(@Query('class') classes: string): Promise<void> {
         await this.service.deleteClass(classes);
         return;
     }

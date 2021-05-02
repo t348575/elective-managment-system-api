@@ -45,10 +45,12 @@ export class ClassRepository extends BaseRepository<IClassModel> {
             batches: [{ type: mongoose.Schema.Types.ObjectId, ref: 'batches' }],
             students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
             teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
-            files: [{
-                file: { type: mongoose.Schema.Types.ObjectId, ref: 'downloads' },
-                createdAt: { type: Date, required: true }
-            }]
+            files: [
+                {
+                    file: { type: mongoose.Schema.Types.ObjectId, ref: 'downloads' },
+                    createdAt: { type: Date, required: true }
+                }
+            ]
         },
         { collection: this.modelName }
     );
@@ -107,9 +109,7 @@ export class ClassRepository extends BaseRepository<IClassModel> {
 
     public async getStudents(id: string) {
         return (
-            await this.documentModel
-            .find(this.cleanWhereQuery({ _id: id }))
-            .populate({
+            await this.documentModel.find(this.cleanWhereQuery({ _id: id })).populate({
                 path: 'students',
                 select: 'name username _id rollNo role classes batch',
                 populate: [

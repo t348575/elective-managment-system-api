@@ -270,7 +270,10 @@ export class AuthService extends BaseService<IAuthTokenRequest> {
                                                     browser: req.useragent?.browser || 'unknown',
                                                     platform: req.useragent?.platform || 'unknown',
                                                     // @ts-ignore
-                                                    ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress,
+                                                    ip:
+                                                        req.headers['x-forwarded-for'] ||
+                                                        req.connection.remoteAddress ||
+                                                        req.socket.remoteAddress,
                                                     // @ts-ignore
                                                     user: jwtObject.id
                                                 })

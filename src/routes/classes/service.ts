@@ -22,9 +22,7 @@ export class ClassService extends BaseService<IClassModel> {
     public async createClass(electiveMap: Map<string, { count: number; users: IUserModel[] }>, form: IFormModel) {
         for (const elective of form.electives) {
             // @ts-ignore
-            const studentArr = electiveMap
-            .get(elective.courseCode + elective.version)
-            .users.map((e) => e.id);
+            const studentArr = electiveMap.get(elective.courseCode + elective.version).users.map((e) => e.id);
             if (studentArr.length > 0) {
                 const students = chunkArray(studentArr, elective.teachers.length);
                 for (const [i, chunk] of students.entries()) {
@@ -32,7 +30,7 @@ export class ClassService extends BaseService<IClassModel> {
                         // @ts-ignore
                         elective: elective.id,
                         // @ts-ignore
-                        batches: elective.batches.map(e => e.id),
+                        batches: elective.batches.map((e) => e.id),
                         students: chunk,
                         // @ts-ignore
                         teacher: elective.teachers[i].id,
@@ -40,22 +38,22 @@ export class ClassService extends BaseService<IClassModel> {
                     });
                     await this.userRepository.addClassToStudents(chunk, classId);
                     this.notificationService
-                    .notifyUsers(chunk, {
-                        notification: {
-                            title: 'You have been added to a new class!',
-                            body: `Joined: ${elective.name}`,
-                            vibrate: [100, 50, 100],
-                            requireInteraction: true,
-                            actions: [
-                                {
-                                    action: `classes/${classId}`,
-                                    title: 'Go to class'
-                                }
-                            ]
-                        }
-                    })
-                    .then()
-                    .catch();
+                        .notifyUsers(chunk, {
+                            notification: {
+                                title: 'You have been added to a new class!',
+                                body: `Joined: ${elective.name}`,
+                                vibrate: [100, 50, 100],
+                                requireInteraction: true,
+                                actions: [
+                                    {
+                                        action: `classes/${classId}`,
+                                        title: 'Go to class'
+                                    }
+                                ]
+                            }
+                        })
+                        .then()
+                        .catch();
                 }
             }
         }
@@ -98,9 +96,8 @@ export class ClassService extends BaseService<IClassModel> {
     public async getActiveClasses(userId: string) {
         const user: IUserModel = await this.userRepository.getById(userId);
         if (user.role === 'student') {
-            return this.repository.findAndPopulate(0, undefined, '', { _id: { $in: user.classes }});
-        }
-        else {
+            return this.repository.findAndPopulate(0, undefined, '', { _id: { $in: user.classes } });
+        } else {
             return this.repository.findAndPopulate(0, undefined, '', { teacher: user.id });
         }
     }

@@ -89,11 +89,7 @@ export class FormsController extends Controller {
     @Security('jwt', teacherOrAdmin)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async generateList(
-        @Query() id: string,
-        @Request() request: ExRequest,
-        @Query() closeForm = false
-    ) {
+    public async generateList(@Query() id: string, @Request() request: ExRequest, @Query() closeForm = false) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.generateList(id, closeForm, accessToken.id);

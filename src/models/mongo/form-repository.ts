@@ -49,10 +49,12 @@ export class FormsRepository extends BaseRepository<IFormModel> {
             selectAllAtForm: { type: Number, required: true },
             electives: [{ type: mongoose.Schema.Types.ObjectId, ref: 'electives' }],
             active: { type: Boolean, required: true, default: true },
-            explicit: [{
-                user: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
-                electives: [{ type: mongoose.Schema.Types.ObjectId, ref: 'electives' }]
-            }]
+            explicit: [
+                {
+                    user: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
+                    electives: [{ type: mongoose.Schema.Types.ObjectId, ref: 'electives' }]
+                }
+            ]
         },
         { collection: this.modelName }
     );

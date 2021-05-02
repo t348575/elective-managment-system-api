@@ -198,12 +198,12 @@ export class FormsService extends BaseService<IFormModel> {
                 encoding: 'utf8',
                 flags: 'w+'
             });
-            const {selections, unresponsive, failed} = await this.rawList(id);
+            const { selections, unresponsive, failed } = await this.rawList(id);
             const fields = ['rollNo', 'elective', 'version', 'batch'];
             const opts = { fields };
             const asyncSelectionsParser = new AsyncParser(opts);
-            asyncSelectionsParser.processor.on('data', chunk => file.write(chunk.toString()));
-            asyncSelectionsParser.processor.on('error', err => {
+            asyncSelectionsParser.processor.on('data', (chunk) => file.write(chunk.toString()));
+            asyncSelectionsParser.processor.on('error', (err) => {
                 file.close();
                 removeTempFile(filePath);
                 reject(UnknownApiError(err));
@@ -212,8 +212,8 @@ export class FormsService extends BaseService<IFormModel> {
                 const fields = ['rollNo'];
                 const opts = { fields };
                 const asyncUnresponsiveParser = new AsyncParser(opts);
-                asyncUnresponsiveParser.processor.on('data', chunk => file.write(chunk.toString()));
-                asyncUnresponsiveParser.processor.on('error', err => {
+                asyncUnresponsiveParser.processor.on('data', (chunk) => file.write(chunk.toString()));
+                asyncUnresponsiveParser.processor.on('error', (err) => {
                     file.close();
                     removeTempFile(filePath);
                     reject(UnknownApiError(err));
@@ -222,8 +222,8 @@ export class FormsService extends BaseService<IFormModel> {
                     const fields = ['rollNo'];
                     const opts = { fields };
                     const asyncFailedParser = new AsyncParser(opts);
-                    asyncFailedParser.processor.on('data', chunk => file.write(chunk.toString()));
-                    asyncFailedParser.processor.on('error', err => {
+                    asyncFailedParser.processor.on('data', (chunk) => file.write(chunk.toString()));
+                    asyncFailedParser.processor.on('error', (err) => {
                         file.close();
                         removeTempFile(filePath);
                         reject(UnknownApiError(err));
@@ -250,41 +250,31 @@ export class FormsService extends BaseService<IFormModel> {
             });
             for (const v of selections) {
                 for (const k of v.electives) {
-                    asyncSelectionsParser.input.push(JSON.stringify({
-                        rollNo: v.user.rollNo,
-                        elective: k.name,
-                        version: k.version,
-                        batch: v.user.batch?.batchString
-                    }));
+                    asyncSelectionsParser.input.push(
+                        JSON.stringify({
+                            rollNo: v.user.rollNo,
+                            elective: k.name,
+                            version: k.version,
+                            batch: v.user.batch?.batchString
+                        })
+                    );
                 }
             }
             asyncSelectionsParser.input.push(null);
         });
     }
 
-    public async createClass(formId: string) {
+    public async createClass(
+        formId: string
+    ): Promise<{
+        failed: Failed[];
+        successful: string[];
+        unresponsive: string[];
+    }> {
         const form: IFormModel = (await this.repository.findAndPopulate('', { _id: formId }, 0))[0];
         const electiveCountMap = new Map<string, { count: number; users: IUserModel[] }>();
-        const failed: string[] = [];
+        const { selections, unresponsive, failed } = await this.rawList(formId);
         const successful: string[] = [];
-        const uniqueBatches = new Set<string>();
-        for (const elective of form.electives) {
-            electiveCountMap.set(elective.courseCode + elective.version, {
-                users: [],
-                count: 0
-            });
-            for (const batch of elective.batches) {
-                // @ts-ignore
-                uniqueBatches.add(batch.id);
-            }
-        }
-        const users = await this.responseRepository.findAndPopulate(
-            '{"time":"asc"}',
-            {
-                form: mongoose.Types.ObjectId(formId)
-            },
-            0
-        );
         await this.repository.update(formId, {
             end: form.end,
             start: form.start,
@@ -292,32 +282,25 @@ export class FormsService extends BaseService<IFormModel> {
             electives: form.electives.map((e) => e.id),
             active: false
         });
-        for (const v of users) {
-            let status = false;
-            for (const ele of v.responses) {
-                const selection = electiveCountMap.get(ele.courseCode + ele.version);
-                if (selection !== undefined && selection !== null && selection.count < ele.strength) {
-                    // @ts-ignore
-                    electiveCountMap.get(ele.courseCode + ele.version).count++;
-                    // @ts-ignore
-                    electiveCountMap.get(ele.courseCode + ele.version).users.push(v.user);
-                    successful.push(v.user.rollNo);
-                    status = true;
-                    break;
+        for (const v of selections) {
+            if (v.electives.length > 0) {
+                successful.push(v.user.rollNo);
+                for (const k of v.electives) {
+                    const item = electiveCountMap.get(k.courseCode + k.version);
+                    if (item) {
+                        item.count++;
+                        item.users.push(v.user);
+                    } else {
+                        electiveCountMap.set(k.courseCode + k.version, { count: 0, users: [v.user] });
+                    }
                 }
             }
-            if (!status) {
-                failed.push(v.user.rollNo);
-            }
         }
-        const unresponsive = (await this.getUnresponsive(successful, Array.from(uniqueBatches.values()), [])).map(
-            (e) => e.rollNo
-        );
         await this.classService.createClass(electiveCountMap, form);
         return {
             failed,
             successful,
-            unresponsive
+            unresponsive: unresponsive.map((e) => e.rollNo)
         };
     }
 
@@ -328,20 +311,23 @@ export class FormsService extends BaseService<IFormModel> {
             0,
             undefined
         );
-        return totalUsers.filter((e) => responsive.indexOf(e.rollNo) === -1).filter(e => failed.findIndex(r => r.item === e.rollNo) === -1);
+        return totalUsers
+            .filter((e) => responsive.indexOf(e.rollNo) === -1)
+            .filter((e) => failed.findIndex((r) => r.item === e.rollNo) === -1);
     }
 
     public async setExplicit(options: AddExplicitOptions) {
         return this.repository.setExplicit(options.id, options.options);
     }
 
-    public async rawList(id: string): Promise<{
+    public async rawList(
+        id: string
+    ): Promise<{
         selections: { user: IUserModel; electives: IElectiveModel[] }[];
-        unresponsive: IUserModel[],
-        failed: Failed[],
+        unresponsive: IUserModel[];
+        failed: Failed[];
         vacancy: { elective: IElectiveModel; vacancy: number }[];
-    }>
-    {
+    }> {
         const form: IFormModel = (await this.repository.findAndPopulate('', { _id: id }, 0))[0];
         const uniqueBatches = new Set<string>();
         const electiveCountMap = new Map<string, number>();
@@ -362,13 +348,13 @@ export class FormsService extends BaseService<IFormModel> {
         const failed: Failed[] = [];
         const selections: { user: IUserModel; electives: IElectiveModel[] }[] = [];
         for (const v of form.explicit) {
-            selections.push({ user: {...v.user}, electives: [...v.electives] });
+            selections.push({ user: { ...v.user }, electives: [...v.electives] });
         }
         for (const v of responses) {
             responsive.push(v.user.rollNo);
-            const explicitIdx = form.explicit.findIndex(e => e.user.id === v.user.id);
+            const explicitIdx = form.explicit.findIndex((e) => e.user.id === v.user.id);
             let numSelected = explicitIdx > -1 ? form.explicit[explicitIdx].electives.length : 0;
-            let selectionIdx = selections.findIndex(e => e.user.id === v.user.id);
+            let selectionIdx = selections.findIndex((e) => e.user.id === v.user.id);
             if (selectionIdx === -1) {
                 selections.push({ user: { ...v.user }, electives: [] });
                 selectionIdx = selections.length - 1;
@@ -399,8 +385,8 @@ export class FormsService extends BaseService<IFormModel> {
         }
         const unresponsive = await this.getUnresponsive(responsive, Array.from(uniqueBatches.values()), failed);
         for (const v of unresponsive) {
-            if (selections.findIndex(e => e.user.id === v.id) === -1) {
-                selections.push({ user: {...v}, electives: [] });
+            if (selections.findIndex((e) => e.user.id === v.id) === -1) {
+                selections.push({ user: { ...v }, electives: [] });
             }
         }
         const electiveVacancy: { elective: IElectiveModel; vacancy: number }[] = [...electiveCountMap].map((e) => {
@@ -422,6 +408,6 @@ export class FormsService extends BaseService<IFormModel> {
         if (explicitIdx === -1) {
             return true;
         }
-        return explicit[explicitIdx].electives.findIndex(e => e.id === elective.id) === -1;
+        return explicit[explicitIdx].electives.findIndex((e) => e.id === elective.id) === -1;
     }
 }

@@ -21,42 +21,41 @@ export class ClassService extends BaseService<IClassModel> {
 
     public async createClass(electiveMap: Map<string, { count: number; users: IUserModel[] }>, form: IFormModel) {
         for (const elective of form.electives) {
-            for (const batch of elective.batches) {
-                // @ts-ignore
-                const studentArr = electiveMap
-                    .get(batch.batchString + elective.courseCode + elective.version)
-                    .users.map((e) => e.id);
-                if (studentArr.length > 0) {
-                    const students = chunkArray(studentArr, elective.teachers.length);
-                    for (const [i, chunk] of students.entries()) {
-                        const classId = await this.repository.addClass({
-                            // @ts-ignore
-                            elective: elective.id,
-                            // @ts-ignore
-                            batch: batch.id,
-                            students: chunk,
-                            // @ts-ignore
-                            teacher: elective.teachers[i].id
-                        });
-                        await this.userRepository.addClassToStudents(chunk, classId);
-                        this.notificationService
-                            .notifyUsers(chunk, {
-                                notification: {
-                                    title: 'You have been added to a new class!',
-                                    body: `Joined: ${elective.name}`,
-                                    vibrate: [100, 50, 100],
-                                    requireInteraction: true,
-                                    actions: [
-                                        {
-                                            action: `classes/${classId}`,
-                                            title: 'Go to class'
-                                        }
-                                    ]
+            // @ts-ignore
+            const studentArr = electiveMap
+            .get(elective.courseCode + elective.version)
+            .users.map((e) => e.id);
+            if (studentArr.length > 0) {
+                const students = chunkArray(studentArr, elective.teachers.length);
+                for (const [i, chunk] of students.entries()) {
+                    const classId = await this.repository.addClass({
+                        // @ts-ignore
+                        elective: elective.id,
+                        // @ts-ignore
+                        batches: elective.batches.map(e => e.id),
+                        students: chunk,
+                        // @ts-ignore
+                        teacher: elective.teachers[i].id,
+                        files: []
+                    });
+                    await this.userRepository.addClassToStudents(chunk, classId);
+                    this.notificationService
+                    .notifyUsers(chunk, {
+                        notification: {
+                            title: 'You have been added to a new class!',
+                            body: `Joined: ${elective.name}`,
+                            vibrate: [100, 50, 100],
+                            requireInteraction: true,
+                            actions: [
+                                {
+                                    action: `classes/${classId}`,
+                                    title: 'Go to class'
                                 }
-                            })
-                            .then()
-                            .catch();
-                    }
+                            ]
+                        }
+                    })
+                    .then()
+                    .catch();
                 }
             }
         }
@@ -97,6 +96,23 @@ export class ClassService extends BaseService<IClassModel> {
     }
 
     public async getActiveClasses(userId: string) {
-        return this.userRepository.getClasses(userId);
+        const user: IUserModel = await this.userRepository.getById(userId);
+        if (user.role === 'student') {
+            return this.repository.findAndPopulate(0, undefined, '', { _id: { $in: user.classes }});
+        }
+        else {
+            return this.repository.findAndPopulate(0, undefined, '', { teacher: user.id });
+        }
+    }
+
+    public async deleteClass(classId: string): Promise<void> {
+        const classes: IClassModel = (await this.repository.findAndPopulate(0, undefined, '', { _id: classId }))[0];
+        await this.userRepository.removeClassFromStudents((classes.students as unknown) as string[], classId);
+        await this.repository.removeClass(classId);
+        return;
+    }
+
+    public async getStudents(id: string) {
+        return this.repository.getStudents(id);
     }
 }

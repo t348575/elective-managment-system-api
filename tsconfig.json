@@ -69,5 +69,9 @@
     "forceConsistentCasingInFileNames": true,
     "strictPropertyInitialization": false,
     "moduleResolution": "node"
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "src/tests"
+  ]
 }

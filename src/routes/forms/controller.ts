@@ -38,7 +38,7 @@ export interface GenerateListResponse {
 
 export interface AddExplicitOptions {
     id: string;
-    options: { user: string; elective: string }[];
+    options: { user: string; electives: string[] }[];
 }
 
 @Tags('forms')
@@ -93,7 +93,7 @@ export class FormsController extends Controller {
         @Query() id: string,
         @Request() request: ExRequest,
         @Query() closeForm = false
-    ): Promise<GenerateListResponse> {
+    ) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.generateList(id, closeForm, accessToken.id);

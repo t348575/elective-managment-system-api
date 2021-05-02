@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Response, Route, Security, Tags, Request } from 'tsoa';
+import { Controller, Get, Query, Response, Route, Security, Tags, Request, Delete } from 'tsoa';
 import { Request as ExRequest } from 'express';
 import { ClassService } from './service';
 import { Inject, Singleton } from 'typescript-ioc';
@@ -7,8 +7,9 @@ import { jwtToken, unknownServerError, validationError } from '../../models/type
 import { PaginationModel } from '../../models/shared/pagination-model';
 import { IClassModel } from '../../models/mongo/class-repository';
 
-const teacherOrAdmin: string[] = ['admin', 'teacher'];
-const studentOnly: string[] = ['student'];
+const adminOnly: string[] = ['admin'];
+const studentOrTeacher: string[] = ['student', 'teacher'];
+const teacherOrAdmin: string[] = ['teacher', 'admin'];
 
 @Singleton
 @Tags('classes')
@@ -21,7 +22,7 @@ export class ClassController extends Controller {
     }
 
     @Get('')
-    @Security('jwt', teacherOrAdmin)
+    @Security('jwt', adminOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
     public async getClasses(
@@ -32,15 +33,20 @@ export class ClassController extends Controller {
         @Query('teacher') teacher?: string,
         @Query('pageSize') pageSize = 25
     ): Promise<PaginationModel<IClassModel>> {
-        return this.service.getPaginated<IClassModel>(page, pageSize, '', JSON.stringify({ [sortBy]: dir }), {
-            batch,
-            teacher,
-            active: true
-        });
+        const query = {};
+        if (batch) {
+            // @ts-ignore
+            query.batch = batch;
+        }
+        if (teacher) {
+            // @ts-ignore
+            query.teacher = teacher;
+        }
+        return this.service.getPaginated<IClassModel>(page, pageSize, '', JSON.stringify({ [sortBy]: dir }), query);
     }
 
     @Get('active')
-    @Security('jwt', studentOnly)
+    @Security('jwt', studentOrTeacher)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
     public async getActiveClasses(@Request() request: ExRequest) {
@@ -49,13 +55,24 @@ export class ClassController extends Controller {
         return this.service.getActiveClasses(accessToken.id);
     }
 
-    /*@Delete()
+    @Get('students')
+    @Security('jwt', teacherOrAdmin)
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
+    public async getStudents(
+        @Query() id: string
+    ) {
+        return this.service.getStudents(id);
+    }
+
+    @Delete()
     @Security('jwt', adminOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
     public async deleteClasses(
-        @Body() classes: string[]
-    ) {
-        // TODO: class deletion
-    }*/
+        @Query('class') classes: string
+    ): Promise<void> {
+        await this.service.deleteClass(classes);
+        return;
+    }
 }

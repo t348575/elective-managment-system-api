@@ -7,7 +7,7 @@ import { PasswordResetRepository } from '../models/mongo/password-reset-reposito
 import { ClassRepository } from '../models/mongo/class-repository';
 import { FormsRepository } from '../models/mongo/form-repository';
 import { ResponseRepository } from '../models/mongo/response-repository';
-import { DownloadRespository } from '../models/mongo/download-repository';
+import { DownloadRepository } from '../models/mongo/download-repository';
 import { NotificationRepository } from '../models/mongo/notification-repository';
 import { TrackRepository } from '../models/mongo/track-repository';
 
@@ -20,7 +20,7 @@ export class PrivateInjectorInit {
     @Inject classRepository: ClassRepository;
     @Inject formRepository: FormsRepository;
     @Inject responseRepository: ResponseRepository;
-    @Inject downloadRespository: DownloadRespository;
+    @Inject downloadRepository: DownloadRepository;
     @Inject notificationsRepository: NotificationRepository;
     @Inject trackRepository: TrackRepository;
     constructor() {
@@ -31,7 +31,7 @@ export class PrivateInjectorInit {
         this.classRepository;
         this.formRepository;
         this.responseRepository;
-        this.downloadRespository;
+        this.downloadRepository;
         this.notificationsRepository;
         this.trackRepository;
     }

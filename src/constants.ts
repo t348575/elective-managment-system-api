@@ -32,7 +32,8 @@ export default {
         passReset: '/../../../resources/assets/pass-reset.html'
     },
     directories: {
-        csvTemporary: '/../../../resources/csvTemp'
+        csvTemporary: '/../../../resources/csvTemp',
+        classResources: '/../../../resources/classResources'
     },
     errorTypes: {
         db: {

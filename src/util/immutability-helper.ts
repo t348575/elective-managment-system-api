@@ -15,6 +15,10 @@ export class ImmutabilityHelper {
             copy = variable.toString();
         } else if (variableType === 'object') {
             copy = { ...variable };
+            if (variable instanceof Date) {
+                // @ts-ignore
+                copy = variable.toISOString();
+            }
         } else if (variableType === 'array') {
             copy = variable.slice();
         } else {

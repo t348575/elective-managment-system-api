@@ -66,3 +66,5 @@ export interface Failed {
 export const unknownServerError = 'unknown_server_error';
 
 export const validationError = 'validation_error';
+
+export const unautorizedError = 'unauthorized_error';

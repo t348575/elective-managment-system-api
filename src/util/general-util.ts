@@ -4,7 +4,8 @@ import { IUserModel } from '../models/mongo/user-repository';
 import constants from '../constants';
 import jwt, { VerifyErrors } from 'jsonwebtoken';
 import { jwtSubjects, jwtToken, scopes } from '../models/types';
-import { unlinkSync } from 'fs';
+import { unlinkSync, mkdirSync, existsSync } from 'fs';
+import * as path from 'path';
 export const safeParse = (str: string, fallback: any = undefined) => {
     try {
         return JSON.parse(str);
@@ -151,7 +152,7 @@ export async function getArgonHash(str: string) {
     return argon2.hash(str);
 }
 
-export function removeTempFile(file: string) {
+export function removeFile(file: string) {
     try {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         unlinkSync(file);
@@ -208,4 +209,20 @@ export function setConstants() {
 
     // @ts-ignore
     constants.environment = process.env.NODE_ENV;
+
+    for (const v in constants.directories) {
+        // @ts-ignore
+        const name = removeFirstOccurance(constants.directories[v] as string, '/../');
+        if (!existsSync(path.join(__dirname, name))) {
+            // @ts-ignore
+            mkdirSync(path.join(__dirname, name));
+        }
+    }
+}
+export function removeFirstOccurance(str: string, searchStr: string): string {
+    const index = str.indexOf(searchStr);
+    if (index === -1) {
+        return str;
+    }
+    return str.slice(0, index) + str.slice(index + searchStr.length);
 }

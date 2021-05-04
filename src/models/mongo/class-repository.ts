@@ -7,6 +7,7 @@ import { MongoConnector } from '../../shared/mongo-connector';
 import { IElectiveModel } from './elective-repository';
 import { Inject, Singleton } from 'typescript-ioc';
 import { cleanQuery } from '../../util/general-util';
+import { IDownloadModel } from './download-repository';
 
 export interface IClassModel {
     id?: string;
@@ -15,7 +16,7 @@ export interface IClassModel {
     students: IUserModel[];
     teacher: IUserModel;
     files: {
-        file: string;
+        file: IDownloadModel;
         createdAt: Date;
     }[];
 }
@@ -26,7 +27,7 @@ export class ClassFormatter extends BaseFormatter implements IClassModel {
     students: IUserModel[];
     teacher: IUserModel;
     files: {
-        file: string;
+        file: IDownloadModel;
         createdAt: Date;
     }[];
     id: string;
@@ -104,6 +105,10 @@ export class ClassRepository extends BaseRepository<IClassModel> {
                     path: 'teacher',
                     select: 'name username _id rollNo role classes'
                 })
+                .populate({
+                    path: 'files.file',
+                    select: '_id fileId name shouldTrack trackAccess'
+                })
         ).map((item) => new this.formatter(item));
     }
 
@@ -119,5 +124,28 @@ export class ClassRepository extends BaseRepository<IClassModel> {
                 ]
             })
         ).map((item) => new this.formatter(item))[0].students;
+    }
+
+    public async addResource(classId: string, resourceId: string) {
+        await this.documentModel.findByIdAndUpdate(classId, {
+            $push: {
+                files: {
+                    file: resourceId,
+                    createdAt: new Date().toISOString()
+                }
+            }
+        });
+    }
+
+    public async deleteResource(classId: string, resourceId: string) {
+        await this.documentModel.findByIdAndUpdate(classId, {
+            $pull: {
+                // @ts-ignore
+                files: {
+                    // @ts-ignore
+                    file: resourceId
+                }
+            }
+        });
     }
 }

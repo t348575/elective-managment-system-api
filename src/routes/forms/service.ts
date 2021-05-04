@@ -18,7 +18,7 @@ import { NotificationService } from '../notification/service';
 import { AsyncParser } from 'json2csv';
 import { ClassService } from '../classes/service';
 import { Inject, Singleton } from 'typescript-ioc';
-import { removeTempFile } from '../../util/general-util';
+import { removeFile } from '../../util/general-util';
 
 @Singleton
 export class FormsService extends BaseService<IFormModel> {
@@ -205,7 +205,7 @@ export class FormsService extends BaseService<IFormModel> {
             asyncSelectionsParser.processor.on('data', (chunk) => file.write(chunk.toString()));
             asyncSelectionsParser.processor.on('error', (err) => {
                 file.close();
-                removeTempFile(filePath);
+                removeFile(filePath);
                 reject(UnknownApiError(err));
             });
             asyncSelectionsParser.processor.on('end', () => {
@@ -215,7 +215,7 @@ export class FormsService extends BaseService<IFormModel> {
                 asyncUnresponsiveParser.processor.on('data', (chunk) => file.write(chunk.toString()));
                 asyncUnresponsiveParser.processor.on('error', (err) => {
                     file.close();
-                    removeTempFile(filePath);
+                    removeFile(filePath);
                     reject(UnknownApiError(err));
                 });
                 asyncUnresponsiveParser.processor.on('end', () => {
@@ -225,11 +225,11 @@ export class FormsService extends BaseService<IFormModel> {
                     asyncFailedParser.processor.on('data', (chunk) => file.write(chunk.toString()));
                     asyncFailedParser.processor.on('error', (err) => {
                         file.close();
-                        removeTempFile(filePath);
+                        removeFile(filePath);
                         reject(UnknownApiError(err));
                     });
                     asyncFailedParser.processor.on('end', async () => {
-                        const link = await this.downloadService.addTemporaryUserLink(userId, filePath);
+                        const link = await this.downloadService.addTemporaryUserLink(userId, filePath, name);
                         resolve({
                             status: failed.length === 0,
                             downloadUri: `${constants.baseUrl}/downloads/temp?file=${link}`,

@@ -10,6 +10,7 @@ import { IClassModel } from '../../models/mongo/class-repository';
 const adminOnly: string[] = ['admin'];
 const studentOrTeacher: string[] = ['student', 'teacher'];
 const teacherOrAdmin: string[] = ['teacher', 'admin'];
+const scopeArray: string[] = ['admin', 'teacher', 'student'];
 
 @Singleton
 @Tags('classes')
@@ -22,13 +23,15 @@ export class ClassController extends Controller {
     }
 
     @Get('')
-    @Security('jwt', adminOnly)
+    @Security('jwt', scopeArray)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
     public async getClasses(
         @Query('sortBy') sortBy: 'batch' | 'teacher' | 'elective',
         @Query('dir') dir: 'asc' | 'desc',
         @Query('page') page: number,
+        @Request() request: ExRequest,
+        @Query('id') id?: string,
         @Query('batch') batch?: string,
         @Query('teacher') teacher?: string,
         @Query('pageSize') pageSize = 25
@@ -41,6 +44,20 @@ export class ClassController extends Controller {
         if (teacher) {
             // @ts-ignore
             query.teacher = teacher;
+        }
+        // @ts-ignore
+        const accessToken = request.user as jwtToken;
+        switch (accessToken.scope) {
+            case 'teacher': {
+                // @ts-ignore
+                query.teacher = accessToken.id;
+                break;
+            }
+            case 'student': {
+                // @ts-ignore
+                query.students = accessToken.id;
+                break;
+            }
         }
         return this.service.getPaginated<IClassModel>(page, pageSize, '', JSON.stringify({ [sortBy]: dir }), query);
     }

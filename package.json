@@ -65,7 +65,6 @@
 		}
 	},
 	"dependencies": {
-		"@fast-csv/format": "^4.3.5",
 		"@tsoa/runtime": "^3.6.1",
 		"argon2": "^0.27.1",
 		"cors": "^2.8.5",
@@ -74,7 +73,6 @@
 		"dotenv": "^8.2.0",
 		"express": "^4.17.1",
 		"express-useragent": "^1.0.15",
-		"fast-csv": "^4.3.6",
 		"helmet": "^4.4.1",
 		"json2csv": "^5.0.6",
 		"jsonwebtoken": "^8.5.1",

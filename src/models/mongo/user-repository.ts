@@ -157,6 +157,29 @@ export class UserRepository extends BaseRepository<IUserModel> {
         session.endSession();
     }
 
+    public async getClasses(id: string) {
+        // @ts-ignore
+        const document: Document = await this.documentModel
+            .findOne({
+                _id: mongoose.Types.ObjectId(id)
+            })
+            .populate({
+                path: 'classes',
+                populate: [
+                    {
+                        path: 'elective'
+                    },
+                    {
+                        path: 'teacher',
+                        select: 'name username _id rollNo role classes'
+                    }
+                ]
+            })
+            .populate('batch');
+        if (!document) throw new ApiError(constants.errorTypes.notFound);
+        return new this.formatter(document).classes;
+    }
+
     public async findAndPopulate(sort: string, query: any, skip = 0, limit = 250): Promise<UserFormatter[]> {
         const sortObject = cleanQuery(sort, this.sortQueryFormatter);
         return (

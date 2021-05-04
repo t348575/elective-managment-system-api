@@ -62,7 +62,7 @@ app.use(express.json());
 app.use(
     multer({
         storage: multer.memoryStorage(),
-        limits: { fileSize: 50000000 }
+        limits: { files: 1 }
     }).single('file')
 );
 

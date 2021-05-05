@@ -121,5 +121,4 @@ export async function sendResponsesToForms(users: IUserModel[]): Promise<void> {
             { id: v.id }
         );
     }
-    return;
 }

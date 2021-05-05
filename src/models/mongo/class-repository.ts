@@ -1,5 +1,5 @@
 import { IBatchModel } from './batch-repository';
-import { IUserModel } from './user-repository';
+import { IUserModel, UserFormatter } from './user-repository';
 import { BaseFormatter } from '../../util/base-formatter';
 import { BaseRepository } from '../shared/base-repository';
 import mongoose, { Schema } from 'mongoose';
@@ -123,7 +123,9 @@ export class ClassRepository extends BaseRepository<IClassModel> {
                     }
                 ]
             })
-        ).map((item) => new this.formatter(item))[0].students;
+        )
+            .map((item) => new this.formatter(item))[0]
+            .students.map((e) => new UserFormatter(e));
     }
 
     public async addResource(classId: string, resourceId: string) {

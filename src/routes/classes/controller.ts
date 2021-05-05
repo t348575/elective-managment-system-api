@@ -86,6 +86,5 @@ export class ClassController extends Controller {
     @Response<ErrorType>(500, unknownServerError)
     public async deleteClasses(@Query('class') classes: string): Promise<void> {
         await this.service.deleteClass(classes);
-        return;
     }
 }

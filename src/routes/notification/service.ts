@@ -159,7 +159,6 @@ export class NotificationService extends BaseService<INotificationModel> {
                 };
             }
             if (options.role) {
-                console.log(options.role);
                 query = {
                     role: options.role
                 };
@@ -167,8 +166,6 @@ export class NotificationService extends BaseService<INotificationModel> {
             if (options.notifyAll) {
                 query = {};
             }
-            console.log(options);
-            console.log(query);
             const users = await this.userRepository.find('', query, undefined, 0);
             const items = ['name', 'rollNo', 'username'];
             if (options.replaceItems) {

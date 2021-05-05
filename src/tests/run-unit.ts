@@ -12,6 +12,7 @@ const files: string[] = [];
         spawnSync('shx', ['rm', '-rf', '.nyc_output'], { shell: true, cwd: process.cwd() });
     }
     for (const [i, v] of files.entries()) {
+        const start = new Date();
         const out = spawnSync(
             'yarn',
             ['env:test', 'nyc', '--no-clean', '--silent', 'mocha', '-r', 'ts-node/register', v, '-t', '100000'],
@@ -27,7 +28,9 @@ const files: string[] = [];
             // @ts-ignore
             process.exit(out.status);
         }
-        console.log(v, 'done', `${Math.round((((i + 1) * 100) / files.length) * 100) / 100}%`);
+        const end = new Date();
+        const time = end.getTime() - start.getTime();
+        console.log(v, 'done', `${Math.round((((i + 1) * 100) / files.length) * 100) / 100}%`, 'took', `${Math.floor((time / 1000) / 60)} m ${(time / 1000) - Math.floor((time / 1000) / 60) * 60} s`);
     }
     spawnSync('nyc', ['report', '--reporter=lcov'], { shell: true, cwd: process.cwd() });
 })();

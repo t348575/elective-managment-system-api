@@ -106,7 +106,6 @@ export class ClassService extends BaseService<IClassModel> {
         const classes: IClassModel = (await this.repository.findAndPopulate(0, undefined, '', { _id: classId }))[0];
         await this.userRepository.removeClassFromStudents((classes.students as unknown) as string[], classId);
         await this.repository.removeClass(classId);
-        return;
     }
 
     public async getStudents(id: string) {

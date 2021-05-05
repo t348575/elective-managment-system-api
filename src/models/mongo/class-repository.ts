@@ -123,7 +123,9 @@ export class ClassRepository extends BaseRepository<IClassModel> {
                     }
                 ]
             })
-        ).map((item) => new this.formatter(item))[0].students.map(e => new UserFormatter(e));
+        )
+            .map((item) => new this.formatter(item))[0]
+            .students.map((e) => new UserFormatter(e));
     }
 
     public async addResource(classId: string, resourceId: string) {

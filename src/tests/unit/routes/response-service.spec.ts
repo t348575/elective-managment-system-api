@@ -39,25 +39,28 @@ describe('Response service', () => {
         for (const v of users) {
             try {
                 // @ts-ignore
-                const selection = electives.filter(e => e.batches.indexOf(v.batch) > -1).map(e => e.id);
-                const res = await responseService.respondToForm({
-                    // @ts-ignore
-                    id: form.id,
-                    // @ts-ignore
-                    electives: faker.helpers.shuffle(selection)
-                }, { id: v.id });
+                const selection = electives.filter((e) => e.batches.indexOf(v.batch) > -1).map((e) => e.id);
+                const res = await responseService.respondToForm(
+                    {
+                        // @ts-ignore
+                        id: form.id,
+                        // @ts-ignore
+                        electives: faker.helpers.shuffle(selection)
+                    },
+                    { id: v.id }
+                );
                 expect(res).to.be.instanceof(ResponseFormatter);
                 expect(res.user).to.be.a('string');
                 expect(res.responses).to.be.an('array');
                 expect(res.responses.length).to.equal(selection.length);
                 responded.push(v.id as string);
-            }
+            } catch (err) {
                 // eslint-disable-next-line no-empty
-            catch(err) {}
+            }
         }
     });
 
-    it('Should return responses', async() => {
+    it('Should return responses', async () => {
         const res = await responseService.getPaginated(0, 500, '', '', '');
         expect(res).to.be.instanceof(PaginationModel);
         expect(res.docs).to.be.an('array');

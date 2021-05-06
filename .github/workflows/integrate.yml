@@ -26,7 +26,7 @@ jobs:
       - name: Build API
         run: yarn build:prod
       - name: Run tests
-        run: yarn test:unit
+        run: yarn test
       - name: set time
         uses: gerred/actions/current-time@master
         id: current-time

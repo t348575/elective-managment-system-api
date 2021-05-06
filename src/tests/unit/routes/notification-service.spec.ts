@@ -1,7 +1,7 @@
 import { UnitHelper } from '../../unit-helper';
 const unitHelper = new UnitHelper();
 import proxyquire from 'proxyquire';
-import { setupMockUsers } from '../models/user.model';
+import { setupMockUsers } from '../../models/user.model';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { IUserModel } from '../../../models/mongo/user-repository';

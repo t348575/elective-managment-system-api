@@ -1,13 +1,13 @@
 import { UnitHelper } from '../../unit-helper';
 const unitHelper = new UnitHelper();
 import { Container } from 'typescript-ioc';
-import { setupMockUsers } from '../models/user.model';
+import { setupMockUsers } from '../../models/user.model';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { IUserModel } from '../../../models/mongo/user-repository';
 import { FormsService } from '../../../routes/forms/service';
 import { IElectiveModel } from '../../../models/mongo/elective-repository';
-import { sendResponsesToForms, setupMockElectives } from '../models/electives.model';
+import { sendResponsesToForms, setupMockElectives } from '../../models/electives.model';
 import * as faker from 'faker';
 import { FormFormatter, FormsRepository } from '../../../models/mongo/form-repository';
 import { NotificationService } from '../../../routes/notification/service';
@@ -81,6 +81,9 @@ describe('Forms service', () => {
         expect(res[0].electives.map((e) => e.id)).to.eql([...new Set(electivesForBatch.map((e) => e.id))]);
         // @ts-ignore
         formId = res[0].id;
+        const resTwo = await formsService.getActiveForms(users[users.length - 1].id as string, 'admin');
+        expect(resTwo).to.be.an('array');
+        expect(resTwo[0]).to.be.instanceof(FormFormatter);
     });
 
     it('Should update the form', async () => {
@@ -96,11 +99,10 @@ describe('Forms service', () => {
     });
 
     it('Should return paginated form list', async () => {
-        const res = await formsService.getPaginated(0, 25, '', '', '');
+        const res = await formsService.getPaginated(0, 25, '_id,start,end', '', '');
         expect(res).to.be.instanceof(PaginationModel);
         expect(res.docs).to.be.an('array');
         expect(res.docs.length).to.equal(1);
-        expect(res.docs[0]).to.be.instanceof(FormFormatter);
     });
 
     it('Should generate the form response list', async () => {

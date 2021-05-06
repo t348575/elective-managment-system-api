@@ -1,7 +1,7 @@
 import faker from 'faker';
 import { Container } from 'typescript-ioc';
-import { FormsService } from '../../../routes/forms/service';
-import { IElectiveModel } from '../../../models/mongo/elective-repository';
+import { FormsService } from '../../routes/forms/service';
+import { IElectiveModel } from '../../models/mongo/elective-repository';
 
 export async function createForm(electives: IElectiveModel[]) {
     const endDate = new Date();

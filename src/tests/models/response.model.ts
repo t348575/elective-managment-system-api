@@ -1,9 +1,9 @@
 import faker from 'faker';
-import { IUserModel } from '../../../models/mongo/user-repository';
+import { IUserModel } from '../../models/mongo/user-repository';
 import { Container } from 'typescript-ioc';
-import { ResponseService } from '../../../routes/response/service';
-import { IElectiveModel } from '../../../models/mongo/elective-repository';
-import { IFormModel } from '../../../models/mongo/form-repository';
+import { ResponseService } from '../../routes/response/service';
+import { IElectiveModel } from '../../models/mongo/elective-repository';
+import { IFormModel } from '../../models/mongo/form-repository';
 
 export async function respondToForm(
     form: IFormModel,

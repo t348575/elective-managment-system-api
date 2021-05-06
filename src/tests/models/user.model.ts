@@ -1,9 +1,9 @@
-import { IUserModel, UserFormatter, UserRepository } from '../../../models/mongo/user-repository';
+import { IUserModel, UserFormatter, UserRepository } from '../../models/mongo/user-repository';
 import faker from 'faker';
-import { scopes } from '../../../models/types';
+import { scopes } from '../../models/types';
 import { Container } from 'typescript-ioc';
-import { BatchRepository, batchStringToModel } from '../../../models/mongo/batch-repository';
-import { MongoConnector } from '../../../shared/mongo-connector';
+import { BatchRepository, batchStringToModel } from '../../models/mongo/batch-repository';
+import { MongoConnector } from '../../shared/mongo-connector';
 let globalI = 0;
 export function getMockUser(scope: scopes, num: number, batch?: string): UserFormatter {
     const rollNo = getRollNo(scope, num);

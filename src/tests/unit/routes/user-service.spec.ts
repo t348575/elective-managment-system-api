@@ -2,7 +2,7 @@ import { UnitHelper } from '../../unit-helper';
 const unitHelper = new UnitHelper();
 import { Container } from 'typescript-ioc';
 import * as argon2 from 'argon2';
-import { getMockUsers, setupMockUsers } from '../models/user.model';
+import { getMockUsers, setupMockUsers } from '../../models/user.model';
 import { IUserModel, UserFormatter } from '../../../models/mongo/user-repository';
 import { UsersService } from '../../../routes/user/service';
 import chai, { expect } from 'chai';

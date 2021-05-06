@@ -1,11 +1,12 @@
-import { ElectiveRepository, IElectiveModel } from '../../../models/mongo/elective-repository';
+import { ElectiveRepository, IElectiveModel } from '../../models/mongo/elective-repository';
 import { getMockBatches } from './user.model';
 import { Container } from 'typescript-ioc';
 import faker from 'faker';
-import { IUserModel } from '../../../models/mongo/user-repository';
-import { BatchRepository } from '../../../models/mongo/batch-repository';
-import { FormsService } from '../../../routes/forms/service';
-import { ResponseService } from '../../../routes/response/service';
+import { IUserModel } from '../../models/mongo/user-repository';
+import { BatchRepository } from '../../models/mongo/batch-repository';
+import { FormsService } from '../../routes/forms/service';
+import { ResponseService } from '../../routes/response/service';
+import { FormsRepository } from '../../models/mongo/form-repository';
 
 export async function setupMockElectives(teachers: IUserModel[]): Promise<IElectiveModel[]> {
     const electiveRepository = Container.get(ElectiveRepository);
@@ -107,18 +108,27 @@ export function getMockElective(teachers: string[]): IElectiveModel {
 export async function sendResponsesToForms(users: IUserModel[]): Promise<void> {
     const formsService = Container.get(FormsService);
     const responseService = Container.get(ResponseService);
-    for (const v of users) {
+    for (const [i, v] of users.entries()) {
         // @ts-ignore
         const form = (await formsService.getActiveForms(v.id, 'student'))[0];
         const chosen = form.electives.slice(0, form.shouldSelect).map((e) => e.id);
-        await responseService.respondToForm(
-            {
+        if (i === 48) {
+            await Container.get(FormsRepository).setExplicit(form.id as string, {
                 // @ts-ignore
-                id: form.id,
-                // @ts-ignore
-                electives: faker.helpers.shuffle(chosen)
-            },
-            { id: v.id }
-        );
+                user: v.id as string,
+                electives: chosen
+            });
+        }
+        else {
+            await responseService.respondToForm(
+                {
+                    // @ts-ignore
+                    id: form.id,
+                    // @ts-ignore
+                    electives: faker.helpers.shuffle(chosen)
+                },
+                { id: v.id }
+            );
+        }
     }
 }

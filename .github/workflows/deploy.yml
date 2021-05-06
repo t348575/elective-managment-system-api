@@ -21,7 +21,7 @@ jobs:
       - name: Build API
         run: yarn build:prod
       - name: Run tests
-        run: yarn test:unit
+        run: yarn test
       - name: Run sonar-scanner
         run: sonar-scanner
               -Dsonar.login=${{ secrets.SONAR_TOKEN }}

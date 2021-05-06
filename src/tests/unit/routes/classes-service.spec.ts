@@ -1,7 +1,7 @@
 import { UnitHelper } from '../../unit-helper';
 const unitHelper = new UnitHelper();
 import { Container } from 'typescript-ioc';
-import { setupMockUsers } from '../models/user.model';
+import { setupMockUsers } from '../../models/user.model';
 import { IUserModel, UserFormatter } from '../../../models/mongo/user-repository';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -9,14 +9,14 @@ import { NotificationService } from '../../../routes/notification/service';
 import { MockNotificationService } from '../mocks/mock-notification-service';
 import { DownloadService } from '../../../routes/download/service';
 import { MockDownloadService } from '../mocks/mock-download-service';
-import { setupMockElectives } from '../models/electives.model';
+import { setupMockElectives } from '../../models/electives.model';
 import { IElectiveModel } from '../../../models/mongo/elective-repository';
 import { FormsRepository, IFormModel } from '../../../models/mongo/form-repository';
-import { createForm } from '../models/form.model';
+import { createForm } from '../../models/form.model';
 import { ClassService } from '../../../routes/classes/service';
 import { FormsService } from '../../../routes/forms/service';
 import { PaginationModel } from '../../../models/shared/pagination-model';
-import { respondToForm } from '../models/response.model';
+import { respondToForm } from '../../models/response.model';
 import { ClassFormatter } from '../../../models/mongo/class-repository';
 
 chai.use(chaiAsPromised);

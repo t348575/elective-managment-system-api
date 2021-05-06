@@ -210,6 +210,10 @@ export function setConstants() {
     // @ts-ignore
     constants.environment = process.env.NODE_ENV;
 
+    if (!existsSync(path.join(__dirname, '/../../resources'))) {
+        mkdirSync(path.join(__dirname, '/../../resources'));
+    }
+
     for (const v in constants.directories) {
         // @ts-ignore
         const name = removeFirstOccurance(constants.directories[v] as string, '/../');

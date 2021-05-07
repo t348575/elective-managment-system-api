@@ -23,6 +23,15 @@ export abstract class BaseRepository<EntityType> implements IBaseRepository<Enti
         // @ts-ignore
         this.schema.plugin(uniqueValidator);
         this.initiated = true;
+        // @ts-ignore
+        this.schema.set('toJSON', {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
+                ret.id = ret._id;
+                delete ret._id;
+                delete ret.__v;
+            }
+        });
     }
 
     public async create(model: EntityType): Promise<EntityType> {

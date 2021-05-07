@@ -51,14 +51,6 @@ export class TrackRepository extends BaseRepository<ITrackModel> {
     constructor() {
         super();
         super.init();
-        this.schema.set('toJSON', {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
-                ret.id = ret._id;
-                delete ret._id;
-                delete ret.__v;
-            }
-        });
     }
     public async findAndPopulate(skip = 0, limit = 250, sort: string, query: any): Promise<TrackFormatter[]> {
         const sortObject = cleanQuery(sort, this.sortQueryFormatter);

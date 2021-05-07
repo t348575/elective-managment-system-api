@@ -1,8 +1,7 @@
 import { Singleton, Inject } from 'typescript-ioc';
 import * as argon2 from 'argon2';
-import { UserRepository } from '../../models/mongo/user-repository';
+import { IUserModel, UserRepository } from '../../models/mongo/user-repository';
 import { Request as ExRequest, Response as ExResponse } from 'express';
-import { IAuthTokenRequest } from '../../models/basic/auth';
 import { BaseService } from '../../models/shared/base-service';
 import { OAuthError } from '../../shared/error-handler';
 import { decipherJWT, getJWT, getSHA256, urlSafe } from '../../util/general-util';
@@ -15,7 +14,7 @@ import { TrackRepository } from '../../models/mongo/track-repository';
 const userDoesNotExist = 'User does not exist';
 
 @Singleton
-export class AuthService extends BaseService<IAuthTokenRequest> {
+export class AuthService extends BaseService<IUserModel> {
     @Inject protected repository: UserRepository;
     @Inject protected redis: RedisConnector;
     @Inject protected trackRepository: TrackRepository;

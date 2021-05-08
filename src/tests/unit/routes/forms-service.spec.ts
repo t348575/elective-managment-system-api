@@ -11,11 +11,11 @@ import { sendResponsesToForms, setupMockElectives } from '../../models/electives
 import * as faker from 'faker';
 import { FormFormatter, FormsRepository } from '../../../models/mongo/form-repository';
 import { NotificationService } from '../../../routes/notification/service';
-import { MockNotificationService, mockNotifyBatches } from '../mocks/mock-notification-service';
+import { MockNotificationService, mockNotifyBatches } from '../../mocks/mock-notification-service';
 import { BatchFormatter } from '../../../models/mongo/batch-repository';
 import { PaginationModel } from '../../../models/shared/pagination-model';
 import { DownloadService } from '../../../routes/download/service';
-import { mockAddTemporaryUserLink, MockDownloadService } from '../mocks/mock-download-service';
+import { mockAddTemporaryUserLink, MockDownloadService } from '../../mocks/mock-download-service';
 import { existsSync } from 'fs';
 import * as path from 'path';
 import constants from '../../../constants';

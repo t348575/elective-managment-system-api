@@ -7,7 +7,7 @@ import { IUserModel, UserFormatter } from '../../../models/mongo/user-repository
 import { UsersService } from '../../../routes/user/service';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { MockMailService, mockMailReplaceSpy } from '../mocks/mock-mail-service';
+import { MockMailService, mockMailReplaceSpy } from '../../mocks/mock-mail-service';
 import { MailService } from '../../../shared/mail-service';
 import * as qs from 'query-string';
 

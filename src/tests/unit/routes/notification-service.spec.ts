@@ -11,7 +11,7 @@ import {
     MockWebPush,
     mockWebPushSendNotification,
     mockWebPushSetVapidDetails
-} from '../mocks/mock-web-push';
+} from '../../mocks/mock-web-push';
 const proxyNotifications = proxyquire('../../../routes/notification/service', {
     'web-push': MockWebPush
 });

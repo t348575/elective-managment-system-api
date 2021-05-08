@@ -168,7 +168,9 @@ export class UserRepository extends BaseRepository<IUserModel> {
                 ]
             })
             .populate('batch');
-        if (!document) throw new ApiError(constants.errorTypes.notFound);
+        if (!document) {
+            throw new ApiError(constants.errorTypes.notFound);
+        }
         return new this.formatter(document).classes;
     }
 

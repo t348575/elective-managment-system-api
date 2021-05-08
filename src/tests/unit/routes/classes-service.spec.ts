@@ -6,9 +6,9 @@ import { IUserModel, UserFormatter } from '../../../models/mongo/user-repository
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { NotificationService } from '../../../routes/notification/service';
-import { MockNotificationService } from '../mocks/mock-notification-service';
+import { MockNotificationService } from '../../mocks/mock-notification-service';
 import { DownloadService } from '../../../routes/download/service';
-import { MockDownloadService } from '../mocks/mock-download-service';
+import { MockDownloadService } from '../../mocks/mock-download-service';
 import { setupMockElectives } from '../../models/electives.model';
 import { IElectiveModel } from '../../../models/mongo/elective-repository';
 import { FormsRepository, IFormModel } from '../../../models/mongo/form-repository';

@@ -94,7 +94,9 @@ export class DownloadRepository extends BaseRepository<IDownloadModel> {
     public async findAndPopulate(fileId: string): Promise<IDownloadModel> {
         // @ts-ignore
         const document: Document = await this.documentModel.findOne({ fileId }).populate('trackAccess.user');
-        if (!document) throw new ApiError(constants.errorTypes.notFound);
+        if (!document) {
+            throw new ApiError(constants.errorTypes.notFound);
+        }
         return new this.formatter(document);
     }
 }

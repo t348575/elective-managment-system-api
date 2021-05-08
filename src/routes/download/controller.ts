@@ -13,6 +13,8 @@ export interface AddClassResourceOptions {
     shouldTrack: boolean;
 }
 
+const classResource = 'class-resource';
+
 @Tags('downloads')
 @Route('downloads')
 @Singleton
@@ -34,7 +36,7 @@ export class DownloadController extends Controller {
         return this.service.getTemporaryFile(file, accessToken.id, (request as ExRequest).res as ExResponse);
     }
 
-    @Get('class-resource')
+    @Get(classResource)
     @Security('jwt', scopeArray)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(403, unautorizedError)
@@ -45,7 +47,7 @@ export class DownloadController extends Controller {
         return this.service.getClassResource(fileId, accessToken.id, (request as ExRequest).res as ExResponse);
     }
 
-    @Post('class-resource')
+    @Post(classResource)
     @Security('jwt', teacherOrAdmin)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(403, unautorizedError)
@@ -66,7 +68,7 @@ export class DownloadController extends Controller {
         }
     }
 
-    @Delete('class-resource')
+    @Delete(classResource)
     @Security('jwt', teacherOrAdmin)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(403, unautorizedError)

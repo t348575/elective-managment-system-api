@@ -24,7 +24,7 @@ export class DownloadService extends BaseService<IDownloadModel> {
         super();
     }
 
-    public async addTemporaryUserLink(userIds: string, path: string, name: string): Promise<string> {
+    public async addTemporaryUserLink(userIds: string[], path: string, name: string): Promise<string> {
         return new Promise<string>(async (resolve, reject) => {
             try {
                 const fileId = randomBytes(64).toString('hex');

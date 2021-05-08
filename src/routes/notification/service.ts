@@ -1,7 +1,7 @@
 import { INotificationModel, NotificationRepository } from '../../models/mongo/notification-repository';
 import { BaseService } from '../../models/shared/base-service';
 import { Singleton, Inject } from 'typescript-ioc';
-import { customNotifyOptions, SubscribeOptions } from './controller';
+import { CustomNotifyOptions, SubscribeOptions } from './controller';
 import constants from '../../constants';
 import * as webPush from 'web-push';
 import { ApiError } from '../../shared/error-handler';
@@ -136,7 +136,7 @@ export class NotificationService extends BaseService<INotificationModel> {
         }
     }
 
-    public async customNotify(options: customNotifyOptions): Promise<boolean> {
+    public async customNotify(options: CustomNotifyOptions): Promise<boolean> {
         try {
             let batchIds: string[] = [];
             let query = {};

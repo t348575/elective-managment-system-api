@@ -91,14 +91,6 @@ export class UserRepository extends BaseRepository<IUserModel> {
     constructor() {
         super();
         super.init();
-        this.schema.set('toJSON', {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
-                ret.id = ret._id;
-                delete ret._id;
-                delete ret.__v;
-            }
-        });
     }
 
     public async getPopulated(id: string, role: scopes | 'any') {

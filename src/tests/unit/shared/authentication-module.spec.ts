@@ -24,176 +24,343 @@ afterEach(() => {
 
 describe('Authentication middleware', () => {
 
-    it('Should authenticate jwt', async () => {
-        const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
-        const res: jwtToken = await expressAuthentication({
-            headers: {
-                authorization: `Bearer ${tokens.access_token}`
-            }
-        } as never as express.Request, 'jwt', ['admin']);
-        expect(res.id).to.equal('user_1');
-        expect(res.scope).to.equal('admin');
-        expect(res.stateSlice).to.equal('abcdefghi');
-        expect(res.sub).to.equal('accessToken');
-    });
-
-    it('Should handle incorrect scope jwt', async () => {
-        const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
-        try {
-            await expressAuthentication({
+    describe('jwt', () => {
+        it('Should authenticate jwt', async () => {
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
+            const res: jwtToken = await expressAuthentication({
                 headers: {
                     authorization: `Bearer ${tokens.access_token}`
                 }
-            } as never as express.Request, 'jwt', ['student']);
-            expect.fail('Expected an error');
-        }
-        catch (err) {
-            expect(err.error_description).to.equal(jwtDoesNotContainScope);
-        }
-    });
-
-    it('Should handle missing authorization', async () => {
-        try {
-            await expressAuthentication({ headers: {} } as never as express.Request, 'jwt', ['admin']);
-            expect.fail('Expected an error');
-        }
-        catch(err) {
-            expect(err.error_description).to.equal('Authorization missing');
-        }
-    });
-
-    it('Should handle incorrect securityName', async () => {
-        try {
-            await expressAuthentication({ headers: {} } as never as express.Request, 'asd', ['admin']);
-            expect.fail('Expected an error');
-        }
-        catch(err) {
-            expect(err.name).to.equal('Unauthorized');
-        }
-    });
-
-    it('Should handle nonexistent token', async () => {
-        const temp = constants.jwtExpiry.accessExpiry;
-        constants.jwtExpiry.accessExpiry = 1;
-        const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
-        await new Promise<void>((resolve) => {
-            setTimeout(() => resolve(), 1050);
+            } as never as express.Request, 'jwt', ['admin']);
+            expect(res.id).to.equal('user_1');
+            expect(res.scope).to.equal('admin');
+            expect(res.stateSlice).to.equal('abcdefghi');
+            expect(res.sub).to.equal('accessToken');
         });
-        try {
-            await expressAuthentication(
-                ({
+
+        it('Should handle incorrect scope jwt', async () => {
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
+            try {
+                await expressAuthentication({
                     headers: {
                         authorization: `Bearer ${tokens.access_token}`
                     }
-                } as never) as express.Request,
-                'jwt',
-                ['admin']
-            );
-            expect.fail('Expected an error');
-        } catch (err) {
-            expect(err.error_description).to.equal(tokenNoExist);
-        }
-        after(() => {
-            constants.jwtExpiry.accessExpiry = temp;
+                } as never as express.Request, 'jwt', ['student']);
+                expect.fail('Expected an error');
+            }
+            catch (err) {
+                expect(err.error_description).to.equal(jwtDoesNotContainScope);
+            }
+        });
+
+        it('Should handle missing authorization', async () => {
+            try {
+                await expressAuthentication({ headers: {} } as never as express.Request, 'jwt', ['admin']);
+                expect.fail('Expected an error');
+            }
+            catch(err) {
+                expect(err.error_description).to.equal('Authorization missing');
+            }
+        });
+
+        it('Should handle incorrect securityName', async () => {
+            try {
+                await expressAuthentication({ headers: {} } as never as express.Request, 'asd', ['admin']);
+                expect.fail('Expected an error');
+            }
+            catch(err) {
+                expect(err.name).to.equal('Unauthorized');
+            }
+        });
+
+        it('Should handle nonexistent token', async () => {
+            const temp = constants.jwtExpiry.accessExpiry;
+            constants.jwtExpiry.accessExpiry = 1;
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
+            await new Promise<void>((resolve) => {
+                setTimeout(() => resolve(), 1050);
+            });
+            try {
+                await expressAuthentication(
+                    ({
+                        headers: {
+                            authorization: `Bearer ${tokens.access_token}`
+                        }
+                    } as never) as express.Request,
+                    'jwt',
+                    ['admin']
+                );
+                expect.fail('Expected an error');
+            } catch (err) {
+                expect(err.error_description).to.equal(tokenNoExist);
+            }
+            after(() => {
+                constants.jwtExpiry.accessExpiry = temp;
+            });
+        });
+
+        it('Should reject invalid token', async () => {
+            try {
+                await expressAuthentication(
+                    ({
+                        headers: {
+                            authorization: 'Bearer some_invalid_token'
+                        }
+                    } as never) as express.Request,
+                    'jwt',
+                    ['admin']
+                );
+                expect.fail('Expected an error');
+            }
+            catch(err) {
+                expect(err.error_description).to.equal('Invalid token');
+            }
         });
     });
 
-    it('Should reject invalid token', async () => {
-        try {
-            await expressAuthentication(
-                ({
-                    headers: {
-                        authorization: 'Bearer some_invalid_token'
-                    }
-                } as never) as express.Request,
-                'jwt',
-                ['admin']
-            );
-            expect.fail('Expected an error');
-        }
-        catch(err) {
-            expect(err.error_description).to.equal('Invalid token');
-        }
+    describe('jwtRefresh', () => {
+        it('Should handle jwtRefresh', async () => {
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
+            const req = {
+                headers: {
+                    authorization: `Bearer ${tokens.access_token}`
+                },
+                body: {
+                    refresh_token: tokens.refresh_token
+                }
+            };
+            const res: jwtToken = await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
+            expect(res.id).to.equal('user_1');
+            expect(res.scope).to.equal('admin');
+            expect(res.stateSlice).to.equal('abcdefghi');
+            expect(res.sub).to.equal('accessToken');
+            expect(req).to.have.property('userRefresh');
+            // @ts-ignore
+            const userRefresh = req.userRefresh as jwtToken;
+            expect(userRefresh.id).to.equal('user_1');
+            expect(userRefresh.sub).to.equal('refreshToken');
+        });
+
+        it('Should handle invalid empty token', async () => {
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
+            const req = {
+                headers: {
+                    authorization: `Bearer ${tokens.access_token}`
+                },
+                body: {
+                    refresh_token: ''
+                }
+            };
+            try {
+                await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
+                expect.fail('Expected an error');
+            }
+            catch(err) {
+                expect(err.error_description).to.equal('Refresh token is required');
+            }
+        });
+
+        it('Should handle invalid jwtRefresh token', async () => {
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
+            const req = {
+                headers: {
+                    authorization: `Bearer ${tokens.access_token}`
+                },
+                body: {
+                    refresh_token: 'asd'
+                }
+            };
+            try {
+                await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
+                expect.fail('Expected an error');
+            }
+            catch(err) {
+                expect(err.error_description).to.equal('Invalid refresh token');
+            }
+        });
+
+        it('Should handle invalid jwtRefresh scope', async () => {
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1', ['admin', 'student', 'admin']);
+            const req = {
+                headers: {
+                    authorization: `Bearer ${tokens.access_token}`
+                },
+                body: {
+                    refresh_token: tokens.refresh_token
+                }
+            };
+            try {
+                await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
+                expect.fail('Expected an error');
+            }
+            catch(err) {
+                expect(err.error_description).to.equal(jwtDoesNotContainScope);
+            }
+        });
+
+        it('Should handle nonexistent jwtRefresh token', async () => {
+            const temp = constants.jwtExpiry.refreshExpiry;
+            constants.jwtExpiry.refreshExpiry = 1;
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
+            await new Promise<void>((resolve) => {
+                setTimeout(() => resolve(), 1050);
+            });
+            try {
+                await expressAuthentication(
+                    ({
+                        headers: {
+                            authorization: `Bearer ${tokens.access_token}`
+                        },
+                        body: {
+                            refresh_token: tokens.refresh_token
+                        }
+                    } as never) as express.Request,
+                    'jwt',
+                    ['admin']
+                );
+                expect.fail('Expected an error');
+            } catch (err) {
+                expect(err.error_description).to.equal(tokenNoExist);
+            }
+            after(() => {
+                constants.jwtExpiry.refreshExpiry = temp;
+            });
+        });
     });
 
-    it('Should handle jwtRefresh', async () => {
-        const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
-        const req = {
-            headers: {
-                authorization: `Bearer ${tokens.access_token}`
-            },
-            body: {
-                refresh_token: tokens.refresh_token
-            }
-        };
-        const res: jwtToken = await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
-        expect(res.id).to.equal('user_1');
-        expect(res.scope).to.equal('admin');
-        expect(res.stateSlice).to.equal('abcdefghi');
-        expect(res.sub).to.equal('accessToken');
-        expect(req).to.have.property('userRefresh');
-        // @ts-ignore
-        const userRefresh = req.userRefresh as jwtToken;
-        expect(userRefresh.id).to.equal('user_1');
-        expect(userRefresh.sub).to.equal('refreshToken');
-    });
+    describe('userId', () => {
+        it('Should handle userId', async () => {
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
+            const req = {
+                headers: {
+                    authorization: `Bearer ${tokens.access_token}`
+                },
+                body: {
+                    refresh_token: tokens.refresh_token,
+                    id_token: tokens.id_token
+                }
+            };
+            const res: jwtToken = await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
+            expect(res.id).to.equal('user_1');
+            expect(res.scope).to.equal('admin');
+            expect(res.stateSlice).to.equal('abcdefghi');
+            expect(res.sub).to.equal('accessToken');
+            expect(req).to.have.property('userRefresh');
+            // @ts-ignore
+            const userRefresh = req.userRefresh as jwtToken;
+            expect(userRefresh.id).to.equal('user_1');
+            expect(userRefresh.sub).to.equal('refreshToken');
+        });
 
-    it('Should handle invalid empty token', async () => {
-        const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
-        const req = {
-            headers: {
-                authorization: `Bearer ${tokens.access_token}`
-            },
-            body: {
-                refresh_token: ''
+        it('Should handle invalid empty token', async () => {
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
+            const req = {
+                headers: {
+                    authorization: `Bearer ${tokens.access_token}`
+                },
+                body: {
+                    refresh_token: '',
+                    id_token: tokens.id_token
+                }
+            };
+            try {
+                await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
+                expect.fail('Expected an error');
             }
-        };
-        try {
-            await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
-            expect.fail('Expected an error');
-        }
-        catch(err) {
-            expect(err.error_description).to.equal('Refresh token is required');
-        }
-    });
+            catch(err) {
+                expect(err.error_description).to.equal('Refresh token is required');
+            }
+        });
 
-    it('Should handle invalid jwtRefresh token', async () => {
-        const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
-        const req = {
-            headers: {
-                authorization: `Bearer ${tokens.access_token}`
-            },
-            body: {
-                refresh_token: 'asd'
+        it('Should handle invalid userId token', async () => {
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
+            const req = {
+                headers: {
+                    authorization: `Bearer ${tokens.access_token}`
+                },
+                body: {
+                    refresh_token: 'asd',
+                    id_token: tokens.id_token
+                }
+            };
+            try {
+                await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
+                expect.fail('Expected an error');
             }
-        };
-        try {
-            await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
-            expect.fail('Expected an error');
-        }
-        catch(err) {
-            expect(err.error_description).to.equal('Invalid refresh token');
-        }
+            catch(err) {
+                expect(err.error_description).to.equal('Invalid refresh token');
+            }
+        });
+
+        it('Should handle invalid userId scope', async () => {
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1', ['admin', 'student', 'admin']);
+            const req = {
+                headers: {
+                    authorization: `Bearer ${tokens.access_token}`
+                },
+                body: {
+                    refresh_token: tokens.refresh_token,
+                    id_token: tokens.id_token
+                }
+            };
+            try {
+                await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
+                expect.fail('Expected an error');
+            }
+            catch(err) {
+                expect(err.error_description).to.equal(jwtDoesNotContainScope);
+            }
+        });
+
+        it('Should handle nonexistent userId token', async () => {
+            const temp = constants.jwtExpiry.refreshExpiry;
+            constants.jwtExpiry.refreshExpiry = 1;
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
+            await new Promise<void>((resolve) => {
+                setTimeout(() => resolve(), 1050);
+            });
+            try {
+                await expressAuthentication(
+                    ({
+                        headers: {
+                            authorization: `Bearer ${tokens.access_token}`
+                        },
+                        body: {
+                            refresh_token: tokens.refresh_token,
+                            id_token: tokens.id_token
+                        }
+                    } as never) as express.Request,
+                    'jwt',
+                    ['admin']
+                );
+                expect.fail('Expected an error');
+            } catch (err) {
+                expect(err.error_description).to.equal(tokenNoExist);
+            }
+            after(() => {
+                constants.jwtExpiry.refreshExpiry = temp;
+            });
+        });
     });
 });
 
-async function setupLoginJWTs(redis: RedisConnector, userId: string, scope: scopes = 'admin') {
+async function setupLoginJWTs(redis: RedisConnector, userId: string, scope: scopes[] = ['admin', 'admin', 'admin']) {
     const user = { id: userId } as never as IUserModel;
     const state = 'abcdefghi';
-    const idToken = await getJWT(user, state, constants.jwtExpiry.idExpiry, 'idToken', scope);
+    const idToken = await getJWT(user, state, constants.jwtExpiry.idExpiry, 'idToken', scope[0]);
     const accessToken = await getJWT(
         user,
         state,
         constants.jwtExpiry.accessExpiry,
         'accessToken',
-        scope
+        scope[1]
     );
     const refreshToken = await getJWT(
         user,
         state,
         constants.jwtExpiry.refreshExpiry,
         'refreshToken',
-        scope
+        scope[2]
     );
     await redis.setex(`idToken::${userId}::${idToken.expiry}`, idToken.expiry, idToken.jwt);
     await redis.setex(

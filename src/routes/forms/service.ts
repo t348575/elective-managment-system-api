@@ -229,7 +229,7 @@ export class FormsService extends BaseService<IFormModel> {
                         reject(UnknownApiError(err));
                     });
                     asyncFailedParser.processor.on('end', async () => {
-                        const link = await this.downloadService.addTemporaryUserLink(userId, filePath, name);
+                        const link = await this.downloadService.addTemporaryUserLink([userId], filePath, name);
                         resolve({
                             status: failed.length === 0,
                             downloadUri: `${constants.baseUrl}/downloads/temp?file=${link}`,

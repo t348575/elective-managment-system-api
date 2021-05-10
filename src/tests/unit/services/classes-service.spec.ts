@@ -42,7 +42,7 @@ describe('Classes service', () => {
 
     it('Should create classes', async () => {
         const formId = form.id as string;
-        const currForm: IFormModel = (await Container.get(FormsRepository).findAndPopulate('', { _id: formId }, 0))[0];
+        const currForm: IFormModel = (await Container.get(FormsRepository).findAndPopulate('', { _id: formId }, false, 0))[0];
         const electiveCountMap = new Map<string, { count: number; users: IUserModel[] }>();
         const { selections } = await Container.get(FormsService).rawList(formId);
         await Container.get(FormsRepository).update(formId, {

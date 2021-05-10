@@ -124,7 +124,7 @@ export class FormsController extends Controller {
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
     public async deleteForm(@Query() id: string) {
-        return this.service.delete(id);
+        return this.service.removeForm(id);
     }
 
     @Put('explicit')

@@ -20,6 +20,7 @@ export interface IFormModel {
     selectAllAtForm: boolean;
     electives: IElectiveModel[];
     active: boolean;
+    show: boolean;
     explicit: ExplicitElectives[];
 }
 
@@ -31,6 +32,7 @@ export class FormFormatter extends BaseFormatter implements IFormModel {
     start: Date;
     id: string;
     active: boolean;
+    show: boolean;
     explicit: ExplicitElectives[];
     constructor(args: any) {
         super();
@@ -54,7 +56,8 @@ export class FormsRepository extends BaseRepository<IFormModel> {
                     user: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
                     electives: [{ type: mongoose.Schema.Types.ObjectId, ref: 'electives' }]
                 }
-            ]
+            ],
+            show: { type: Boolean, required: true }
         },
         { collection: this.modelName }
     );
@@ -64,13 +67,13 @@ export class FormsRepository extends BaseRepository<IFormModel> {
     protected dbConnection: MongoConnector;
     constructor() {
         super();
-        super.init();
+        this.init();
     }
 
     public async findActive(): Promise<IFormModel[]> {
         return (
             await this.documentModel
-                .find({ end: { $gte: new Date() }, active: true })
+                .find({ end: { $gte: new Date() }, active: true, show: true })
                 .populate({
                     path: 'electives',
                     populate: [
@@ -94,8 +97,11 @@ export class FormsRepository extends BaseRepository<IFormModel> {
         ).map((item) => new this.formatter(item));
     }
 
-    public async findAndPopulate(sort: string, query: any, skip = 0, limit = 250): Promise<FormFormatter[]> {
+    public async findAndPopulate(sort: string, query: any, giveHidden = false, skip = 0, limit = 250): Promise<FormFormatter[]> {
         const sortObject = cleanQuery(sort, this.sortQueryFormatter);
+        if (!giveHidden) {
+            query.show = true;
+        }
         return (
             await this.documentModel
                 .find(this.cleanWhereQuery(query))

@@ -44,6 +44,6 @@ export class PasswordResetRepository extends BaseRepository<IPasswordResetModel>
     protected dbConnection: MongoConnector;
     constructor() {
         super();
-        super.init();
+        this.init();
     }
 }

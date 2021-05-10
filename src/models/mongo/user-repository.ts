@@ -90,7 +90,7 @@ export class UserRepository extends BaseRepository<IUserModel> {
     protected dbConnection: MongoConnector;
     constructor() {
         super();
-        super.init();
+        this.init();
     }
 
     public async getPopulated(id: string, role: scopes | 'any') {

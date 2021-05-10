@@ -11,6 +11,9 @@ import { DownloadRepository } from '../models/mongo/download-repository';
 import { NotificationRepository } from '../models/mongo/notification-repository';
 import { TrackRepository } from '../models/mongo/track-repository';
 import { RedisConnector } from '../shared/redis-connector';
+import { RequestChangeRepository } from '../models/mongo/request-change-repository';
+import { QuizRepository } from '../models/mongo/quiz-repository';
+import { QuizResponseRepository } from '../models/mongo/quiz-response-repository';
 
 @Singleton
 export class PrivateInjectorInit {
@@ -25,6 +28,9 @@ export class PrivateInjectorInit {
     @Inject notificationsRepository: NotificationRepository;
     @Inject trackRepository: TrackRepository;
     @Inject redisConnector: RedisConnector
+    @Inject requestChangeRepository: RequestChangeRepository;
+    @Inject quizRepository: QuizRepository;
+    @Inject quizResponseRepository: QuizResponseRepository;
     constructor() {
         this.batchRepository;
         this.electiveRepository;
@@ -37,5 +43,8 @@ export class PrivateInjectorInit {
         this.notificationsRepository;
         this.trackRepository;
         this.redisConnector;
+        this.requestChangeRepository;
+        this.quizRepository;
+        this.quizResponseRepository;
     }
 }

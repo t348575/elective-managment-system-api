@@ -7,3 +7,4 @@ export * from './response/controller';
 export * from './download/controller';
 export * from './notification/controller';
 export * from './classes/controller';
+export * from './quizzes/controller';

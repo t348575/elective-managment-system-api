@@ -63,7 +63,7 @@ export class ElectiveRepository extends BaseRepository<IElectiveModel> {
     protected dbConnection: MongoConnector;
     constructor() {
         super();
-        super.init();
+        this.init();
     }
 
     public async findAndPopulate(skip = 0, limit = 250, sort: string, query: any): Promise<ElectiveFormatter[]> {

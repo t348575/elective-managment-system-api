@@ -50,7 +50,7 @@ export class BatchRepository extends BaseRepository<IBatchModel> {
     protected dbConnection: MongoConnector;
     constructor() {
         super();
-        super.init();
+        this.init();
     }
 }
 

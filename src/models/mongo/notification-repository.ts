@@ -58,7 +58,7 @@ export class NotificationRepository extends BaseRepository<INotificationModel> {
     protected dbConnection: MongoConnector;
     constructor() {
         super();
-        super.init();
+        this.init();
     }
 
     public async findAndPopulate(id: string): Promise<NotificationFormatter[]> {

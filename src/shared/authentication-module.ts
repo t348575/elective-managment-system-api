@@ -221,8 +221,10 @@ export function expressAuthentication(req: express.Request, securityName: string
                     });
             });
         }
-        case 'any': {
+        case 'quiz': {
             const token = req.headers.authorization?.split(' ')[1];
+            // @ts-ignore
+            const quizRequestToken = req.headers.quizRequest?.split(' ')[1];
             return new Promise((resolve, reject) => {
                 if (!token) {
                     return reject(
@@ -232,10 +234,57 @@ export function expressAuthentication(req: express.Request, securityName: string
                         })
                     );
                 }
+                if (!quizRequestToken) {
+                    return reject(
+                        new OAuthError({
+                            name: 'invalid_request',
+                            error_description: 'Quiz authorization missing'
+                        })
+                    );
+                }
                 decipherJWT(token, 'accessToken')
                     .then(async (accessToken) => {
+                        if (scopes.indexOf(accessToken.scope) === -1) {
+                            reject(
+                                new OAuthError({
+                                    name: 'invalid_scope',
+                                    error_description: jwtDoesNotContainScope
+                                })
+                            );
+                        }
                         if (await redis.exists(`accessToken::${accessToken.id}::${accessToken.exp}`)) {
-                            resolve(accessToken);
+                            decipherJWT(quizRequestToken, 'quiz')
+                            .then(async (quizToken) => {
+                                if (scopes.indexOf(quizToken.scope) === -1) {
+                                    reject(
+                                        new OAuthError({
+                                            name: 'invalid_scope',
+                                            error_description: jwtDoesNotContainScope
+                                        })
+                                    );
+                                }
+                                if (await redis.exists(`quiz::${quizToken.id}::${quizToken.exp}`)) {
+                                    // @ts-ignore
+                                    req.quiz = quizToken;
+                                    resolve(accessToken);
+                                }
+                                else {
+                                    reject(
+                                        new OAuthError({
+                                            name: 'access_denied',
+                                            error_description: tokenNoExist
+                                        })
+                                    );
+                                }
+                            })
+                            .catch(() => {
+                                reject(
+                                    new OAuthError({
+                                        name: 'invalid_request',
+                                        error_description: 'Invalid token'
+                                    })
+                                );
+                            });
                         } else {
                             reject(
                                 new OAuthError({

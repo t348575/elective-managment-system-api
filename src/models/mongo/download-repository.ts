@@ -73,7 +73,7 @@ export class DownloadRepository extends BaseRepository<IDownloadModel> {
     protected dbConnection: MongoConnector;
     constructor() {
         super();
-        super.init();
+        this.init();
     }
 
     public async addTrack(file: IDownloadModel, userId: string) {

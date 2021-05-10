@@ -50,7 +50,7 @@ export class TrackRepository extends BaseRepository<ITrackModel> {
     protected dbConnection: MongoConnector;
     constructor() {
         super();
-        super.init();
+        this.init();
     }
     public async findAndPopulate(skip = 0, limit = 250, sort: string, query: any): Promise<TrackFormatter[]> {
         const sortObject = cleanQuery(sort, this.sortQueryFormatter);

@@ -46,7 +46,7 @@ export class ResponseRepository extends BaseRepository<IResponseModel> {
     protected dbConnection: MongoConnector;
     constructor() {
         super();
-        super.init();
+        this.init();
     }
 
     public async findAndPopulate(sort: string, query: any, skip = 0, limit = 250): Promise<ResponseFormatter[]> {

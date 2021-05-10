@@ -53,7 +53,7 @@ export class ClassRepository extends BaseRepository<IClassModel> {
                 }
             ]
         },
-        { collection: this.modelName }
+        { collection: this.modelName, timestamps: true }
     );
 
     protected formatter = ClassFormatter;
@@ -61,7 +61,7 @@ export class ClassRepository extends BaseRepository<IClassModel> {
     protected dbConnection: MongoConnector;
     constructor() {
         super();
-        super.init();
+        this.init();
     }
 
     public async addClass(classObj: IClassModel): Promise<string> {
@@ -79,6 +79,32 @@ export class ClassRepository extends BaseRepository<IClassModel> {
         const session = await this.documentModel.startSession();
         await session.withTransaction(async () => {
             await this.delete(classId);
+        });
+        session.endSession();
+    }
+
+    public async addStudentToClass(classId: string, userId: string) {
+        const session = await this.documentModel.startSession();
+        await session.withTransaction(async () => {
+            await this.documentModel.findByIdAndUpdate(classId, {
+                $push: {
+                    // @ts-ignore
+                    students: userId
+                }
+            });
+        });
+        session.endSession();
+    }
+
+    public async removeStudentFromClass(classId: string, userId: string) {
+        const session = await this.documentModel.startSession();
+        await session.withTransaction(async () => {
+            await this.documentModel.findByIdAndUpdate(classId, {
+                $pull: {
+                    // @ts-ignore
+                    students: userId
+                }
+            });
         });
         session.endSession();
     }

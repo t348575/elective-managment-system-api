@@ -208,6 +208,11 @@ export function setConstants() {
     constants.mailAccess.name = process.env.mailName;
 
     // @ts-ignore
+    constants.mongoConnectionString = process.env.mongoConnectionString;
+    // @ts-ignore
+    constants.redisPassword = process.env.redisPassword;
+
+    // @ts-ignore
     constants.environment = process.env.NODE_ENV;
 
     if (!existsSync(path.join(__dirname, '/../../resources'))) {

@@ -83,7 +83,8 @@ export class FormsService extends BaseService<IFormModel> {
                 electives: options.electives,
                 shouldSelect: options.numElectives,
                 selectAllAtForm: options.shouldSelectAll,
-                explicit: []
+                explicit: [],
+                show: true
             });
             const s = new Set(batches);
             this.notificationService
@@ -167,7 +168,7 @@ export class FormsService extends BaseService<IFormModel> {
         // eslint-disable-next-line prefer-const
         let [count, docs] = await Promise.all([
             this.repository.count(query),
-            this.repository.findAndPopulate(sort, query, skip, limit)
+            this.repository.findAndPopulate(sort, query, false, skip, limit)
         ]);
         const fieldArray = (fields || '')
             .split(',')
@@ -271,7 +272,7 @@ export class FormsService extends BaseService<IFormModel> {
         successful: string[];
         unresponsive: string[];
     }> {
-        const form: IFormModel = (await this.repository.findAndPopulate('', { _id: formId }, 0))[0];
+        const form: IFormModel = (await this.repository.findAndPopulate('', { _id: formId }, false, 0))[0];
         const electiveCountMap = new Map<string, { count: number; users: IUserModel[] }>();
         const { selections, unresponsive, failed } = await this.rawList(formId);
         const successful: string[] = [];
@@ -329,7 +330,7 @@ export class FormsService extends BaseService<IFormModel> {
         failed: Failed[];
         vacancy: { elective: IElectiveModel; vacancy: number }[];
     }> {
-        const form: IFormModel = (await this.repository.findAndPopulate('', { _id: id }, 0))[0];
+        const form: IFormModel = (await this.repository.findAndPopulate('', { _id: id }, false, 0))[0];
         const uniqueBatches = new Set<string>();
         const electiveCountMap = new Map<string, number>();
         const responsive: string[] = [];
@@ -410,5 +411,10 @@ export class FormsService extends BaseService<IFormModel> {
             return true;
         }
         return explicit[explicitIdx].electives.findIndex((e) => e.id === elective.id) === -1;
+    }
+
+    public async removeForm(formId: string) {
+        // @ts-ignore
+        return this.repository.findAndUpdate({ _id: formId }, { show: false });
     }
 }

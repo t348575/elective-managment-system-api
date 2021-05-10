@@ -3,7 +3,7 @@ import * as argon2 from 'argon2';
 import { IUserModel } from '../models/mongo/user-repository';
 import constants from '../constants';
 import jwt, { VerifyErrors } from 'jsonwebtoken';
-import { jwtSubjects, jwtToken, scopes } from '../models/types';
+import { jwtSubjects, jwtToken, quizSubject, scopes } from '../models/types';
 import { unlinkSync, mkdirSync, existsSync } from 'fs';
 import * as path from 'path';
 export const safeParse = (str: string, fallback: any = undefined) => {
@@ -54,7 +54,7 @@ export const cleanQuery = (
 
 export function getJWT(
     user: IUserModel,
-    state: string,
+    state: string | quizSubject,
     expiresIn: number,
     subject: jwtSubjects,
     scope: scopes
@@ -107,14 +107,14 @@ export function urlSafe(str: string) {
     str = str.replace(/=/g, '');
     return str;
 }
-export function checkNumber(body: any, prop: string, parse = false) {
+export function checkNumber(body: any, prop: string, parse = false, parser = parseInt) {
     try {
         // eslint-disable-next-line no-prototype-builtins
         if (body.hasOwnProperty(prop)) {
             if (parse) {
                 try {
-                    const num = parseInt(body[prop], 10);
-                    return !!(num && !isNaN(num));
+                    const num = parser(body[prop], 10);
+                    return !!(num !== undefined && num !== null && !isNaN(num));
                 } catch (err) {
                     return false;
                 }

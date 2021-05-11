@@ -6,11 +6,12 @@ import * as qs from 'query-string';
 import { setConstants } from '../util/general-util';
 import dotenv from 'dotenv';
 import path from 'path';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import constants from '../constants';
 import { setupMockUsers } from './models/user.model';
 import { IUserModel } from '../models/mongo/user-repository';
 import { scopes } from '../models/types';
+import { Container } from 'typescript-ioc';
+import { MongoConnector } from '../shared/mongo-connector';
+import { PrivateInjectorInit } from '../routes/private-injector-init';
 dotenv.config({
     path: path.resolve(process.cwd(), `${process.env.NODE_ENV}.env`)
 });
@@ -22,16 +23,23 @@ export class IntegrationHelper {
     public refresh_token: string;
     public users: IUserModel[];
 
-    public db: MongoMemoryServer;
-
     constructor(app: SuperTest<any>) {
         setConstants();
         this.app = app;
     }
 
-    async initMongoMemoryServer() {
-        this.db = new MongoMemoryServer();
-        constants.mongoConnectionString = await this.db.getUri();
+    async init() {
+        Container.get(MongoConnector);
+        await new Promise<void>(resolve => setTimeout(() => resolve(), 1000));
+        const collections: string[] = ['users', 'track', 'responses', 'password-reset', 'notifications', 'forms', 'electives', 'downloads', 'classes', 'batches', 'request-change', 'quiz-response', 'quizzes'];
+        for (const v of collections) {
+            try {
+                await Container.get(MongoConnector).db.dropCollection(v);
+            }
+                // eslint-disable-next-line no-empty
+            catch(err) {}
+        }
+        Container.get(PrivateInjectorInit);
         this.users = await setupMockUsers();
     }
 

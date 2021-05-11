@@ -36,24 +36,22 @@ let form: IFormModel;
 let classes: IClassModel[] = [];
 let fileResource: string;
 
-before(async () => {
-    await unitHelper.initMongoMemoryServer();
-    Container.bind(NotificationService).to(MockNotificationService);
-    users = await setupMockUsers();
-    electives = await setupMockElectives(users.slice(50, 56));
-    form = await createForm(electives);
-    await respondToForm(form, users, electives);
-    classes = (await createClasses(form)).docs as IClassModel[];
-});
-
-afterEach(() => {
-    mockCreateWriteStream.resetHistory();
-    mockCreateReadStream.resetHistory();
-    MockFsFilestream.cleanup();
-});
-
 describe('Downloads service' , () => {
+    before(async () => {
+        await unitHelper.init();
+        Container.bind(NotificationService).to(MockNotificationService);
+        users = await setupMockUsers();
+        electives = await setupMockElectives(users.slice(50, 56));
+        form = await createForm(electives);
+        await respondToForm(form, users, electives);
+        classes = (await createClasses(form)).docs as IClassModel[];
+    });
 
+    afterEach(() => {
+        mockCreateWriteStream.resetHistory();
+        mockCreateReadStream.resetHistory();
+        MockFsFilestream.cleanup();
+    });
     const downloadService = Container.get(proxyFsStreams.DownloadService) as RealDownloadService;
 
     it('Should create temporary download link', async () => {

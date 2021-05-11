@@ -4,11 +4,10 @@ import { expect } from 'chai';
 import { MongoConnector } from '../../../shared/mongo-connector';
 import { Container } from 'typescript-ioc';
 
-before(async () => {
-    await unitHelper.initMongoMemoryServer();
-});
-
 describe('MongoDB connector', () => {
+    before(async () => {
+        await unitHelper.init();
+    });
     it('Should connect', async () => {
         const connector = Container.get(MongoConnector);
         expect(

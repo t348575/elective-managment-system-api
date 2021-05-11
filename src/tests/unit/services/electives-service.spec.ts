@@ -14,12 +14,11 @@ import { BatchFormatter } from '../../../models/mongo/batch-repository';
 chai.use(chaiAsPromised);
 let users: IUserModel[] = [];
 
-before(async () => {
-    await unitHelper.initMongoMemoryServer();
-    users = await setupMockUsers('adminTeachers');
-});
-
 describe('Elective service', () => {
+    before(async () => {
+        await unitHelper.init();
+        users = await setupMockUsers('adminTeachers');
+    });
     const electivesService = Container.get(ElectivesService);
 
     it('Should create electives', async () => {

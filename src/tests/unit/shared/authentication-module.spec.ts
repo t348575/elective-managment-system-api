@@ -14,16 +14,13 @@ import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
 
-before(() => {
-    Container.bind(RedisConnector).to(MockRedisConnector);
-});
-
-afterEach(() => {
-    (Container.get(RedisConnector) as never as MockRedisConnector).cleanup();
-});
-
 describe('Authentication middleware', () => {
-
+    before(() => {
+        Container.bind(RedisConnector).to(MockRedisConnector);
+    });
+    afterEach(() => {
+        (Container.get(RedisConnector) as never as MockRedisConnector).cleanup();
+    });
     describe('jwt', () => {
         it('Should authenticate jwt', async () => {
             const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
@@ -362,15 +359,15 @@ async function setupLoginJWTs(redis: RedisConnector, userId: string, scope: scop
         'refreshToken',
         scope[2]
     );
-    await redis.setex(`idToken::${userId}::${idToken.expiry}`, idToken.expiry, idToken.jwt);
+    await redis.setex(`idToken::${userId}::${idToken.expiry}`, constants.jwtExpiry.idExpiry, idToken.jwt);
     await redis.setex(
         `accessToken::${userId}::${accessToken.expiry}`,
-        accessToken.expiry,
+        constants.jwtExpiry.accessExpiry,
         accessToken.jwt
     );
     await redis.setex(
         `refreshToken::${userId}::${refreshToken.expiry}`,
-        refreshToken.expiry,
+        constants.jwtExpiry.refreshExpiry,
         refreshToken.jwt
     );
     return {

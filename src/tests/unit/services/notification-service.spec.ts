@@ -18,22 +18,22 @@ const proxyNotifications = proxyquire('../../../routes/notification/service', {
 import { NotificationService as RealNotificationService } from '../../../routes/notification/service';
 import constants from '../../../constants';
 import { BatchRepository } from '../../../models/mongo/batch-repository';
+import { MongoConnector } from '../../../shared/mongo-connector';
 
 chai.use(chaiAsPromised);
 
 let users: IUserModel[] = [];
 
-before(async () => {
-    await unitHelper.initMongoMemoryServer();
-    users = await setupMockUsers();
-});
-
-afterEach(() => {
-    mockWebPushSetVapidDetails.resetHistory();
-    mockWebPushSendNotification.resetHistory();
-});
-
 describe('Notification service', () => {
+    before(async () => {
+        await unitHelper.init();
+        users = await setupMockUsers();
+    });
+
+    afterEach(() => {
+        mockWebPushSetVapidDetails.resetHistory();
+        mockWebPushSendNotification.resetHistory();
+    });
     const NotificationService = proxyNotifications.NotificationService;
 
     const notification = {
@@ -148,6 +148,16 @@ describe('Notification service', () => {
 
     it('Should send a custom notification', async () => {
         const batches = [...new Set(users.slice(0, 5).map((e) => (e.batch as unknown) as string))];
+        for (const [i, v] of users.entries()) {
+            await (Container.get(MongoConnector).db.dropCollection('notifications'));
+            await (Container.get(NotificationService) as RealNotificationService).subscribe(
+                {
+                    name: `test_notification${i}${v.id as string}`,
+                    sub: generateRandomSub()
+                },
+                v.id as string
+            );
+        }
         await (Container.get(NotificationService) as RealNotificationService).customNotify({
             batches: (await Container.get(BatchRepository).find('', { _id: { $in: batches } })).map(
                 (e) => e.batchString
@@ -166,7 +176,7 @@ describe('Notification service', () => {
             body: 'asd',
             replaceItems: true
         });
-        expect(mockWebPushSendNotification.callCount).to.equal(5);
+        expect(mockWebPushSendNotification.callCount).to.be.within(57,58);
         await (Container.get(NotificationService) as RealNotificationService).customNotify({
             batches: [],
             users: [],
@@ -175,16 +185,16 @@ describe('Notification service', () => {
             body: 'asd',
             replaceItems: true
         });
-        expect(mockWebPushSendNotification.callCount).to.equal(5);
+        expect(mockWebPushSendNotification.callCount).to.be.within(57,58);
         await (Container.get(NotificationService) as RealNotificationService).customNotify({
             batches: [],
             users: [],
-            notifyAll: true,
+            notifyAll: false,
             role: 'student',
             title: 'test',
             body: 'asd',
             replaceItems: true
         });
-        expect(mockWebPushSendNotification.callCount).to.equal(10);
+        expect(mockWebPushSendNotification.callCount).to.be.within(57,58);
     });
 });

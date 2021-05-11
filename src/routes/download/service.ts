@@ -105,7 +105,7 @@ export class DownloadService extends BaseService<IDownloadModel> {
                         }
                         if (file.shouldTrack) {
                             // @ts-ignore
-                            this.repository.addTrack(file, user.id).then().catch();
+                            await this.repository.addTrack(file, user.id);
                         }
                         break;
                     }

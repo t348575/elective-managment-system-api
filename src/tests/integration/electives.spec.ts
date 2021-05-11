@@ -1,16 +1,19 @@
 import { expect } from 'chai';
 import supertest from 'supertest';
-import { initServer, server as importApp } from '../../server';
+import { closeServer, initServer, server as importApp } from '../../server';
 import { IntegrationHelper } from '../integration-helper';
 let app: supertest.SuperTest<supertest.Test>;
 let integrationHelper: IntegrationHelper;
-before(async () => {
-    app = supertest(importApp);
-    integrationHelper = new IntegrationHelper(app);
-    await integrationHelper.initMongoMemoryServer();
-    initServer();
-});
 describe('/electives', () => {
+    before(async () => {
+        app = supertest(importApp);
+        integrationHelper = new IntegrationHelper(app);
+        await integrationHelper.init();
+        initServer();
+    });
+    after(() => {
+        closeServer();
+    });
     describe('/electives/add', () => {
         const name = 'a';
         const description = 'test a';

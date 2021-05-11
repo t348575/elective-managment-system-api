@@ -48,7 +48,7 @@ export class ClassService extends BaseService<IClassModel> {
                         files: []
                     });
                     await this.userRepository.addClassToStudents(chunk, classId);
-                    this.notificationService
+                    await this.notificationService
                         .notifyUsers(chunk, {
                             notification: {
                                 title: 'You have been added to a new class!',
@@ -62,9 +62,7 @@ export class ClassService extends BaseService<IClassModel> {
                                     }
                                 ]
                             }
-                        })
-                        .then()
-                        .catch();
+                        });
                 }
             }
         }
@@ -141,14 +139,14 @@ export class ClassService extends BaseService<IClassModel> {
 
     public async deleteElectiveChange(id: string) {
         const item = (await this.requestChangeRepository.findAndPopulate(0, undefined, '', { _id: id }))[0];
-        this.notificationService.notifyUsers([item.user.id as string], {
+        await this.notificationService.notifyUsers([item.user.id as string], {
             notification: {
                 title: 'Elective change request',
                 body: `Requested change from elective: ${item.from.name} to ${item.to.name}`,
                 vibrate: [100, 50, 100],
                 requireInteraction: true
             }
-        }).then().catch();
+        });
         await this.requestChangeRepository.delete(id);
     }
 
@@ -174,7 +172,7 @@ export class ClassService extends BaseService<IClassModel> {
         })[0];
         await this.userRepository.addClassToStudents([item.user.id as string], item.to.id as string);
         await this.repository.addStudentToClass(userClasses[fromIdx].id as string, item.user.id as string);
-        this.notificationService.notifyUsers([item.user.id as string], {
+        await this.notificationService.notifyUsers([item.user.id as string], {
             notification: {
                 title: 'You have been added to a new class!',
                 body: `Joined: ${item.to.name}, left: ${item.from.name}`,
@@ -187,9 +185,7 @@ export class ClassService extends BaseService<IClassModel> {
                     }
                 ]
             }
-        })
-        .then()
-        .catch();
+        });
     }
 
     public async getValidRequestElectives(id: string): Promise<IElectiveModel[]> {

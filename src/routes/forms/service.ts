@@ -87,7 +87,7 @@ export class FormsService extends BaseService<IFormModel> {
                 show: true
             });
             const s = new Set(batches);
-            this.notificationService
+            await this.notificationService
                 // @ts-ignore
                 .notifyBatches(Array.from(s.values()), {
                     notification: {
@@ -102,9 +102,7 @@ export class FormsService extends BaseService<IFormModel> {
                             }
                         ]
                     }
-                })
-                .then()
-                .catch();
+                });
             return createdElective;
         } catch (err) {
             if (err instanceof ApiError) {

@@ -1,17 +1,21 @@
 import { expect } from 'chai';
 import supertest from 'supertest';
-import { initServer, server as importApp } from '../../server';
+import { closeServer, initServer, server as importApp } from '../../server';
 import { IntegrationHelper } from '../integration-helper';
 let app: supertest.SuperTest<supertest.Test>;
 let integrationHelper: IntegrationHelper;
 
-before(async () => {
-    app = supertest(importApp);
-    integrationHelper = new IntegrationHelper(app);
-    await integrationHelper.initMongoMemoryServer();
-    initServer();
-});
 describe('/forms/batches', () => {
+    before(async () => {
+        app = supertest(importApp);
+        integrationHelper = new IntegrationHelper(app);
+        await integrationHelper.init();
+        initServer();
+    });
+
+    after(() => {
+        closeServer();
+    });
     it('returns details of batch', async () => {
         await integrationHelper.login();
         const res = await app

@@ -27,18 +27,18 @@ let users: IUserModel[] = [];
 let electives: IElectiveModel[] = [];
 let formId: string;
 
-before(async () => {
-    await unitHelper.initMongoMemoryServer();
-    Container.bind(NotificationService).to(MockNotificationService);
-    Container.bind(DownloadService).to(MockDownloadService);
-    users = await setupMockUsers();
-    electives = await setupMockElectives(users.slice(50, 56));
-});
-
 describe('Forms service', () => {
+    before(async () => {
+        await unitHelper.init();
+        Container.bind(NotificationService).to(MockNotificationService);
+        Container.bind(DownloadService).to(MockDownloadService);
+        users = await setupMockUsers();
+        electives = await setupMockElectives(users.slice(50, 56));
+    });
     const formsService = Container.get(FormsService);
 
     it('Should create forms', async () => {
+        mockNotifyBatches.resetHistory();
         const endDate = new Date();
         const startDate = new Date();
         endDate.setDate(endDate.getDate() + faker.datatype.number({ min: 1, max: 10 }));
@@ -99,7 +99,7 @@ describe('Forms service', () => {
     });
 
     it('Should return paginated form list', async () => {
-        const res = await formsService.getPaginated(0, 25, '_id,start,end', '', '');
+        const res = await formsService.getPaginated(0, 25, '_id,start,end', '', {});
         expect(res).to.be.instanceof(PaginationModel);
         expect(res.docs).to.be.an('array');
         expect(res.docs.length).to.equal(1);

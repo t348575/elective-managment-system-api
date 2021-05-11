@@ -52,7 +52,7 @@ export class AuthService extends BaseService<IUserModel> {
                                                 this.redis
                                                     .setex(
                                                         `oneTimeAuthCode::${user.id}::${state.slice(0, 8)}`,
-                                                        jwt.expiry,
+                                                        constants.jwtExpiry.oneTimeAuthCodeExpiry,
                                                         `${jwt.jwt}::${urlSafe(code_challenge)}::${urlSafe(
                                                             redirectUri
                                                         )}`
@@ -175,7 +175,7 @@ export class AuthService extends BaseService<IUserModel> {
                                         this.redis
                                             .setex(
                                                 `oneTimeAuthCode::${user.id}::${state.slice(0, 8)}`,
-                                                jwt.expiry,
+                                                constants.jwtExpiry.oneTimeAuthCodeExpiry,
                                                 `${jwt.jwt}::${urlSafe(code_challenge)}::${urlSafe(redirectUri)}`
                                             )
                                             .then((status) => {
@@ -346,15 +346,15 @@ export class AuthService extends BaseService<IUserModel> {
                             'refreshToken',
                             scope
                         );
-                        await this.redis.setex(`idToken::${id}::${idToken.expiry}`, idToken.expiry, idToken.jwt);
+                        await this.redis.setex(`idToken::${id}::${idToken.expiry}`, constants.jwtExpiry.idExpiry, idToken.jwt);
                         await this.redis.setex(
                             `accessToken::${id}::${accessToken.expiry}`,
-                            accessToken.expiry,
+                            constants.jwtExpiry.accessExpiry,
                             accessToken.jwt
                         );
                         await this.redis.setex(
                             `refreshToken::${id}::${refreshToken.expiry}`,
-                            refreshToken.expiry,
+                            constants.jwtExpiry.refreshExpiry,
                             refreshToken.jwt
                         );
                         resolve({
@@ -394,12 +394,12 @@ export class AuthService extends BaseService<IUserModel> {
                         await this.redis.remove(`refreshToken::${jwtAccess.id}::${jwtRefresh.exp}`);
                         await this.redis.setex(
                             `accessToken::${jwtAccess.id}::${accessToken.expiry}`,
-                            accessToken.expiry,
+                            constants.jwtExpiry.accessExpiry,
                             accessToken.jwt
                         );
                         await this.redis.setex(
                             `refreshToken::${jwtAccess.id}::${refreshToken.expiry}`,
-                            refreshToken.expiry,
+                            constants.jwtExpiry.refreshExpiry,
                             refreshToken.jwt
                         );
                         resolve({

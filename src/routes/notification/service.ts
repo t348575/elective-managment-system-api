@@ -78,7 +78,7 @@ export class NotificationService extends BaseService<INotificationModel> {
                 const ids = await this.repository.find('', { user: user }, undefined, 0);
                 for (const v of ids) {
                     try {
-                        webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then();
+                        await webPush.sendNotification(v.sub, JSON.stringify(notificationPayload));
                     } catch (errFor) {
                         try {
                             // @ts-ignore
@@ -98,7 +98,7 @@ export class NotificationService extends BaseService<INotificationModel> {
                 const ids = await this.repository.findAndPopulate(batches);
                 for (const v of ids) {
                     try {
-                        webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then();
+                        await webPush.sendNotification(v.sub, JSON.stringify(notificationPayload));
                     } catch (errFor) {
                         try {
                             // @ts-ignore
@@ -116,7 +116,7 @@ export class NotificationService extends BaseService<INotificationModel> {
         const ids = await this.repository.find('', '', undefined, 0);
         for (const v of ids) {
             try {
-                webPush.sendNotification(v.sub, JSON.stringify(notificationPayload)).then();
+                await webPush.sendNotification(v.sub, JSON.stringify(notificationPayload));
             } catch (err) {
                 try {
                     // @ts-ignore
@@ -179,19 +179,17 @@ export class NotificationService extends BaseService<INotificationModel> {
                         body = body.replace(new RegExp(`{{${items[k]}}}`, 'gmi'), v[items[k]]);
                     }
                     // @ts-ignore
-                    this.notifyUsers([v.id], {
+                    await this.notifyUsers([v.id], {
                         notification: {
                             title,
                             body,
                             vibrate: [100, 50, 100],
                             requireInteraction: true
                         }
-                    })
-                        .then()
-                        .catch();
+                    });
                 }
             } else {
-                this.notifyUsers(
+                await this.notifyUsers(
                     // @ts-ignore
                     users.map((e) => e.id),
                     {
@@ -202,9 +200,7 @@ export class NotificationService extends BaseService<INotificationModel> {
                             requireInteraction: true
                         }
                     }
-                )
-                    .then()
-                    .catch();
+                );
             }
             return true;
         } catch (err) {

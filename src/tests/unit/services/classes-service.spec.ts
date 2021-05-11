@@ -27,18 +27,18 @@ let responses: string[] = [];
 let useClass: string;
 let classCount = 0;
 
-before(async () => {
-    await unitHelper.initMongoMemoryServer();
-    Container.bind(NotificationService).to(MockNotificationService);
-    Container.bind(DownloadService).to(MockDownloadService);
-    users = await setupMockUsers();
-    electives = await setupMockElectives(users.slice(50, 56));
-    form = await createForm(electives);
-    responses = await respondToForm(form, users, electives);
-});
-
 describe('Classes service', () => {
     const classService = Container.get(ClassService);
+
+    before(async () => {
+        await unitHelper.init();
+        Container.bind(NotificationService).to(MockNotificationService);
+        Container.bind(DownloadService).to(MockDownloadService);
+        users = await setupMockUsers();
+        electives = await setupMockElectives(users.slice(50, 56));
+        form = await createForm(electives);
+        responses = await respondToForm(form, users, electives);
+    });
 
     it('Should create classes', async () => {
         const formId = form.id as string;

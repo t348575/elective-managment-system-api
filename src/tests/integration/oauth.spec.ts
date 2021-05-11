@@ -2,22 +2,23 @@ import { expect } from 'chai';
 import supertest from 'supertest';
 import * as qs from 'query-string';
 import * as crypto from 'crypto';
-import { initServer, server as importApp } from '../../server';
+import { closeServer, initServer, server as importApp } from '../../server';
 import { fromHexString, IntegrationHelper } from '../integration-helper';
 import { Base64 } from 'js-base64';
 import { sha256 } from 'js-sha256';
 let app: supertest.SuperTest<supertest.Test>;
 let integrationHelper: IntegrationHelper;
-
-before(async () => {
-    app = supertest(importApp);
-    integrationHelper = new IntegrationHelper(app);
-    await integrationHelper.initMongoMemoryServer();
-    initServer();
-    await integrationHelper.login();
-});
-
 describe('/oauth', () => {
+    before(async () => {
+        app = supertest(importApp);
+        integrationHelper = new IntegrationHelper(app);
+        await integrationHelper.init();
+        initServer();
+        await integrationHelper.login();
+    });
+    after(() => {
+        closeServer();
+    });
     const redirectURI = 'http://localhost:3000';
     const code_verifier = crypto.randomBytes(32).toString('hex');
     const code_challenge = Base64.fromUint8Array(fromHexString(sha256(code_verifier)));

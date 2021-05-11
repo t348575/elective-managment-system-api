@@ -17,6 +17,7 @@ import { createForm } from '../../models/form.model';
 import * as faker from 'faker';
 import { ResponseFormatter } from '../../../models/mongo/response-repository';
 import { PaginationModel } from '../../../models/shared/pagination-model';
+import { jwtToken } from '../../../models/types';
 
 chai.use(chaiAsPromised);
 let users: IUserModel[] = [];
@@ -24,16 +25,15 @@ let electives: IElectiveModel[] = [];
 let form: IFormModel;
 const responded: string[] = [];
 
-before(async () => {
-    await unitHelper.initMongoMemoryServer();
-    Container.bind(NotificationService).to(MockNotificationService);
-    Container.bind(DownloadService).to(MockDownloadService);
-    users = await setupMockUsers();
-    electives = await setupMockElectives(users.slice(50, 56));
-    form = await createForm(electives);
-});
-
 describe('Response service', () => {
+    before(async () => {
+        await unitHelper.init();
+        Container.bind(NotificationService).to(MockNotificationService);
+        Container.bind(DownloadService).to(MockDownloadService);
+        users = await setupMockUsers();
+        electives = await setupMockElectives(users.slice(50, 56));
+        form = await createForm(electives);
+    });
     const responseService = Container.get(ResponseService);
     it('Should respond to form', async () => {
         for (const v of users) {
@@ -47,7 +47,7 @@ describe('Response service', () => {
                         // @ts-ignore
                         electives: faker.helpers.shuffle(selection)
                     },
-                    { id: v.id }
+                    { id: v.id } as jwtToken
                 );
                 expect(res).to.be.instanceof(ResponseFormatter);
                 expect(res.user).to.be.a('string');

@@ -201,7 +201,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
         }, expireAt, 'quiz', 'student');
         await this.redis.setex(
             `quiz::${userId}::${questionRequest.expiry}`,
-            questionRequest.expiry,
+            expireAt,
             questionRequest.jwt
         );
         // @ts-ignore
@@ -259,7 +259,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
             }, expireAt, 'quiz', 'student');
             await this.redis.setex(
                 `quiz::${quizTokenItem.id}::${questionRequest.expiry}`,
-                questionRequest.expiry,
+                expireAt,
                 questionRequest.jwt
             );
             await this.redis.remove(`quiz::${quizTokenItem.id}::${quizTokenItem.exp}}`);

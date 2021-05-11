@@ -188,7 +188,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
         await this.quizResponseRepository.startQuiz(userId, options.quizId);
         const quizResponse = await this.quizResponseRepository.findOne({ user: userId, quiz: quiz.id });
         let expireAt: number;
-        if (new Date(quiz.end).getTime() < new Date().getTime() + quiz.time * 60 * 1000) {
+        if (quiz.time == 0 || new Date(quiz.end).getTime() < new Date().getTime() + quiz.time * 60 * 1000) {
             expireAt = Math.floor((new Date(quiz.end).getTime() - new Date().getTime()) / 1000) + 1;
         } else {
             expireAt = Math.floor(quiz.time * 60) + 1;

@@ -72,7 +72,7 @@
                         ]
                     }
                 },
-                "/quizzes": {
+                "/quizzes/create-quiz": {
                     "post": {
                         "consumes": [
                             "multipart/form-data"

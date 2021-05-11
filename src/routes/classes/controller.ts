@@ -11,7 +11,7 @@ const adminOnly: string[] = ['admin'];
 const studentOrTeacher: string[] = ['student', 'teacher'];
 const teacherOrAdmin: string[] = ['teacher', 'admin'];
 const scopeArray: string[] = ['admin', 'teacher', 'student'];
-const studentOnly: string[] = [];
+const studentOnly: string[] = ['student'];
 
 export interface RequestElectiveChangeOptions {
     from: string;

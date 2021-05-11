@@ -11,11 +11,11 @@ export class RedisConnector {
         if (constants.redisPassword.length > 0) {
             this.db = redis.createClient({
                 auth_pass: constants.redisPassword,
-                host: '127.0.0.1'
+                host: constants.redisHost
             });
         }
         else {
-            this.db = redis.createClient({ host: '127.0.0.1' });
+            this.db = redis.createClient({ host: constants.redisHost });
         }
     }
     setex(key: string, time: number, value: string): Promise<boolean> {

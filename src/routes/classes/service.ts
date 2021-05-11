@@ -153,7 +153,7 @@ export class ClassService extends BaseService<IClassModel> {
     public async confirmElectiveChange(id: string) {
         const item = (await this.requestChangeRepository.findAndPopulate(0, undefined, '', { _id: id }))[0];
         const userClasses = await this.getActiveClasses(item.user.id as string);
-        const fromIdx = userClasses.findIndex(e => e.id === item.from.id);
+        const fromIdx = userClasses.findIndex(e => e.elective.id === item.from.id);
         if (fromIdx > -1) {
             await this.userRepository.removeClassFromStudents([item.user.id as string], userClasses[fromIdx].id as string);
             await this.repository.removeStudentFromClass(userClasses[fromIdx].id as string, item.user.id as string);
@@ -170,8 +170,9 @@ export class ClassService extends BaseService<IClassModel> {
             }
             return 0;
         })[0];
-        await this.userRepository.addClassToStudents([item.user.id as string], item.to.id as string);
-        await this.repository.addStudentToClass(userClasses[fromIdx].id as string, item.user.id as string);
+        await this.userRepository.addClassToStudents([item.user.id as string], toClass.id as string);
+        await this.repository.addStudentToClass(toClass.id as string, item.user.id as string);
+        await this.requestChangeRepository.delete(item.id);
         await this.notificationService.notifyUsers([item.user.id as string], {
             notification: {
                 title: 'You have been added to a new class!',

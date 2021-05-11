@@ -211,6 +211,8 @@ export function setConstants() {
     constants.mongoConnectionString = process.env.mongoConnectionString;
     // @ts-ignore
     constants.redisPassword = process.env.redisPassword;
+    // @ts-ignore
+    constants.redisHost = process.env.redisHost;
 
     // @ts-ignore
     constants.environment = process.env.NODE_ENV;

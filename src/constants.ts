@@ -6,6 +6,7 @@ export default {
     baseUrl: 'https://localhost',
     mongoConnectionString: '',
     redisPassword: '',
+    redisHost: '127.0.0.1',
     emailSuffix: {
         student: 'cb.students.amrita.edu',
         teacher: 'cb.amrita.edu'

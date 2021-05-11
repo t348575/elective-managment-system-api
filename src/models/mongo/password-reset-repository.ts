@@ -44,14 +44,6 @@ export class PasswordResetRepository extends BaseRepository<IPasswordResetModel>
     protected dbConnection: MongoConnector;
     constructor() {
         super();
-        super.init();
-        this.schema.set('toJSON', {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
-                ret.id = ret._id;
-                delete ret._id;
-                delete ret.__v;
-            }
-        });
+        this.init();
     }
 }

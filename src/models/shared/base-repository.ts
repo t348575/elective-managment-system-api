@@ -16,11 +16,22 @@ export abstract class BaseRepository<EntityType> implements IBaseRepository<Enti
 
     /** this needs to be called after the extended class super is executed */
     protected init(): void {
-        if (this.initiated) return;
+        if (this.initiated) {
+            return;
+        }
         this.documentModel = this.dbConnection.db.model(this.modelName, this.schema);
         // @ts-ignore
         this.schema.plugin(uniqueValidator);
         this.initiated = true;
+        // @ts-ignore
+        this.schema.set('toJSON', {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
+                ret.id = ret._id;
+                delete ret._id;
+                delete ret.__v;
+            }
+        });
     }
 
     public async create(model: EntityType): Promise<EntityType> {
@@ -82,7 +93,9 @@ export abstract class BaseRepository<EntityType> implements IBaseRepository<Enti
     protected cleanToSave(entity: EntityType): EntityType {
         const copy: EntityType = new this.formatter(entity);
         const loop = (value: any): any => {
-            if (!value || typeof value !== 'object') return;
+            if (!value || typeof value !== 'object') {
+                return;
+            }
             /** formatting logic to save goes here */
             Object.keys(value).forEach((key) => loop(value[key]));
         };

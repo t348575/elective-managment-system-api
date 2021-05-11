@@ -17,10 +17,6 @@ export abstract class BaseFormatter {
                 } else {
                     // @ts-ignore
                     this[key] = ImmutabilityHelper.copy(args[key]);
-                    if (args[key] instanceof Date) {
-                        // @ts-ignore
-                        this[key] = args[key].toISOString();
-                    }
                 }
             }
         });

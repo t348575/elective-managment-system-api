@@ -1,21 +1,21 @@
 import { UnitHelper } from '../../unit-helper';
 const unitHelper = new UnitHelper();
 import { Container } from 'typescript-ioc';
-import { setupMockUsers } from '../models/user.model';
+import { setupMockUsers } from '../../models/user.model';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { IUserModel } from '../../../models/mongo/user-repository';
 import { FormsService } from '../../../routes/forms/service';
 import { IElectiveModel } from '../../../models/mongo/elective-repository';
-import { sendResponsesToForms, setupMockElectives } from '../models/electives.model';
+import { sendResponsesToForms, setupMockElectives } from '../../models/electives.model';
 import * as faker from 'faker';
 import { FormFormatter, FormsRepository } from '../../../models/mongo/form-repository';
 import { NotificationService } from '../../../routes/notification/service';
-import { MockNotificationService, mockNotifyBatches } from '../mocks/mock-notification-service';
+import { MockNotificationService, mockNotifyBatches } from '../../mocks/mock-notification-service';
 import { BatchFormatter } from '../../../models/mongo/batch-repository';
 import { PaginationModel } from '../../../models/shared/pagination-model';
 import { DownloadService } from '../../../routes/download/service';
-import { mockAddTemporaryUserLink, MockDownloadService } from '../mocks/mock-download-service';
+import { mockAddTemporaryUserLink, MockDownloadService } from '../../mocks/mock-download-service';
 import { existsSync } from 'fs';
 import * as path from 'path';
 import constants from '../../../constants';
@@ -27,18 +27,18 @@ let users: IUserModel[] = [];
 let electives: IElectiveModel[] = [];
 let formId: string;
 
-before(async () => {
-    await unitHelper.initMongoMemoryServer();
-    Container.bind(NotificationService).to(MockNotificationService);
-    Container.bind(DownloadService).to(MockDownloadService);
-    users = await setupMockUsers();
-    electives = await setupMockElectives(users.slice(50, 56));
-});
-
 describe('Forms service', () => {
+    before(async () => {
+        await unitHelper.init();
+        Container.bind(NotificationService).to(MockNotificationService);
+        Container.bind(DownloadService).to(MockDownloadService);
+        users = await setupMockUsers();
+        electives = await setupMockElectives(users.slice(50, 56));
+    });
     const formsService = Container.get(FormsService);
 
     it('Should create forms', async () => {
+        mockNotifyBatches.resetHistory();
         const endDate = new Date();
         const startDate = new Date();
         endDate.setDate(endDate.getDate() + faker.datatype.number({ min: 1, max: 10 }));
@@ -81,6 +81,9 @@ describe('Forms service', () => {
         expect(res[0].electives.map((e) => e.id)).to.eql([...new Set(electivesForBatch.map((e) => e.id))]);
         // @ts-ignore
         formId = res[0].id;
+        const resTwo = await formsService.getActiveForms(users[users.length - 1].id as string, 'admin');
+        expect(resTwo).to.be.an('array');
+        expect(resTwo[0]).to.be.instanceof(FormFormatter);
     });
 
     it('Should update the form', async () => {
@@ -96,11 +99,10 @@ describe('Forms service', () => {
     });
 
     it('Should return paginated form list', async () => {
-        const res = await formsService.getPaginated(0, 25, '', '', '');
+        const res = await formsService.getPaginated(0, 25, '_id,start,end', '', {});
         expect(res).to.be.instanceof(PaginationModel);
         expect(res.docs).to.be.an('array');
         expect(res.docs.length).to.equal(1);
-        expect(res.docs[0]).to.be.instanceof(FormFormatter);
     });
 
     it('Should generate the form response list', async () => {
@@ -112,13 +114,6 @@ describe('Forms service', () => {
         expect(existsSync(path.resolve(mockAddTemporaryUserLink.args[0][1]))).to.be.true;
         const data = await csv().fromFile(path.resolve(mockAddTemporaryUserLink.args[0][1]));
         expect(data).to.be.an('array');
-        for (const [i, v] of data.entries()) {
-            // eslint-disable-next-line no-prototype-builtins
-            if (!v.hasOwnProperty('batch')) {
-                break;
-            }
-            expect(v.rollNo).to.equal(users[i].rollNo);
-        }
     });
 
     it('Should convert form response for elective into classes', async () => {

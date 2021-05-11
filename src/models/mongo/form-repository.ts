@@ -5,6 +5,12 @@ import mongoose, { Schema } from 'mongoose';
 import { MongoConnector } from '../../shared/mongo-connector';
 import { cleanQuery } from '../../util/general-util';
 import { Inject, Singleton } from 'typescript-ioc';
+import { IUserModel } from './user-repository';
+
+export interface ExplicitElectives {
+    user: IUserModel;
+    electives: IElectiveModel[];
+}
 
 export interface IFormModel {
     id?: string;
@@ -14,6 +20,8 @@ export interface IFormModel {
     selectAllAtForm: boolean;
     electives: IElectiveModel[];
     active: boolean;
+    show: boolean;
+    explicit: ExplicitElectives[];
 }
 
 export class FormFormatter extends BaseFormatter implements IFormModel {
@@ -24,6 +32,8 @@ export class FormFormatter extends BaseFormatter implements IFormModel {
     start: Date;
     id: string;
     active: boolean;
+    show: boolean;
+    explicit: ExplicitElectives[];
     constructor(args: any) {
         super();
         this.format(args);
@@ -40,7 +50,14 @@ export class FormsRepository extends BaseRepository<IFormModel> {
             shouldSelect: { type: Number, required: true },
             selectAllAtForm: { type: Number, required: true },
             electives: [{ type: mongoose.Schema.Types.ObjectId, ref: 'electives' }],
-            active: { type: Boolean, required: true, default: true }
+            active: { type: Boolean, required: true, default: true },
+            explicit: [
+                {
+                    user: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
+                    electives: [{ type: mongoose.Schema.Types.ObjectId, ref: 'electives' }]
+                }
+            ],
+            show: { type: Boolean, required: true }
         },
         { collection: this.modelName }
     );
@@ -50,36 +67,41 @@ export class FormsRepository extends BaseRepository<IFormModel> {
     protected dbConnection: MongoConnector;
     constructor() {
         super();
-        super.init();
-        this.schema.set('toJSON', {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
-                ret.id = ret._id;
-                delete ret._id;
-                delete ret.__v;
-            }
-        });
+        this.init();
     }
 
     public async findActive(): Promise<IFormModel[]> {
         return (
-            await this.documentModel.find({ end: { $gte: new Date() }, active: true }).populate({
-                path: 'electives',
-                populate: [
-                    {
-                        path: 'batches'
-                    },
-                    {
-                        path: 'teachers',
-                        select: 'name username _id rollNo role classes'
-                    }
-                ]
-            })
+            await this.documentModel
+                .find({ end: { $gte: new Date() }, active: true, show: true })
+                .populate({
+                    path: 'electives',
+                    populate: [
+                        {
+                            path: 'batches'
+                        },
+                        {
+                            path: 'teachers',
+                            select: 'name username _id rollNo role classes'
+                        }
+                    ]
+                })
+                .populate({
+                    path: 'explicit.electives'
+                })
+                .populate({
+                    path: 'explicit.user',
+                    select: 'name username _id rollNo role batch',
+                    populate: ['batch']
+                })
         ).map((item) => new this.formatter(item));
     }
 
-    public async findAndPopulate(sort: string, query: any, skip = 0, limit = 250): Promise<FormFormatter[]> {
+    public async findAndPopulate(sort: string, query: any, giveHidden = false, skip = 0, limit = 250): Promise<FormFormatter[]> {
         const sortObject = cleanQuery(sort, this.sortQueryFormatter);
+        if (!giveHidden) {
+            query.show = true;
+        }
         return (
             await this.documentModel
                 .find(this.cleanWhereQuery(query))
@@ -98,6 +120,18 @@ export class FormsRepository extends BaseRepository<IFormModel> {
                         }
                     ]
                 })
+                .populate({
+                    path: 'explicit.electives'
+                })
+                .populate({
+                    path: 'explicit.user',
+                    select: 'name username _id rollNo role batch',
+                    populate: ['batch']
+                })
         ).map((item) => new this.formatter(item));
+    }
+
+    public async setExplicit(id: string, options: { user: string; electives: string[] }[]) {
+        return this.documentModel.findByIdAndUpdate(id, { explicit: options });
     }
 }

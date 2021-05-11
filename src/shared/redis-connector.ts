@@ -8,10 +8,15 @@ export class RedisConnector {
     public db: redis.RedisClient;
     constructor() {
         Logger.log(`connecting to ${constants.environment} Redis`);
-        this.db = redis.createClient({
-            auth_pass: constants.redisPassword,
-            host: 'amrita-elective.tk'
-        });
+        if (constants.redisPassword.length > 0) {
+            this.db = redis.createClient({
+                auth_pass: constants.redisPassword,
+                host: constants.redisHost
+            });
+        }
+        else {
+            this.db = redis.createClient({ host: constants.redisHost });
+        }
     }
     setex(key: string, time: number, value: string): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {

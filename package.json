@@ -1,15 +1,14 @@
 {
 	"name": "elective-managment-system-api",
 	"description": "An elective managment system",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"author": "Joseph Subash Kanichai <kjosephsubash@gmail.com>",
 	"license": "MIT",
 	"main": "dist/server.js",
 	"scripts": {
 		"test": "yarn test:unit && yarn test:integration",
-		"test:unit": "yarn shx mkdir -p resources//csvTemp && yarn env:test ts-node src/tests/run-unit.ts",
-		"test:integration": "yarn build:test && yarn env:test mocha --parallel -t 100000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
-		"test:integration:quick": "yarn env:test mocha --parallel -t 100000 -r ts-node/register ./src/tests/integration/**/*.spec.ts --exit --no-deprecation",
+		"test:unit": "yarn env:test nyc mocha -r ts-node/register src/tests/unit/**/*.spec.ts -t 10000",
+		"test:integration": "yarn env:test nyc --no-clean mocha -r ts-node/register src/tests/integration/**/*.spec.ts -t 10000",
 		"start": "yarn start:dev",
 		"start:dev": "yarn env:dev concurrently \"yarn build:tsoa && ts-node-dev --respawn ./src/server.ts --rs --watch 'src' --debug\" \"nodemon\"",
 		"start:prod": "yarn env:prod node ./build/src/server.js",
@@ -28,9 +27,7 @@
 		"env:test": "cross-env NODE_ENV=test",
 		"env:prod": "cross-env NODE_ENV=production",
 		"clean": "shx rm -rf build && shx mkdir build && shx mkdir -p build//src && shx mkdir -p build//resources",
-		"copy-flutter": "shx cp -r /var/lib/jenkins/workspace/elective-management-system-site/dist/elective-management-system-site/* /server/resources/public",
-		"copy": "shx cp -r ./resources ./build",
-		"copy-server": "shx cp -r /server/resources /server/build"
+		"copy": "shx cp -r ./resources ./build"
 	},
 	"nyc": {
 		"extends": "@istanbuljs/nyc-config-typescript",
@@ -55,7 +52,8 @@
 		],
 		"reporter": [
 			"lcov",
-			"text-lcov"
+			"text-lcov",
+			"text-summary"
 		],
 		"report-dir": "coverage"
 	},
@@ -65,16 +63,14 @@
 		}
 	},
 	"dependencies": {
-		"@fast-csv/format": "^4.3.5",
 		"@tsoa/runtime": "^3.6.1",
-		"argon2": "^0.27.1",
+		"argon2": "^0.27.2",
 		"cors": "^2.8.5",
 		"crypto-random-string": "^3.3.1",
 		"csvtojson": "^2.0.10",
 		"dotenv": "^8.2.0",
 		"express": "^4.17.1",
 		"express-useragent": "^1.0.15",
-		"fast-csv": "^4.3.6",
 		"helmet": "^4.4.1",
 		"json2csv": "^5.0.6",
 		"jsonwebtoken": "^8.5.1",
@@ -83,6 +79,7 @@
 		"morgan": "^1.10.0",
 		"multer": "^1.4.2",
 		"nodemailer": "^6.5.0",
+		"proxyquire": "^2.1.3",
 		"querystring": "^0.2.1",
 		"redis": "^3.0.2",
 		"shx": "^0.3.3",
@@ -95,6 +92,7 @@
 		"winston": "^3.3.3"
 	},
 	"devDependencies": {
+		"@apidevtools/swagger-parser": "^10.0.2",
 		"@istanbuljs/nyc-config-typescript": "^1.0.1",
 		"@types/argon2": "^0.15.0",
 		"@types/chai": "^4.2.15",
@@ -116,10 +114,13 @@
 		"@types/multer": "^1.4.5",
 		"@types/node": "^14.14.27",
 		"@types/nodemailer": "^6.4.0",
+		"@types/proxyquire": "^1.3.28",
 		"@types/query-string": "^6.3.0",
 		"@types/redis": "^2.8.28",
+		"@types/request-ip": "^0.0.35",
 		"@types/sinon": "^9.0.11",
 		"@types/supertest": "^2.0.10",
+		"@types/swagger-parser": "^7.0.1",
 		"@types/swagger-ui-express": "^4.1.2",
 		"@types/web-push": "^3.3.0",
 		"@types/winston": "^2.4.4",
@@ -138,7 +139,6 @@
 		"js-base64": "^3.6.0",
 		"js-sha256": "^0.9.0",
 		"mocha": "^8.3.2",
-		"mongodb-memory-server": "^6.9.6",
 		"nyc": "^15.1.0",
 		"prettier": "^2.2.1",
 		"prettier-eslint": "^12.0.0",

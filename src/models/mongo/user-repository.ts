@@ -8,6 +8,7 @@ import { ApiError } from '../../shared/error-handler';
 import constants from '../../constants';
 import { IClassModel } from './class-repository';
 import { Inject, Singleton } from 'typescript-ioc';
+import { cleanQuery } from '../../util/general-util';
 
 export interface IUserModel {
     id?: string;
@@ -89,15 +90,7 @@ export class UserRepository extends BaseRepository<IUserModel> {
     protected dbConnection: MongoConnector;
     constructor() {
         super();
-        super.init();
-        this.schema.set('toJSON', {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
-                ret.id = ret._id;
-                delete ret._id;
-                delete ret.__v;
-            }
-        });
+        this.init();
     }
 
     public async getPopulated(id: string, role: scopes | 'any') {
@@ -141,20 +134,56 @@ export class UserRepository extends BaseRepository<IUserModel> {
         session.endSession();
     }
 
+    public async removeClassFromStudents(students: string[], classId: string) {
+        const session = await this.documentModel.startSession();
+        await session.withTransaction(async () => {
+            for (const v of students) {
+                await this.documentModel.findByIdAndUpdate(v, {
+                    $pull: {
+                        // @ts-ignore
+                        classes: classId
+                    }
+                });
+            }
+        });
+        session.endSession();
+    }
+
     public async getClasses(id: string) {
         // @ts-ignore
         const document: Document = await this.documentModel
             .findOne({
                 _id: mongoose.Types.ObjectId(id)
             })
-            .populate('classes')
-            .populate('elective')
-            .populate('batch')
             .populate({
-                path: 'teacher',
-                select: 'name username _id rollNo role classes'
-            });
-        if (!document) throw new ApiError(constants.errorTypes.notFound);
-        return new this.formatter(document);
+                path: 'classes',
+                populate: [
+                    {
+                        path: 'elective'
+                    },
+                    {
+                        path: 'teacher',
+                        select: 'name username _id rollNo role classes'
+                    }
+                ]
+            })
+            .populate('batch');
+        if (!document) {
+            throw new ApiError(constants.errorTypes.notFound);
+        }
+        return new this.formatter(document).classes;
+    }
+
+    public async findAndPopulate(sort: string, query: any, skip = 0, limit = 250): Promise<UserFormatter[]> {
+        const sortObject = cleanQuery(sort, this.sortQueryFormatter);
+        return (
+            await this.documentModel
+                .find(this.cleanWhereQuery(query))
+                .sort(Object.keys(sortObject).map((key) => [key, sortObject[key]]))
+                .skip(skip)
+                .select('name username _id rollNo role classes batch')
+                .limit(limit)
+                .populate('batch')
+        ).map((item) => new this.formatter(item));
     }
 }

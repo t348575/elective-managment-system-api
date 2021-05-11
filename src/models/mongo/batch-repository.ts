@@ -50,20 +50,7 @@ export class BatchRepository extends BaseRepository<IBatchModel> {
     protected dbConnection: MongoConnector;
     constructor() {
         super();
-        super.init();
-        this.schema.set('toJSON', {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            transform: (
-                doc: any,
-                ret: { id: any; _id: any; __v: any },
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                options: any
-            ) => {
-                ret.id = ret._id;
-                delete ret._id;
-                delete ret.__v;
-            }
-        });
+        this.init();
     }
 }
 

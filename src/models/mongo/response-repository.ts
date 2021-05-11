@@ -46,15 +46,7 @@ export class ResponseRepository extends BaseRepository<IResponseModel> {
     protected dbConnection: MongoConnector;
     constructor() {
         super();
-        super.init();
-        this.schema.set('toJSON', {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            transform: (doc: any, ret: { id: any; _id: any; __v: any }, options: any) => {
-                ret.id = ret._id;
-                delete ret._id;
-                delete ret.__v;
-            }
-        });
+        this.init();
     }
 
     public async findAndPopulate(sort: string, query: any, skip = 0, limit = 250): Promise<ResponseFormatter[]> {
@@ -72,21 +64,5 @@ export class ResponseRepository extends BaseRepository<IResponseModel> {
                 })
                 .populate('responses')
         ).map((item) => new this.formatter(item));
-    }
-
-    public findToStream(sort: string, query: any, pipeCsv: any, pipeRes: any): void {
-        const sortObject = cleanQuery(sort, this.sortQueryFormatter);
-        this.documentModel
-            .find(this.cleanWhereQuery(query))
-            .sort(Object.keys(sortObject).map((key) => [key, sortObject[key]]))
-            .populate('responses')
-            .populate({
-                path: 'user',
-                select: 'name username _id rollNo role classes batch',
-                populate: ['batch']
-            })
-            .cursor()
-            .pipe(pipeCsv)
-            .pipe(pipeRes);
     }
 }

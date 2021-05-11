@@ -27,12 +27,18 @@ export interface UpdateFormOptions {
     shouldSelect?: number;
     selectAllAtForm?: boolean;
     electives?: string[];
+    active?: boolean;
 }
 
 export interface GenerateListResponse {
     status: boolean;
     downloadUri: string;
     failed: Failed[];
+}
+
+export interface AddExplicitOptions {
+    id: string;
+    options: { user: string; electives: string[] }[];
 }
 
 @Tags('forms')
@@ -83,14 +89,18 @@ export class FormsController extends Controller {
     @Security('jwt', teacherOrAdmin)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async generateList(
-        @Query() id: string,
-        @Request() request: ExRequest,
-        @Query() closeForm = false
-    ): Promise<GenerateListResponse> {
+    public async generateList(@Query() id: string, @Request() request: ExRequest, @Query() closeForm = false) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.generateList(id, closeForm, accessToken.id);
+    }
+
+    @Get('raw-list')
+    @Security('jwt', teacherOrAdmin)
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
+    public async genRawList(@Query() id: string) {
+        return this.service.rawList(id);
     }
 
     @Post('create-classes')
@@ -114,6 +124,14 @@ export class FormsController extends Controller {
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
     public async deleteForm(@Query() id: string) {
-        return this.service.delete(id);
+        return this.service.removeForm(id);
+    }
+
+    @Put('explicit')
+    @Security('jwt', teacherOrAdmin)
+    @Response<ErrorType>(401, validationError)
+    @Response<ErrorType>(500, unknownServerError)
+    public async setExplicit(@Body() options: AddExplicitOptions) {
+        await this.service.setExplicit(options);
     }
 }

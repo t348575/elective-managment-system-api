@@ -48,4 +48,5 @@ export class MockMailService {
         });
     }
 }
+
 export const mockMailReplaceSpy = spy(MockMailService.prototype, 'replaceAndSendEmail');

@@ -1,42 +1,43 @@
 import { expect } from 'chai';
 import supertest from 'supertest';
-import { initServer, server as importApp } from '../../server';
+import { closeServer, initServer, server as importApp } from '../../server';
 import { IntegrationHelper } from '../integration-helper';
-import testingConstants from '../testing-constants';
 
 let app: supertest.SuperTest<supertest.Test>;
 let integrationHelper: IntegrationHelper;
 
-before(async () => {
-    app = supertest(importApp);
-    integrationHelper = new IntegrationHelper(app);
-    await integrationHelper.initMongoMemoryServer();
-    initServer();
-});
-
-describe(testingConstants.users.name, () => {
-    describe(testingConstants.users.basicRoute, () => {
+describe('/users', () => {
+    before(async () => {
+        app = supertest(importApp);
+        integrationHelper = new IntegrationHelper(app);
+        await integrationHelper.init();
+        initServer();
+        await integrationHelper.login();
+    });
+    after(() => {
+        closeServer();
+    });
+    describe('/users/basic', () => {
         it('returns appropriate user information', async () => {
-            await integrationHelper.login();
             const res = await app
-                .get(testingConstants.users.basicRoute)
+                .get('/users/basic')
                 .set('Authorization', integrationHelper.getBearer());
             expect(res.status).to.equal(200);
-            expect(res.body.username).to.equal(testingConstants.username);
+            expect(res.body.username).to.equal(integrationHelper.users[integrationHelper.users.length - 1].username);
             expect(res.body).not.haveOwnProperty('password');
         });
     });
 
-    describe(testingConstants.users.scopeRoute, () => {
-        it(`returns correct scope: ${testingConstants.scope}`, async () => {
+    describe('/users/scope', () => {
+        it(`returns correct scope: 'admin'`, async () => {
             const res = await app
-                .get(testingConstants.users.scopeRoute)
+                .get('/users/scope')
                 .set('Authorization', integrationHelper.getBearer());
             expect(res.status).to.equal(200);
-            expect(res.body).to.equal(testingConstants.scope);
+            expect(res.body).to.equal('admin');
         });
     });
-    describe(testingConstants.users.createRoute, () => {
+    describe('/users/create', () => {
         const batch = 'asdasd';
         const role = 'admin';
         const rollNo = 'nlkjok';
@@ -46,42 +47,40 @@ describe(testingConstants.users.name, () => {
         const users = [{ batch, role, rollNo, username, name }];
         it('creates user', async () => {
             const res = await app
-                .post(testingConstants.users.createRoute)
+                .post('/users/create')
                 .send({ users, defaultRollNoAsEmail })
                 .set('Authorization', integrationHelper.getBearer());
             expect(res.status).to.equal(200);
         });
     });
-    describe(testingConstants.users.userByRollNoRoute, () => {
+    describe('/users/user-by-roll-no', () => {
         it('returns user by roll no', async () => {
             const args = {
-                rollNo: 'cb.en.u4cse18105'
+                rollNo: integrationHelper.users[integrationHelper.users.length - 1].rollNo
             };
             const res = await app
-                .get(testingConstants.users.userByRollNoRoute)
+                .get('/users/user-by-roll-no')
                 .query(args)
                 .set('Authorization', integrationHelper.getBearer());
             expect(res.status).to.equal(200);
             expect(res.body.name).to.be.a('string');
             expect(res.body.username).to.be.a('string');
-            expect(res.body.role).to.be.equal('student');
+            expect(res.body.role).to.be.equal('admin');
             expect(res.body.rollNo).to.be.a('string');
-            expect(res.body.batch.id).to.be.a('string');
-            expect(res.body.batch.year).to.be.equal(2018);
         });
     });
-    describe(testingConstants.users.validResetRoute, () => {
+    describe('/users/validReset', () => {
         it('returns a string message for valid reset', async () => {
             const args = {
                 code: 'code'
             };
             const res = await app
-                .get(testingConstants.users.validResetRoute)
+                .get('/users/validReset')
                 .query(args)
                 .set('Authorization', integrationHelper.getBearer());
             expect(res.status).to.equal(200);
             expect(res.body.message).to.be.a('string');
-            expect(res.body.status).to.be.a('boolean'); //here
+            expect(res.body.status).to.be.a('boolean');
         });
     });
 });

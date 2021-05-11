@@ -13,6 +13,14 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: '15'
+      - name: Start Redis
+        uses: supercharge/redis-github-action@1.2.0
+        with:
+          redis-version: 5
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.3.0
+        with:
+          mongodb-version: 4.4
       - name: Setup cache
         uses: c-hive/gha-yarn-cache@v1
       - name: Install dependencies
@@ -26,7 +34,7 @@ jobs:
       - name: Build API
         run: yarn build:prod
       - name: Run tests
-        run: yarn test:unit
+        run: yarn test
       - name: set time
         uses: gerred/actions/current-time@master
         id: current-time

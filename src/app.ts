@@ -18,7 +18,7 @@ import { Container } from 'typescript-ioc';
 
 export const app = express();
 
-app.set('trust proxy', true);
+app.enable('trust proxy');
 
 if (constants.environment === 'debug') {
     app.use(cors());
@@ -62,7 +62,7 @@ app.use(express.json());
 app.use(
     multer({
         storage: multer.memoryStorage(),
-        limits: { fileSize: 50000000 }
+        limits: { files: 1 }
     }).single('file')
 );
 

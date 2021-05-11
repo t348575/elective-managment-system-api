@@ -3,8 +3,9 @@ import * as argon2 from 'argon2';
 import { IUserModel } from '../models/mongo/user-repository';
 import constants from '../constants';
 import jwt, { VerifyErrors } from 'jsonwebtoken';
-import { jwtSubjects, jwtToken, scopes } from '../models/types';
-import { unlinkSync } from 'fs';
+import { jwtSubjects, jwtToken, quizSubject, scopes } from '../models/types';
+import { unlinkSync, mkdirSync, existsSync } from 'fs';
+import * as path from 'path';
 export const safeParse = (str: string, fallback: any = undefined) => {
     try {
         return JSON.parse(str);
@@ -53,7 +54,7 @@ export const cleanQuery = (
 
 export function getJWT(
     user: IUserModel,
-    state: string,
+    state: string | quizSubject,
     expiresIn: number,
     subject: jwtSubjects,
     scope: scopes
@@ -106,14 +107,14 @@ export function urlSafe(str: string) {
     str = str.replace(/=/g, '');
     return str;
 }
-export function checkNumber(body: any, prop: string, parse = false) {
+export function checkNumber(body: any, prop: string, parse = false, parser = parseInt) {
     try {
         // eslint-disable-next-line no-prototype-builtins
         if (body.hasOwnProperty(prop)) {
             if (parse) {
                 try {
-                    const num = parseInt(body[prop], 10);
-                    return !!(num && !isNaN(num));
+                    const num = parser(body[prop], 10);
+                    return !!(num !== undefined && num !== null && !isNaN(num));
                 } catch (err) {
                     return false;
                 }
@@ -151,7 +152,7 @@ export async function getArgonHash(str: string) {
     return argon2.hash(str);
 }
 
-export function removeTempFile(file: string) {
+export function removeFile(file: string) {
     try {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         unlinkSync(file);
@@ -207,5 +208,32 @@ export function setConstants() {
     constants.mailAccess.name = process.env.mailName;
 
     // @ts-ignore
+    constants.mongoConnectionString = process.env.mongoConnectionString;
+    // @ts-ignore
+    constants.redisPassword = process.env.redisPassword;
+    // @ts-ignore
+    constants.redisHost = process.env.redisHost;
+
+    // @ts-ignore
     constants.environment = process.env.NODE_ENV;
+
+    if (!existsSync(path.join(__dirname, '/../../resources'))) {
+        mkdirSync(path.join(__dirname, '/../../resources'));
+    }
+
+    for (const v in constants.directories) {
+        // @ts-ignore
+        const name = removeFirstOccurance(constants.directories[v] as string, '/../');
+        if (!existsSync(path.join(__dirname, name))) {
+            // @ts-ignore
+            mkdirSync(path.join(__dirname, name));
+        }
+    }
+}
+export function removeFirstOccurance(str: string, searchStr: string): string {
+    const index = str.indexOf(searchStr);
+    if (index === -1) {
+        return str;
+    }
+    return str.slice(0, index) + str.slice(index + searchStr.length);
 }

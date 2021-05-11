@@ -1,12 +1,20 @@
 import { expect } from 'chai';
 import supertest from 'supertest';
-import { server as importApp } from '../../server';
+import { closeServer, initServer, server as importApp } from '../../server';
 import { IntegrationHelper } from '../integration-helper';
-import testingConstants from '../testing-constants';
-const app = supertest(importApp);
-const integrationHelper = new IntegrationHelper(app);
-describe(testingConstants.oauth.name, () => {
-    describe(testingConstants.electives.addRoute, () => {
+let app: supertest.SuperTest<supertest.Test>;
+let integrationHelper: IntegrationHelper;
+describe('/electives', () => {
+    before(async () => {
+        app = supertest(importApp);
+        integrationHelper = new IntegrationHelper(app);
+        await integrationHelper.init();
+        initServer();
+    });
+    after(() => {
+        closeServer();
+    });
+    describe('/electives/add', () => {
         const name = 'a';
         const description = 'test a';
         const courseCode = '15csea';
@@ -18,7 +26,7 @@ describe(testingConstants.oauth.name, () => {
         it('should return true status', async () => {
             await integrationHelper.login();
             const res = await app
-                .post(testingConstants.electives.addRoute)
+                .post('/electives/add')
                 .send({
                     name,
                     description,

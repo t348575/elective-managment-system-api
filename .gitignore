@@ -122,3 +122,4 @@ production.env
 debug.env
 production.env
 src/routes/routes.ts
+.vscode

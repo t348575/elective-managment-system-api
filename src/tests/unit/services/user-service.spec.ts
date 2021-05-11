@@ -2,32 +2,40 @@ import { UnitHelper } from '../../unit-helper';
 const unitHelper = new UnitHelper();
 import { Container } from 'typescript-ioc';
 import * as argon2 from 'argon2';
-import { getMockUsers, setupMockUsers } from '../models/user.model';
+import { getMockUsers, setupMockUsers } from '../../models/user.model';
 import { IUserModel, UserFormatter } from '../../../models/mongo/user-repository';
 import { UsersService } from '../../../routes/user/service';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { MockMailService, mockMailReplaceSpy } from '../mocks/mock-mail-service';
+import { MockMailService, mockMailReplaceSpy } from '../../mocks/mock-mail-service';
 import { MailService } from '../../../shared/mail-service';
 import * as qs from 'query-string';
+import { MongoConnector } from '../../../shared/mongo-connector';
 
 chai.use(chaiAsPromised);
 
 let users: IUserModel[] = [];
 let code: string;
 
-before(async () => {
-    await unitHelper.initMongoMemoryServer();
-    Container.bind(MailService).to(MockMailService);
-    users = await setupMockUsers();
-});
-
 describe('User service', () => {
+    before(async () => {
+        await unitHelper.init();
+        Container.bind(MailService).to(MockMailService);
+    });
     afterEach(() => {
         mockMailReplaceSpy.resetHistory();
     });
 
     const userService = Container.get(UsersService);
+
+    it('Should create users', async () => {
+        const res = await userService.createUsers(getMockUsers(), { defaultRollNoAsEmail: false });
+        await (Container.get(MongoConnector).db.dropCollection('users'));
+        users = await setupMockUsers();
+        expect(res).to.be.an('array');
+        expect(res.length).to.be.equal(0);
+        expect(mockMailReplaceSpy.callCount).is.equal(1);
+    });
 
     it('Should return basic user details', async () => {
         for (const v of users) {
@@ -39,13 +47,6 @@ describe('User service', () => {
             expect(res.role).to.be.equal(v.role);
             expect(res.rollNo).to.be.equal(v.rollNo);
         }
-    });
-
-    it('Should create users', async () => {
-        const res = await userService.createUsers(getMockUsers(), { defaultRollNoAsEmail: false });
-        expect(res).to.be.an('array');
-        expect(res.length).to.be.equal(0);
-        expect(mockMailReplaceSpy.callCount).is.equal(1);
     });
 
     it('Update password works', async () => {

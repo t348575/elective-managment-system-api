@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { SubscribeOptions } from '../../../routes/notification/controller';
+import { SubscribeOptions } from '../../routes/notification/controller';
 import mongoose from 'mongoose';
 import { spy } from 'sinon';
 import * as faker from 'faker';
-import { NotificationFormatter } from '../../../models/mongo/notification-repository';
+import { NotificationFormatter } from '../../models/mongo/notification-repository';
 
 export class MockNotificationService {
     public async subscribe(options: SubscribeOptions, userId: string) {

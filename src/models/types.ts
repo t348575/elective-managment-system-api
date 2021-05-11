@@ -25,7 +25,7 @@ export type tokenResponse = {
     refresh_token: string;
 };
 
-export type jwtSubjects = 'oneTimeAuthCode' | 'idToken' | 'refreshToken' | 'accessToken';
+export type jwtSubjects = 'oneTimeAuthCode' | 'idToken' | 'refreshToken' | 'accessToken' | 'quiz';
 
 export type tokenBodyType = { code: string; code_verifier: string };
 
@@ -44,6 +44,21 @@ export type jwtToken = {
     scope: scopes;
     sub: jwtSubjects;
 };
+
+export type quizToken = {
+    exp: number;
+    iat: number;
+    stateSlice: quizSubject;
+    id: string;
+    scope: scopes;
+    sub: jwtSubjects;
+};
+
+export type quizSubject = {
+    quizId: string,
+    responseId: string,
+    question: number
+}
 
 export type electiveAttributes = { key: string; value: string }[];
 
@@ -66,3 +81,5 @@ export interface Failed {
 export const unknownServerError = 'unknown_server_error';
 
 export const validationError = 'validation_error';
+
+export const unautorizedError = 'unauthorized_error';

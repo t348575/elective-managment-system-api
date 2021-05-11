@@ -7,9 +7,13 @@ import { PasswordResetRepository } from '../models/mongo/password-reset-reposito
 import { ClassRepository } from '../models/mongo/class-repository';
 import { FormsRepository } from '../models/mongo/form-repository';
 import { ResponseRepository } from '../models/mongo/response-repository';
-import { DownloadRespository } from '../models/mongo/download-repository';
+import { DownloadRepository } from '../models/mongo/download-repository';
 import { NotificationRepository } from '../models/mongo/notification-repository';
 import { TrackRepository } from '../models/mongo/track-repository';
+import { RedisConnector } from '../shared/redis-connector';
+import { RequestChangeRepository } from '../models/mongo/request-change-repository';
+import { QuizRepository } from '../models/mongo/quiz-repository';
+import { QuizResponseRepository } from '../models/mongo/quiz-response-repository';
 
 @Singleton
 export class PrivateInjectorInit {
@@ -20,9 +24,13 @@ export class PrivateInjectorInit {
     @Inject classRepository: ClassRepository;
     @Inject formRepository: FormsRepository;
     @Inject responseRepository: ResponseRepository;
-    @Inject downloadRespository: DownloadRespository;
+    @Inject downloadRepository: DownloadRepository;
     @Inject notificationsRepository: NotificationRepository;
     @Inject trackRepository: TrackRepository;
+    @Inject redisConnector: RedisConnector
+    @Inject requestChangeRepository: RequestChangeRepository;
+    @Inject quizRepository: QuizRepository;
+    @Inject quizResponseRepository: QuizResponseRepository;
     constructor() {
         this.batchRepository;
         this.electiveRepository;
@@ -31,8 +39,12 @@ export class PrivateInjectorInit {
         this.classRepository;
         this.formRepository;
         this.responseRepository;
-        this.downloadRespository;
+        this.downloadRepository;
         this.notificationsRepository;
         this.trackRepository;
+        this.redisConnector;
+        this.requestChangeRepository;
+        this.quizRepository;
+        this.quizResponseRepository;
     }
 }

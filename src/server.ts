@@ -38,4 +38,7 @@ function initServer() {
         initApp();
     });
 }
-export { server, initServer };
+function closeServer() {
+    server.close();
+}
+export { server, initServer, closeServer };

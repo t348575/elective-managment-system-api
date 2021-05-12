@@ -10,7 +10,7 @@
 		"test:unit": "yarn env:test nyc mocha -r ts-node/register src/tests/unit/**/*.spec.ts -t 10000",
 		"test:integration": "yarn env:test nyc --no-clean mocha -r ts-node/register src/tests/integration/**/*.spec.ts -t 10000",
 		"start": "yarn start:dev",
-		"start:dev": "yarn env:dev concurrently \"yarn build:tsoa && ts-node-dev --respawn ./src/server.ts --rs --watch 'src' --debug\" \"nodemon\"",
+		"start:dev": "yarn env:dev concurrently \"yarn build:tsoa && ts-node-dev --respawn ./src/server.ts --rs --watch 'src' --ignore-watch src/routes/routes.ts --debug\" \"nodemon\"",
 		"start:prod": "yarn env:prod node ./build/src/server.js",
 		"start:prod:debug": "yarn env:dev node ./build/src/server.js",
 		"build:routes": "tsoa routes",

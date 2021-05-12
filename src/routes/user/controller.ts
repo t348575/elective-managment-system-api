@@ -279,6 +279,7 @@ export class UsersController extends Controller {
         return this.service.resetPassword(options);
     }
 
+    @Security('jwt', adminOnly)
     @Get('tracked-data')
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)

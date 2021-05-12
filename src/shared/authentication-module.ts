@@ -224,7 +224,7 @@ export function expressAuthentication(req: express.Request, securityName: string
         case 'quiz': {
             const token = req.headers.authorization?.split(' ')[1];
             // @ts-ignore
-            const quizRequestToken = req.headers.quizRequest?.split(' ')[1];
+            const quizRequestToken = req.headers.quizrequest?.split(' ')[1];
             return new Promise((resolve, reject) => {
                 if (!token) {
                     return reject(

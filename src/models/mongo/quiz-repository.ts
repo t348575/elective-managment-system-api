@@ -69,19 +69,6 @@ export class QuizRepository extends BaseRepository<IQuizModel> {
         this.init();
     }
 
-    public async findAndPopulateSafe(skip = 0, limit = 250, sort: string, query: any): Promise<QuizFormatter[]> {
-        const sortObject = cleanQuery(sort, this.sortQueryFormatter);
-        return (
-            await this.documentModel
-                .find(this.cleanWhereQuery(query))
-                .sort(Object.keys(sortObject).map((key) => [key, sortObject[key]]))
-                .skip(skip)
-                .limit(limit)
-                .populate('classItem')
-                .select('classItem start end time name')
-        ).map((item) => new this.formatter(item));
-    }
-
     public async findAndPopulate(skip = 0, limit = 250, sort: string, query: any): Promise<QuizFormatter[]> {
         const sortObject = cleanQuery(sort, this.sortQueryFormatter);
         return (

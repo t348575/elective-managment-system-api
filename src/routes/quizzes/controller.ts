@@ -8,8 +8,9 @@ import { Readable } from 'stream';
 import csv from 'csvtojson';
 import { getArgonHash } from '../../util/general-util';
 import { IQuizResponseModel } from '../../models/mongo/quiz-response-repository';
+import { PaginationModel } from '../../models/shared/pagination-model';
 
-const studentOnly: string[] = ['studnet'];
+const studentOnly: string[] = ['student'];
 const teacherOnly: string[] = ['teacher'];
 const studentOrTeacher: string[] = ['student', 'teacher'];
 
@@ -33,6 +34,7 @@ export interface UpdateQuizOptions {
     start?: string;
     end?: string;
     name?: string;
+    time?: number;
 }
 
 @Tags('quizzes')
@@ -105,11 +107,11 @@ export class QuizzesController extends Controller {
     ) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
-        return this.service.getNewQuizzes(classId, accessToken.id);
+        return this.service.getNewQuizzes(classId, accessToken.id, accessToken.scope);
     }
 
     @Get('old')
-    @Security('jwt', studentOrTeacher)
+    @Security('jwt', studentOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
     public async getOldQuizzes(
@@ -118,7 +120,7 @@ export class QuizzesController extends Controller {
     ) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
-        return this.service.getOldQuizzes(classId, accessToken.id, accessToken.scope);
+        return this.service.getOldQuizzes(classId, accessToken.id);
     }
 
     @Get('results')
@@ -130,7 +132,7 @@ export class QuizzesController extends Controller {
         @Query('page') page: number,
         @Request() request: ExRequest,
         @Query('limit') limit = 25
-    ) {
+    ): Promise<PaginationModel<IQuizResponseModel>> {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.getResults<IQuizResponseModel>(page, limit, quizId, accessToken.id);
@@ -157,7 +159,7 @@ export class QuizzesController extends Controller {
         @Query('num') questionNumber: number,
         @Query('dir') dir: 'next' | 'prev',
         @Request() request: ExRequest,
-        @Query('ans') answer?: number
+        @Query('ans') answer: number
     ) {
         // @ts-ignore
         const quizToken = request.quiz as quizToken;
@@ -194,7 +196,8 @@ export class QuizzesController extends Controller {
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
     public async deleteQuiz(
-        @Query('quizId') quizId: string
+        @Query('quizId') quizId: string,
+        @Request() request: ExRequest
     ) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;

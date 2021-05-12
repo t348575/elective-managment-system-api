@@ -6,11 +6,13 @@ import { IUserModel } from "./user-repository";
 import mongoose, { Schema } from 'mongoose';
 import { MongoConnector } from "../../shared/mongo-connector";
 import { cleanQuery } from "../../util/general-util";
+import { IClassModel } from './class-repository';
 
 export interface IQuizResponseModel {
     id?: string;
     user: IUserModel;
     quiz: IQuizModel;
+    classItem: IClassModel;
     answers: number[];
     start: Date;
     end?: Date;
@@ -22,6 +24,7 @@ export interface IQuizResponseModel {
 export class QuizResponseFormatter extends BaseFormatter implements IQuizResponseModel {
     user: IUserModel;
     quiz: IQuizModel;
+    classItem: IClassModel;
     answers: number[];
     start: Date;
     end?: Date;
@@ -42,6 +45,7 @@ export class QuizResponseRepository extends BaseRepository<IQuizResponseModel> {
         {
             user: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
             quiz: { type: mongoose.Schema.Types.ObjectId, ref: 'quizzes' },
+            classItem: { type: mongoose.Schema.Types.ObjectId, ref: 'classes' },
             answers: [{ type: Number, required: true }],
             start: { type: Date, required: true },
             end: { type: Date, required: false },
@@ -59,13 +63,14 @@ export class QuizResponseRepository extends BaseRepository<IQuizResponseModel> {
         this.init();
     }
 
-    public async startQuiz(userId: string, quizId: string) {
+    public async startQuiz(classId: string, userId: string, quizId: string) {
         const session = await this.documentModel.startSession();
         await session.withTransaction(async () => {
             // @ts-ignore
             await this.create({
                 quiz: quizId as never as IQuizModel,
                 user: userId as never as IUserModel,
+                classItem: classId as never as IClassModel,
                 answers: [],
                 start: new Date().toISOString() as never as Date,
                 score: 0,
@@ -86,8 +91,9 @@ export class QuizResponseRepository extends BaseRepository<IQuizResponseModel> {
                 .limit(limit)
                 .populate({
                     path: 'quiz',
-                    select: 'classItem start end time name'
+                    select: 'start end time name'
                 })
+                .populate('user')
         ).map((item) => new this.formatter(item));
     }
 

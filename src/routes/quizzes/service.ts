@@ -13,6 +13,7 @@ import { IUserModel } from '../../models/mongo/user-repository';
 import { quizToken, scopes } from '../../models/types';
 import { RedisConnector } from '../../shared/redis-connector';
 import { PaginationModel } from '../../models/shared/pagination-model';
+import { query } from 'express';
 
 @Singleton
 export class QuizzesService extends BaseService<IQuizModel> {
@@ -64,7 +65,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
                     message: 'Answer not within boundry of options'
                 };
             }
-            const headerNames = ['question', 'points', 'negativePoints'];
+            const headerNames = ['question', 'points', 'negativePoints', 'answer'];
             const optionNames = Object.keys(v).filter((e) => headerNames.indexOf(e) === -1);
             const options: string[] = [];
             for (const e in v) {
@@ -120,40 +121,51 @@ export class QuizzesService extends BaseService<IQuizModel> {
         });
     }
 
-    public async getNewQuizzes(classId: string, userId: string) {
+    public async getNewQuizzes(classId: string, userId: string, scope: scopes) {
         const classes = await this.classService.getActiveClasses(userId);
         if (classes.findIndex((e) => (e.id as string) === classId) === -1) {
             throw new ApiError(constants.errorTypes.forbidden);
         }
-        return this.repository.findAndPopulateSafe(0, undefined, JSON.stringify({ start: 'desc' }), {
-            classes: classId,
-            end: {
-                $gte: new Date()
-            }
-        });
-    }
-
-    public async getOldQuizzes(classId: string, userId: string, scope: scopes): Promise<IQuizModel[] | IQuizResponseModel[]> {
-        const classes = await this.classService.getActiveClasses(userId);
-        if (classes.findIndex((e) => (e.id as string) === classId) === -1) {
-            throw new ApiError(constants.errorTypes.forbidden);
-        }
-        if (scope === 'student') {
-            return this.quizResponseRepository.findAndPopulate(0, undefined, '', {
-                classes: classId,
-                end: {
-                    $lte: new Date()
+        if (scope === 'teacher') {
+            return (await this.repository.findAndPopulate(0, undefined, JSON.stringify({ start: 'desc' }), { classItem: classId })).map(e => (
+                {
+                    ...e,
+                    password: e?.password ? ' ' : '',
+                    // @ts-ignore
+                    questions: e.questions.length
                 }
-            });
+            ));
         }
         else {
-            return this.repository.findAndPopulateSafe(0, undefined, JSON.stringify({ start: 'desc' }), {
-                classes: classId,
+            const responses = await this.quizResponseRepository.find('', {classItem: classId});
+            return (await this.repository.findAndPopulate(0, undefined, JSON.stringify({ start: 'desc' }), {
+                classItem: classId,
                 end: {
-                    $lte: new Date()
+                    $gte: new Date()
                 }
-            });
+            })).map(e => (
+                {
+                    ...e,
+                    password: e?.password ? ' ' : '',
+                    // @ts-ignore
+                    questions: e.questions.length
+                }
+            )).filter(e => responses.findIndex(r => r.quiz as never as string === e.id && r.end !== undefined) === -1);
         }
+    }
+
+    public async getOldQuizzes(classId: string, userId: string): Promise<IQuizResponseModel[]> {
+        const classes = await this.classService.getActiveClasses(userId);
+        if (classes.findIndex((e) => (e.id as string) === classId) === -1) {
+            throw new ApiError(constants.errorTypes.forbidden);
+        }
+        return this.quizResponseRepository.findAndPopulate(0, undefined, JSON.stringify({ start: 'desc' }), {
+            classItem: classId,
+            user: userId,
+            end: {
+                $lte: new Date()
+            }
+        });
     }
 
     public async startQuiz(
@@ -167,7 +179,8 @@ export class QuizzesService extends BaseService<IQuizModel> {
             }
         });
         const classes = await this.classService.getActiveClasses(userId);
-        if (classes.findIndex((e) => (e.id as string) === (quiz.classItem as never as string)) === -1) {
+        const classIdx = classes.findIndex((e) => (e.id as string) === (quiz.classItem as never as string));
+        if (classIdx === -1) {
             throw new ApiError(constants.errorTypes.forbidden);
         }
         if (quiz?.password) {
@@ -185,19 +198,39 @@ export class QuizzesService extends BaseService<IQuizModel> {
                 };
             }
         }
-        await this.quizResponseRepository.startQuiz(userId, options.quizId);
+        let response: IQuizResponseModel | undefined = undefined;
+        try {
+            response = await this.quizResponseRepository.findOne({
+                quiz: quiz.id,
+                user: userId
+            });
+        }
+        catch(err) {
+            await this.quizResponseRepository.startQuiz(classes[classIdx].id, userId, options.quizId);
+        }
         const quizResponse = await this.quizResponseRepository.findOne({ user: userId, quiz: quiz.id });
         let expireAt: number;
-        if (quiz.time == 0 || new Date(quiz.end).getTime() < new Date().getTime() + quiz.time * 60 * 1000) {
-            expireAt = Math.floor((new Date(quiz.end).getTime() - new Date().getTime()) / 1000) + 1;
-        } else {
-            expireAt = Math.floor(quiz.time * 60) + 1;
+        if (response) {
+            if (quiz.time == 0 || new Date(quiz.end).getTime() < new Date(response.start).getTime() + quiz.time * 60 * 1000) {
+                expireAt = Math.floor((new Date(quiz.end).getTime() - new Date().getTime()) / 1000) + 1;
+            }
+            else {
+                expireAt = Math.floor((quiz.time - ((new Date().getTime() - new Date(response.start).getTime()) / 60000)) * 60) + 1;
+            }
+        }
+        else {
+            if (quiz.time == 0 || new Date(quiz.end).getTime() < new Date().getTime() + quiz.time * 60 * 1000) {
+                expireAt = Math.floor((new Date(quiz.end).getTime() - new Date().getTime()) / 1000) + 1;
+            }
+            else {
+                expireAt = Math.floor(quiz.time * 60) + 1;
+            }
         }
         const endAt = new Date(new Date().getTime() + expireAt * 1000).toISOString();
         const questionRequest = await getJWT({ id: userId } as IUserModel, {
             quizId: quiz.id as string,
             responseId: quizResponse.id as string,
-            question: 0
+            question: 1
         }, expireAt, 'quiz', 'student');
         await this.redis.setex(
             `quiz::${userId}::${questionRequest.expiry}`,
@@ -206,6 +239,9 @@ export class QuizzesService extends BaseService<IQuizModel> {
         );
         // @ts-ignore
         delete quiz.questions[0].answer;
+        if (response && response.answers.length > 0) {
+            quiz.questions[0].answer = response.answers[0];
+        }
         return {
             question: quiz.questions[0],
             nextRequest: questionRequest.jwt,
@@ -217,15 +253,15 @@ export class QuizzesService extends BaseService<IQuizModel> {
         questionNumber: number,
         quizTokenItem: quizToken,
         dir: 'next' | 'prev',
-        answer?: number
-    ): Promise<{ question: IQuestionModel; nextRequest: string; endAt: string }> {
+        answer: number
+    ): Promise<{ question: IQuestionModel | undefined; endAt: string; nextRequest: string }> {
         const response = await this.quizResponseRepository.findOne({
             quiz: quizTokenItem.stateSlice.quizId,
             user: quizTokenItem.id,
             _id: quizTokenItem.stateSlice.responseId
         });
         const secondField = dir === 'next' ? quizTokenItem.stateSlice.question + 1 : quizTokenItem.stateSlice.question - 1;
-        if (response.answers.length === quizTokenItem.stateSlice.question && secondField === questionNumber) {
+        if (secondField === questionNumber) {
             let quiz: IQuizModel;
             try {
                 quiz = await this.repository.getById(quizTokenItem.stateSlice.quizId);
@@ -236,26 +272,30 @@ export class QuizzesService extends BaseService<IQuizModel> {
                     message: 'Quiz has been deleted'
                 };
             }
-            if (answer) {
-                if (response.answers.length >= questionNumber) {
-                    response.answers[questionNumber - 1] = answer;
+            if (questionNumber - 1 < response.answers.length) {
+                response.answers[questionNumber - (dir === 'prev' ? 0 : 2)] = answer;
+            }
+            else {
+                if (questionNumber - 1 >= quiz.questions.length) {
+                    response.answers[response.answers.length - 1] = answer;
                 }
                 else {
                     response.answers.push(answer);
                 }
-                await this.quizResponseRepository.findAndUpdate({_id: response.id as string}, { answers: response.answers } as IQuizResponseModel);
             }
+            await this.quizResponseRepository.findAndUpdate({_id: response.id as string}, { answers: response.answers } as IQuizResponseModel);
             let expireAt: number;
-            if (new Date(quiz.end).getTime() < new Date().getTime() + quiz.time * 60 * 1000) {
+            if (quiz.time == 0 || new Date(quiz.end).getTime() < new Date(response.start).getTime() + quiz.time * 60 * 1000) {
                 expireAt = Math.floor((new Date(quiz.end).getTime() - new Date().getTime()) / 1000) + 1;
-            } else {
-                expireAt = Math.floor(quiz.time * 60) + 1;
+            }
+            else {
+                expireAt = Math.floor((quiz.time - ((new Date().getTime() - new Date(response.start).getTime()) / 60000)) * 60) + 1;
             }
             const endAt = new Date(new Date().getTime() + expireAt * 1000).toISOString();
             const questionRequest = await getJWT({ id: quizTokenItem.id } as IUserModel, {
                 quizId: quiz.id as string,
                 responseId: response.id as string,
-                question: questionNumber + (dir === 'next' ? 1 : -1),
+                question: questionNumber
             }, expireAt, 'quiz', 'student');
             await this.redis.setex(
                 `quiz::${quizTokenItem.id}::${questionRequest.expiry}`,
@@ -263,18 +303,30 @@ export class QuizzesService extends BaseService<IQuizModel> {
                 questionRequest.jwt
             );
             await this.redis.remove(`quiz::${quizTokenItem.id}::${quizTokenItem.exp}}`);
-            // @ts-ignore
-            delete quiz.questions[questionNumber].answer;
-            return {
-                question: quiz.questions[questionNumber],
-                nextRequest: questionRequest.jwt,
-                endAt
-            };
+            if (questionNumber === quiz.questions.length + 1) {
+                return {
+                    question: undefined,
+                    nextRequest: questionRequest.jwt,
+                    endAt
+                };
+            }
+            else {
+                // @ts-ignore
+                delete quiz.questions[questionNumber - 1].answer;
+                if (questionNumber - 1 < response.answers.length) {
+                    quiz.questions[questionNumber - 1].answer = response.answers[questionNumber - 1];
+                }
+                return {
+                    question: quiz.questions[questionNumber - 1],
+                    nextRequest: questionRequest.jwt,
+                    endAt
+                };
+            }
         }
         else {
             throw {
                 name: 'answer_mismatch',
-                message: 'Quiz question number missmatch'
+                message: 'Quiz question number mismatch'
             };
         }
     }
@@ -318,9 +370,11 @@ export class QuizzesService extends BaseService<IQuizModel> {
                 user: v as never as IUserModel,
                 answers: [],
                 start: new Date().toISOString() as never as Date,
+                end: new Date().toISOString() as never as Date,
                 score: 0,
                 published: true,
-                attended: false
+                attended: false,
+                classItem: quiz.classItem.id as never as IClassModel
             });
         }
     }
@@ -339,7 +393,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
         if (quiz.classItem.teacher as never as string !== teacherId) {
             throw new ApiError(constants.errorTypes.forbidden);
         }
-        if (options?.password) {
+        if (options?.password && options.password.length > 0) {
             options.password = await getArgonHash(options.password);
         }
         const quizId = options.quizId;
@@ -354,7 +408,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
         quizId: string,
         teacherId: string
     ): Promise<PaginationModel<Entity>> {
-        const quiz = (await this.repository.findAndPopulate(0, undefined, '', { _id: quizId}))[0];
+        const quiz = (await this.repository.findAndPopulate(0, undefined, '', { _id: quizId }))[0];
         if (quiz.classItem.teacher as never as string !== teacherId) {
             throw new ApiError(constants.errorTypes.forbidden);
         }
@@ -362,13 +416,23 @@ export class QuizzesService extends BaseService<IQuizModel> {
         // eslint-disable-next-line prefer-const
         let [count, docs] = await Promise.all([
             this.repository.count({}),
-            this.repository.find('', {}, limit, skip)
+            this.quizResponseRepository.findAndPopulate(skip, limit, '', query)
         ]);
         return new PaginationModel<Entity>({
             count,
             page,
             limit,
-            docs,
+            docs: docs.map(e => (
+                {
+                    ...e,
+                    quiz: [quiz].map(r => ({
+                        ...r,
+                        password: r?.password ? ' ' : '',
+                        // @ts-ignore
+                        questions: r.questions.length
+                    }))[0]
+                }
+            )),
             totalPages: Math.ceil(count / limit)
         });
     }

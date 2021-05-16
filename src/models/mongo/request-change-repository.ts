@@ -38,7 +38,7 @@ export class RequestChangeRepository extends BaseRepository<IRequestChangeModel>
             requestDate: { type: Date, required: true }
         },
         { collection: this.modelName }
-    )
+    );
     protected formatter = RequestChangeFormatter;
     @Inject
     protected dbConnection: MongoConnector;
@@ -50,16 +50,16 @@ export class RequestChangeRepository extends BaseRepository<IRequestChangeModel>
         const sortObject = cleanQuery(sort, this.sortQueryFormatter);
         return (
             await this.documentModel
-            .find(this.cleanWhereQuery(query))
-            .sort(Object.keys(sortObject).map((key) => [key, sortObject[key]]))
-            .skip(skip)
-            .limit(limit)
-            .populate('from')
-            .populate('to')
-            .populate({
-                path: 'user',
-                select: 'name username _id rollNo role classes'
-            })
+                .find(this.cleanWhereQuery(query))
+                .sort(Object.keys(sortObject).map((key) => [key, sortObject[key]]))
+                .skip(skip)
+                .limit(limit)
+                .populate('from')
+                .populate('to')
+                .populate({
+                    path: 'user',
+                    select: 'name username _id rollNo role classes'
+                })
         ).map((item) => new this.formatter(item));
     }
 }

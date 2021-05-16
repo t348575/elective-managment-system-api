@@ -85,8 +85,7 @@ describe('Notification service', () => {
         expect(
             await (Container.get(NotificationService) as RealNotificationService).unsubscribe(
                 {
-                    name: 'test_notification',
-                    sub: generateRandomSub()
+                    name: 'test_notification'
                 },
                 users[0].id as string
             )
@@ -94,8 +93,7 @@ describe('Notification service', () => {
         expect(
             (Container.get(NotificationService) as RealNotificationService).unsubscribe(
                 {
-                    name: 'test_notification',
-                    sub: generateRandomSub()
+                    name: 'test_notification'
                 },
                 users[0].id as string
             )
@@ -149,7 +147,7 @@ describe('Notification service', () => {
     it('Should send a custom notification', async () => {
         const batches = [...new Set(users.slice(0, 5).map((e) => (e.batch as unknown) as string))];
         for (const [i, v] of users.entries()) {
-            await (Container.get(MongoConnector).db.dropCollection('notifications'));
+            await Container.get(MongoConnector).db.dropCollection('notifications');
             await (Container.get(NotificationService) as RealNotificationService).subscribe(
                 {
                     name: `test_notification${i}${v.id as string}`,
@@ -176,7 +174,7 @@ describe('Notification service', () => {
             body: 'asd',
             replaceItems: true
         });
-        expect(mockWebPushSendNotification.callCount).to.be.within(57,58);
+        expect(mockWebPushSendNotification.callCount).to.be.within(57, 58);
         await (Container.get(NotificationService) as RealNotificationService).customNotify({
             batches: [],
             users: [],
@@ -185,7 +183,7 @@ describe('Notification service', () => {
             body: 'asd',
             replaceItems: true
         });
-        expect(mockWebPushSendNotification.callCount).to.be.within(57,58);
+        expect(mockWebPushSendNotification.callCount).to.be.within(57, 58);
         await (Container.get(NotificationService) as RealNotificationService).customNotify({
             batches: [],
             users: [],
@@ -195,6 +193,6 @@ describe('Notification service', () => {
             body: 'asd',
             replaceItems: true
         });
-        expect(mockWebPushSendNotification.callCount).to.be.within(57,58);
+        expect(mockWebPushSendNotification.callCount).to.be.within(57, 58);
     });
 });

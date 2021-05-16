@@ -1,11 +1,11 @@
-import { Inject, Singleton } from "typescript-ioc";
-import { BaseFormatter } from "../../util/base-formatter";
-import { BaseRepository } from "../shared/base-repository";
-import { IQuizModel } from "./quiz-repository";
-import { IUserModel } from "./user-repository";
+import { Inject, Singleton } from 'typescript-ioc';
+import { BaseFormatter } from '../../util/base-formatter';
+import { BaseRepository } from '../shared/base-repository';
+import { IQuizModel } from './quiz-repository';
+import { IUserModel } from './user-repository';
 import mongoose, { Schema } from 'mongoose';
-import { MongoConnector } from "../../shared/mongo-connector";
-import { cleanQuery } from "../../util/general-util";
+import { MongoConnector } from '../../shared/mongo-connector';
+import { cleanQuery } from '../../util/general-util';
 import { IClassModel } from './class-repository';
 
 export interface IQuizResponseModel {
@@ -57,7 +57,7 @@ export class QuizResponseRepository extends BaseRepository<IQuizResponseModel> {
     );
     protected formatter = QuizResponseFormatter;
     @Inject protected dbConnection: MongoConnector;
-    
+
     constructor() {
         super();
         this.init();
@@ -68,11 +68,11 @@ export class QuizResponseRepository extends BaseRepository<IQuizResponseModel> {
         await session.withTransaction(async () => {
             // @ts-ignore
             await this.create({
-                quiz: quizId as never as IQuizModel,
-                user: userId as never as IUserModel,
-                classItem: classId as never as IClassModel,
+                quiz: (quizId as never) as IQuizModel,
+                user: (userId as never) as IUserModel,
+                classItem: (classId as never) as IClassModel,
                 answers: [],
-                start: new Date().toISOString() as never as Date,
+                start: (new Date().toISOString() as never) as Date,
                 score: 0,
                 published: false,
                 attended: true

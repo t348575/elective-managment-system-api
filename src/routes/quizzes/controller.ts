@@ -26,7 +26,7 @@ export interface CreateQuizOptions {
 export interface StartQuizOptions {
     password?: string;
     quizId: string;
-};
+}
 
 export interface UpdateQuizOptions {
     quizId: string;
@@ -50,48 +50,48 @@ export class QuizzesController extends Controller {
     @Security('jwt', teacherOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public createQuiz(
-        @Body() options: CreateQuizOptions,
-        @Request() request: ExRequest
-    ) {
+    public createQuiz(@Body() options: CreateQuizOptions, @Request() request: ExRequest) {
         return new Promise<void>((resolve, reject) => {
             if (request.file === undefined) {
-                reject(new ApiError({
-                    name: 'form_error',
-                    statusCode: 400,
-                    message: 'Not a valid multipart form'
-                }));
-            }
-            else {
+                reject(
+                    new ApiError({
+                        name: 'form_error',
+                        statusCode: 400,
+                        message: 'Not a valid multipart form'
+                    })
+                );
+            } else {
                 if (request.file.originalname.indexOf('.csv') > -1) {
                     const inputStream = new Readable();
                     inputStream.push(request.file.buffer);
                     inputStream.push(null);
                     csv()
-                    .fromStream(inputStream)
-                    .then(async (obj) => {
-                        if (options?.password) {
-                            options.password = await getArgonHash(options.password);
-                        }
-                        try {
-                            await this.service.createQuiz(obj, options);
-                            resolve();
-                        }
-                        catch(err) {
-                            reject(new ApiError({
-                                name: err.name,
-                                message: err?.message,
-                                statusCode: 400
-                            }));
-                        }
-                    });
-                }
-                else {
-                    reject(new ApiError({
-                        name: 'file_type',
-                        statusCode: 400,
-                        message: 'Improper file type'
-                    }));
+                        .fromStream(inputStream)
+                        .then(async (obj) => {
+                            if (options?.password) {
+                                options.password = await getArgonHash(options.password);
+                            }
+                            try {
+                                await this.service.createQuiz(obj, options);
+                                resolve();
+                            } catch (err) {
+                                reject(
+                                    new ApiError({
+                                        name: err.name,
+                                        message: err?.message,
+                                        statusCode: 400
+                                    })
+                                );
+                            }
+                        });
+                } else {
+                    reject(
+                        new ApiError({
+                            name: 'file_type',
+                            statusCode: 400,
+                            message: 'Improper file type'
+                        })
+                    );
                 }
             }
         });
@@ -101,10 +101,7 @@ export class QuizzesController extends Controller {
     @Security('jwt', studentOrTeacher)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public getNewQuizzes(
-        @Query('classId') classId: string,
-        @Request() request: ExRequest
-    ) {
+    public getNewQuizzes(@Query('classId') classId: string, @Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.getNewQuizzes(classId, accessToken.id, accessToken.scope);
@@ -114,10 +111,7 @@ export class QuizzesController extends Controller {
     @Security('jwt', studentOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async getOldQuizzes(
-        @Query('classId') classId: string,
-        @Request() request: ExRequest
-    ) {
+    public async getOldQuizzes(@Query('classId') classId: string, @Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.getOldQuizzes(classId, accessToken.id);
@@ -142,10 +136,7 @@ export class QuizzesController extends Controller {
     @Security('jwt', studentOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async startQuiz(
-        @Body() options: StartQuizOptions,
-        @Request() request: ExRequest
-    ) {
+    public async startQuiz(@Body() options: StartQuizOptions, @Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.startQuiz(options, accessToken.id);
@@ -170,9 +161,7 @@ export class QuizzesController extends Controller {
     @Security('quiz', studentOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async closeQuiz(
-        @Request() request: ExRequest
-    ) {
+    public async closeQuiz(@Request() request: ExRequest) {
         // @ts-ignore
         const quizToken = request.quiz as quizToken;
         return this.service.submitQuiz(quizToken);
@@ -182,10 +171,7 @@ export class QuizzesController extends Controller {
     @Security('jwt', teacherOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async publishScores(
-        @Query('quizId') quizId: string,
-        @Request() request: ExRequest
-    ) {
+    public async publishScores(@Query('quizId') quizId: string, @Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.publishScores(quizId, accessToken.id);
@@ -195,10 +181,7 @@ export class QuizzesController extends Controller {
     @Security('jwt', teacherOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async deleteQuiz(
-        @Query('quizId') quizId: string,
-        @Request() request: ExRequest
-    ) {
+    public async deleteQuiz(@Query('quizId') quizId: string, @Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.deleteQuiz(quizId, accessToken.id);
@@ -208,10 +191,7 @@ export class QuizzesController extends Controller {
     @Security('jwt', teacherOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async updateQuiz(
-        @Body() options: UpdateQuizOptions,
-        @Request() request: ExRequest
-    ) {
+    public async updateQuiz(@Body() options: UpdateQuizOptions, @Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.updateQuiz(options, accessToken.id);

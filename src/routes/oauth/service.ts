@@ -346,7 +346,11 @@ export class AuthService extends BaseService<IUserModel> {
                             'refreshToken',
                             scope
                         );
-                        await this.redis.setex(`idToken::${id}::${idToken.expiry}`, constants.jwtExpiry.idExpiry, idToken.jwt);
+                        await this.redis.setex(
+                            `idToken::${id}::${idToken.expiry}`,
+                            constants.jwtExpiry.idExpiry,
+                            idToken.jwt
+                        );
                         await this.redis.setex(
                             `accessToken::${id}::${accessToken.expiry}`,
                             constants.jwtExpiry.accessExpiry,

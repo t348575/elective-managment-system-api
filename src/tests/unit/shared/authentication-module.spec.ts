@@ -19,16 +19,20 @@ describe('Authentication middleware', () => {
         Container.bind(RedisConnector).to(MockRedisConnector);
     });
     afterEach(() => {
-        (Container.get(RedisConnector) as never as MockRedisConnector).cleanup();
+        ((Container.get(RedisConnector) as never) as MockRedisConnector).cleanup();
     });
     describe('jwt', () => {
         it('Should authenticate jwt', async () => {
             const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
-            const res: jwtToken = await expressAuthentication({
-                headers: {
-                    authorization: `Bearer ${tokens.access_token}`
-                }
-            } as never as express.Request, 'jwt', ['admin']);
+            const res: jwtToken = await expressAuthentication(
+                ({
+                    headers: {
+                        authorization: `Bearer ${tokens.access_token}`
+                    }
+                } as never) as express.Request,
+                'jwt',
+                ['admin']
+            );
             expect(res.id).to.equal('user_1');
             expect(res.scope).to.equal('admin');
             expect(res.stateSlice).to.equal('abcdefghi');
@@ -38,34 +42,35 @@ describe('Authentication middleware', () => {
         it('Should handle incorrect scope jwt', async () => {
             const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
             try {
-                await expressAuthentication({
-                    headers: {
-                        authorization: `Bearer ${tokens.access_token}`
-                    }
-                } as never as express.Request, 'jwt', ['student']);
+                await expressAuthentication(
+                    ({
+                        headers: {
+                            authorization: `Bearer ${tokens.access_token}`
+                        }
+                    } as never) as express.Request,
+                    'jwt',
+                    ['student']
+                );
                 expect.fail('Expected an error');
-            }
-            catch (err) {
+            } catch (err) {
                 expect(err.error_description).to.equal(jwtDoesNotContainScope);
             }
         });
 
         it('Should handle missing authorization', async () => {
             try {
-                await expressAuthentication({ headers: {} } as never as express.Request, 'jwt', ['admin']);
+                await expressAuthentication(({ headers: {} } as never) as express.Request, 'jwt', ['admin']);
                 expect.fail('Expected an error');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.error_description).to.equal('Authorization missing');
             }
         });
 
         it('Should handle incorrect securityName', async () => {
             try {
-                await expressAuthentication({ headers: {} } as never as express.Request, 'asd', ['admin']);
+                await expressAuthentication(({ headers: {} } as never) as express.Request, 'asd', ['admin']);
                 expect.fail('Expected an error');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('Unauthorized');
             }
         });
@@ -108,8 +113,7 @@ describe('Authentication middleware', () => {
                     ['admin']
                 );
                 expect.fail('Expected an error');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.error_description).to.equal('Invalid token');
             }
         });
@@ -126,7 +130,9 @@ describe('Authentication middleware', () => {
                     refresh_token: tokens.refresh_token
                 }
             };
-            const res: jwtToken = await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
+            const res: jwtToken = await expressAuthentication((req as never) as express.Request, 'jwtRefresh', [
+                'admin'
+            ]);
             expect(res.id).to.equal('user_1');
             expect(res.scope).to.equal('admin');
             expect(res.stateSlice).to.equal('abcdefghi');
@@ -149,10 +155,9 @@ describe('Authentication middleware', () => {
                 }
             };
             try {
-                await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
+                await expressAuthentication((req as never) as express.Request, 'jwtRefresh', ['admin']);
                 expect.fail('Expected an error');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.error_description).to.equal('Refresh token is required');
             }
         });
@@ -168,10 +173,9 @@ describe('Authentication middleware', () => {
                 }
             };
             try {
-                await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
+                await expressAuthentication((req as never) as express.Request, 'jwtRefresh', ['admin']);
                 expect.fail('Expected an error');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.error_description).to.equal('Invalid refresh token');
             }
         });
@@ -187,10 +191,9 @@ describe('Authentication middleware', () => {
                 }
             };
             try {
-                await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
+                await expressAuthentication((req as never) as express.Request, 'jwtRefresh', ['admin']);
                 expect.fail('Expected an error');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.error_description).to.equal(jwtDoesNotContainScope);
             }
         });
@@ -237,7 +240,9 @@ describe('Authentication middleware', () => {
                     id_token: tokens.id_token
                 }
             };
-            const res: jwtToken = await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
+            const res: jwtToken = await expressAuthentication((req as never) as express.Request, 'jwtRefresh', [
+                'admin'
+            ]);
             expect(res.id).to.equal('user_1');
             expect(res.scope).to.equal('admin');
             expect(res.stateSlice).to.equal('abcdefghi');
@@ -261,10 +266,9 @@ describe('Authentication middleware', () => {
                 }
             };
             try {
-                await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
+                await expressAuthentication((req as never) as express.Request, 'jwtRefresh', ['admin']);
                 expect.fail('Expected an error');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.error_description).to.equal('Refresh token is required');
             }
         });
@@ -281,10 +285,9 @@ describe('Authentication middleware', () => {
                 }
             };
             try {
-                await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
+                await expressAuthentication((req as never) as express.Request, 'jwtRefresh', ['admin']);
                 expect.fail('Expected an error');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.error_description).to.equal('Invalid refresh token');
             }
         });
@@ -301,10 +304,9 @@ describe('Authentication middleware', () => {
                 }
             };
             try {
-                await expressAuthentication(req as never as express.Request, 'jwtRefresh', ['admin']);
+                await expressAuthentication((req as never) as express.Request, 'jwtRefresh', ['admin']);
                 expect.fail('Expected an error');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.error_description).to.equal(jwtDoesNotContainScope);
             }
         });
@@ -342,23 +344,11 @@ describe('Authentication middleware', () => {
 });
 
 async function setupLoginJWTs(redis: RedisConnector, userId: string, scope: scopes[] = ['admin', 'admin', 'admin']) {
-    const user = { id: userId } as never as IUserModel;
+    const user = ({ id: userId } as never) as IUserModel;
     const state = 'abcdefghi';
     const idToken = await getJWT(user, state, constants.jwtExpiry.idExpiry, 'idToken', scope[0]);
-    const accessToken = await getJWT(
-        user,
-        state,
-        constants.jwtExpiry.accessExpiry,
-        'accessToken',
-        scope[1]
-    );
-    const refreshToken = await getJWT(
-        user,
-        state,
-        constants.jwtExpiry.refreshExpiry,
-        'refreshToken',
-        scope[2]
-    );
+    const accessToken = await getJWT(user, state, constants.jwtExpiry.accessExpiry, 'accessToken', scope[1]);
+    const refreshToken = await getJWT(user, state, constants.jwtExpiry.refreshExpiry, 'refreshToken', scope[2]);
     await redis.setex(`idToken::${userId}::${idToken.expiry}`, constants.jwtExpiry.idExpiry, idToken.jwt);
     await redis.setex(
         `accessToken::${userId}::${accessToken.expiry}`,

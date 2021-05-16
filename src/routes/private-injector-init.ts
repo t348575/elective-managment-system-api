@@ -27,7 +27,7 @@ export class PrivateInjectorInit {
     @Inject downloadRepository: DownloadRepository;
     @Inject notificationsRepository: NotificationRepository;
     @Inject trackRepository: TrackRepository;
-    @Inject redisConnector: RedisConnector
+    @Inject redisConnector: RedisConnector;
     @Inject requestChangeRepository: RequestChangeRepository;
     @Inject quizRepository: QuizRepository;
     @Inject quizResponseRepository: QuizResponseRepository;

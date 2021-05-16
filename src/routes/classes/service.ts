@@ -48,21 +48,20 @@ export class ClassService extends BaseService<IClassModel> {
                         files: []
                     });
                     await this.userRepository.addClassToStudents(chunk, classId);
-                    await this.notificationService
-                        .notifyUsers(chunk, {
-                            notification: {
-                                title: 'You have been added to a new class!',
-                                body: `Joined: ${elective.name}`,
-                                vibrate: [100, 50, 100],
-                                requireInteraction: true,
-                                actions: [
-                                    {
-                                        action: `classes/${classId}`,
-                                        title: 'Go to class'
-                                    }
-                                ]
-                            }
-                        });
+                    await this.notificationService.notifyUsers(chunk, {
+                        notification: {
+                            title: 'You have been added to a new class!',
+                            body: `Joined: ${elective.name}`,
+                            vibrate: [100, 50, 100],
+                            requireInteraction: true,
+                            actions: [
+                                {
+                                    action: `classes/${classId}`,
+                                    title: 'Go to class'
+                                }
+                            ]
+                        }
+                    });
                 }
             }
         }
@@ -125,12 +124,12 @@ export class ClassService extends BaseService<IClassModel> {
         await this.userRepository.getById(userId);
         const electiveFrom = await this.electiveRepository.getById(options.from);
         const electiveTo = await this.electiveRepository.getById(options.to);
-        return this.requestChangeRepository.create({
+        return this.requestChangeRepository.create(({
             from: electiveFrom.id as string,
             to: electiveTo.id as string,
             user: userId,
             requestDate: new Date().toISOString()
-        } as never as IRequestChangeModel);
+        } as never) as IRequestChangeModel);
     }
 
     public async getElectiveChanges() {
@@ -153,19 +152,22 @@ export class ClassService extends BaseService<IClassModel> {
     public async confirmElectiveChange(id: string) {
         const item = (await this.requestChangeRepository.findAndPopulate(0, undefined, '', { _id: id }))[0];
         const userClasses = await this.getActiveClasses(item.user.id as string);
-        const fromIdx = userClasses.findIndex(e => e.elective.id === item.from.id);
+        const fromIdx = userClasses.findIndex((e) => e.elective.id === item.from.id);
         if (fromIdx > -1) {
-            await this.userRepository.removeClassFromStudents([item.user.id as string], userClasses[fromIdx].id as string);
+            await this.userRepository.removeClassFromStudents(
+                [item.user.id as string],
+                userClasses[fromIdx].id as string
+            );
             await this.repository.removeStudentFromClass(userClasses[fromIdx].id as string, item.user.id as string);
-        }
-        else {
+        } else {
             throw new ApiError(constants.errorTypes.notFound);
         }
-        const toClass = (await this.repository.findAndPopulate(0, undefined, '', { elective: item.to.id as string })).sort((a, b) => {
+        const toClass = (
+            await this.repository.findAndPopulate(0, undefined, '', { elective: item.to.id as string })
+        ).sort((a, b) => {
             if (a.students.length < b.students.length) {
                 return -1;
-            }
-            else if (a.students.length > b.students.length) {
+            } else if (a.students.length > b.students.length) {
                 return 1;
             }
             return 0;
@@ -195,7 +197,11 @@ export class ClassService extends BaseService<IClassModel> {
 
     public async canRequestElectiveChange(id: string) {
         const user = await this.userRepository.getPopulated(id, 'student');
-        const forms = await this.formRepository.findAndPopulate(JSON.stringify({ end: 'desc' }), { active: false }, true);
+        const forms = await this.formRepository.findAndPopulate(
+            JSON.stringify({ end: 'desc' }),
+            { active: false },
+            true
+        );
         return forms.filter((e) => {
             e.electives = e.electives.filter(
                 // @ts-ignore

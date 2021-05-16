@@ -55,10 +55,10 @@ export type quizToken = {
 };
 
 export type quizSubject = {
-    quizId: string,
-    responseId: string,
-    question: number
-}
+    quizId: string;
+    responseId: string;
+    question: number;
+};
 
 export type electiveAttributes = { key: string; value: string }[];
 

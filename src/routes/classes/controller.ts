@@ -98,10 +98,7 @@ export class ClassController extends Controller {
     @Security('jwt', studentOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async requestElectiveChange(
-        @Body() options: RequestElectiveChangeOptions,
-        @Request() request: ExRequest
-    ) {
+    public async requestElectiveChange(@Body() options: RequestElectiveChangeOptions, @Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.addElectiveChange(options, accessToken.id);
@@ -119,9 +116,7 @@ export class ClassController extends Controller {
     @Security('jwt', adminOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async confirmElectiveChange(
-        @Query() id: string
-    ) {
+    public async confirmElectiveChange(@Query() id: string) {
         return this.service.confirmElectiveChange(id);
     }
 
@@ -129,9 +124,7 @@ export class ClassController extends Controller {
     @Security('jwt', adminOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async deleteElectiveChange(
-        @Query() id: string
-    ) {
+    public async deleteElectiveChange(@Query() id: string) {
         return this.service.deleteElectiveChange(id);
     }
 
@@ -139,9 +132,7 @@ export class ClassController extends Controller {
     @Security('jwt', studentOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async getValidRequestElectives(
-        @Request() request: ExRequest
-    ) {
+    public async getValidRequestElectives(@Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.getValidRequestElectives(accessToken.id);
@@ -151,9 +142,7 @@ export class ClassController extends Controller {
     @Security('jwt', studentOnly)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async canRequestElectiveChange(
-        @Request() request: ExRequest
-    ) {
+    public async canRequestElectiveChange(@Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return (await this.service.canRequestElectiveChange(accessToken.id)).length >= 1;

@@ -93,8 +93,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                                             })
                                         );
                                     }
-                                }
-                                else if (securityName === 'userId') {
+                                } else if (securityName === 'userId') {
                                     if (
                                         // eslint-disable-next-line no-prototype-builtins
                                         req.query.hasOwnProperty('id_token') &&
@@ -190,8 +189,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                                             })
                                         );
                                     }
-                                }
-                                else {
+                                } else {
                                     resolve(accessToken);
                                 }
                             } else {
@@ -254,37 +252,36 @@ export function expressAuthentication(req: express.Request, securityName: string
                         }
                         if (await redis.exists(`accessToken::${accessToken.id}::${accessToken.exp}`)) {
                             decipherJWT(quizRequestToken, 'quiz')
-                            .then(async (quizToken) => {
-                                if (scopes.indexOf(quizToken.scope) === -1) {
+                                .then(async (quizToken) => {
+                                    if (scopes.indexOf(quizToken.scope) === -1) {
+                                        reject(
+                                            new OAuthError({
+                                                name: 'invalid_scope',
+                                                error_description: jwtDoesNotContainScope
+                                            })
+                                        );
+                                    }
+                                    if (await redis.exists(`quiz::${quizToken.id}::${quizToken.exp}`)) {
+                                        // @ts-ignore
+                                        req.quiz = quizToken;
+                                        resolve(accessToken);
+                                    } else {
+                                        reject(
+                                            new OAuthError({
+                                                name: 'access_denied',
+                                                error_description: tokenNoExist
+                                            })
+                                        );
+                                    }
+                                })
+                                .catch(() => {
                                     reject(
                                         new OAuthError({
-                                            name: 'invalid_scope',
-                                            error_description: jwtDoesNotContainScope
+                                            name: 'invalid_request',
+                                            error_description: 'Invalid token'
                                         })
                                     );
-                                }
-                                if (await redis.exists(`quiz::${quizToken.id}::${quizToken.exp}`)) {
-                                    // @ts-ignore
-                                    req.quiz = quizToken;
-                                    resolve(accessToken);
-                                }
-                                else {
-                                    reject(
-                                        new OAuthError({
-                                            name: 'access_denied',
-                                            error_description: tokenNoExist
-                                        })
-                                    );
-                                }
-                            })
-                            .catch(() => {
-                                reject(
-                                    new OAuthError({
-                                        name: 'invalid_request',
-                                        error_description: 'Invalid token'
-                                    })
-                                );
-                            });
+                                });
                         } else {
                             reject(
                                 new OAuthError({

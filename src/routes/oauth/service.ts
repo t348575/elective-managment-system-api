@@ -264,13 +264,13 @@ export class AuthService extends BaseService<IUserModel> {
                                     this.generateTokens(jwtObject.id, jwtObject.stateSlice, jwtObject.scope)
                                         .then((tokens) => {
                                             this.trackRepository
-                                                .create({
+                                                .addRecent({
                                                     device: AuthService.getDevice(req.useragent),
                                                     browser: req.useragent?.browser || 'unknown',
                                                     platform: req.useragent?.platform || 'unknown',
                                                     // @ts-ignore
                                                     ip:
-                                                        req.headers['x-forwarded-for'] ||
+                                                        req.ip ||
                                                         req.connection.remoteAddress ||
                                                         req.socket.remoteAddress,
                                                     // @ts-ignore

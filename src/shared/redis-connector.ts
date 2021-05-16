@@ -13,8 +13,7 @@ export class RedisConnector {
                 auth_pass: constants.redisPassword,
                 host: constants.redisHost
             });
-        }
-        else {
+        } else {
             this.db = redis.createClient({ host: constants.redisHost });
         }
     }

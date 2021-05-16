@@ -23,8 +23,7 @@ export class MockRedisConnector {
                     // @ts-ignore
                     delete this.db[key];
                     resolve(true);
-                }
-                else {
+                } else {
                     reject('NO_EXIST');
                 }
             });
@@ -36,8 +35,7 @@ export class MockRedisConnector {
                 // eslint-disable-next-line no-prototype-builtins
                 if (this.db.hasOwnProperty(key)) {
                     resolve(true);
-                }
-                else {
+                } else {
                     resolve(false);
                 }
             });

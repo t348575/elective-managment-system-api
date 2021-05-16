@@ -18,9 +18,7 @@ describe('/forms/batches', () => {
     });
     it('returns details of batch', async () => {
         await integrationHelper.login();
-        const res = await app
-            .get('/forms/batches')
-            .set('Authorization', integrationHelper.getBearer());
+        const res = await app.get('/forms/batches').set('Authorization', integrationHelper.getBearer());
         expect(res.status).to.equal(200);
         expect(res.body[0].id).to.be.a('string');
         expect(res.body[0].degree).to.be.a('string');
@@ -30,9 +28,7 @@ describe('/forms/batches', () => {
 describe('/forms/active-forms', () => {
     it('returns all the active forms', async () => {
         await integrationHelper.login();
-        const res = await app
-            .get('/forms/active-forms')
-            .set('Authorization', integrationHelper.getBearer());
+        const res = await app.get('/forms/active-forms').set('Authorization', integrationHelper.getBearer());
         expect(res.status).to.equal(200);
     });
 });
@@ -43,10 +39,7 @@ describe('/forms', () => {
             pageNumber: 12,
             limit: 20
         };
-        const res = await app
-            .get('/forms')
-            .query(args)
-            .set('Authorization', integrationHelper.getBearer());
+        const res = await app.get('/forms').query(args).set('Authorization', integrationHelper.getBearer());
         expect(res.status).to.equal(200);
         expect(res.body.count).to.be.a('number');
     });

@@ -51,13 +51,15 @@ export class QuizRepository extends BaseRepository<IQuizModel> {
             time: { type: Number, required: true },
             name: { type: String, required: true },
             password: { type: String },
-            questions: [{
-                points: { type: Number, required: true },
-                negativePoints: { type: Number, required: true },
-                name: { type: String, required: true },
-                options: [{ type: String, required: true }],
-                answer: { type: Number, required: true }
-            }]
+            questions: [
+                {
+                    points: { type: Number, required: true },
+                    negativePoints: { type: Number, required: true },
+                    name: { type: String, required: true },
+                    options: [{ type: String, required: true }],
+                    answer: { type: Number, required: true }
+                }
+            ]
         },
         { collection: this.modelName }
     );

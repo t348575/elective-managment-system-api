@@ -16,7 +16,9 @@ export const MockFsFilestream = {
                 fileStore[path] = chunk;
                 return;
             },
-            close: () => { return; }
+            close: () => {
+                return;
+            }
         };
     },
     createReadStream: (path: string, options: { flags: stream }) => {

@@ -19,9 +19,7 @@ describe('/users', () => {
     });
     describe('/users/basic', () => {
         it('returns appropriate user information', async () => {
-            const res = await app
-                .get('/users/basic')
-                .set('Authorization', integrationHelper.getBearer());
+            const res = await app.get('/users/basic').set('Authorization', integrationHelper.getBearer());
             expect(res.status).to.equal(200);
             expect(res.body.username).to.equal(integrationHelper.users[integrationHelper.users.length - 1].username);
             expect(res.body).not.haveOwnProperty('password');
@@ -30,9 +28,7 @@ describe('/users', () => {
 
     describe('/users/scope', () => {
         it(`returns correct scope: 'admin'`, async () => {
-            const res = await app
-                .get('/users/scope')
-                .set('Authorization', integrationHelper.getBearer());
+            const res = await app.get('/users/scope').set('Authorization', integrationHelper.getBearer());
             expect(res.status).to.equal(200);
             expect(res.body).to.equal('admin');
         });

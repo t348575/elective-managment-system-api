@@ -30,7 +30,7 @@ describe('User service', () => {
 
     it('Should create users', async () => {
         const res = await userService.createUsers(getMockUsers(), { defaultRollNoAsEmail: false });
-        await (Container.get(MongoConnector).db.dropCollection('users'));
+        await Container.get(MongoConnector).db.dropCollection('users');
         users = await setupMockUsers();
         expect(res).to.be.an('array');
         expect(res.length).to.be.equal(0);

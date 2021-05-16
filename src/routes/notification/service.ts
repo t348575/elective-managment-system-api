@@ -1,7 +1,7 @@
 import { INotificationModel, NotificationRepository } from '../../models/mongo/notification-repository';
 import { BaseService } from '../../models/shared/base-service';
 import { Singleton, Inject } from 'typescript-ioc';
-import { CustomNotifyOptions, SubscribeOptions } from './controller';
+import { CustomNotifyOptions, SubscribeOptions, UnSubscribeOptions } from './controller';
 import constants from '../../constants';
 import * as webPush from 'web-push';
 import { ApiError } from '../../shared/error-handler';
@@ -54,7 +54,7 @@ export class NotificationService extends BaseService<INotificationModel> {
         }
     }
 
-    public async unsubscribe(options: SubscribeOptions, userId: string) {
+    public async unsubscribe(options: UnSubscribeOptions, userId: string) {
         try {
             const previous = await this.repository.findOne({
                 user: userId,

@@ -20,6 +20,10 @@ export interface SubscribeOptions {
     };
 }
 
+export interface UnSubscribeOptions {
+    name: string;
+}
+
 export interface CustomNotifyOptions {
     batches: string[];
     users: string[];
@@ -54,7 +58,7 @@ export class NotificationController extends Controller {
     @Security('jwt', scopeArray)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async unsubscribe(@Body() options: SubscribeOptions, @Request() request: ExRequest) {
+    public async unsubscribe(@Body() options: UnSubscribeOptions, @Request() request: ExRequest) {
         // @ts-ignore
         const accessToken = request.user as jwtToken;
         return this.service.unsubscribe(options, accessToken.id);

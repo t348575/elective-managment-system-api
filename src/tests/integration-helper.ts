@@ -30,14 +30,28 @@ export class IntegrationHelper {
 
     async init() {
         Container.get(MongoConnector);
-        await new Promise<void>(resolve => setTimeout(() => resolve(), 1000));
-        const collections: string[] = ['users', 'track', 'responses', 'password-reset', 'notifications', 'forms', 'electives', 'downloads', 'classes', 'batches', 'request-change', 'quiz-response', 'quizzes'];
+        await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
+        const collections: string[] = [
+            'users',
+            'track',
+            'responses',
+            'password-reset',
+            'notifications',
+            'forms',
+            'electives',
+            'downloads',
+            'classes',
+            'batches',
+            'request-change',
+            'quiz-response',
+            'quizzes'
+        ];
         for (const v of collections) {
             try {
                 await Container.get(MongoConnector).db.dropCollection(v);
-            }
+            } catch (err) {
                 // eslint-disable-next-line no-empty
-            catch(err) {}
+            }
         }
         Container.get(PrivateInjectorInit);
         this.users = await setupMockUsers();
@@ -73,9 +87,7 @@ export class IntegrationHelper {
         };
         const res = await this.app.get('/oauth/authorize').query(args);
         const resParam = qs.parseUrl(res.header.location);
-        const resToken = await this.app
-            .post('/oauth/token')
-            .send({ code_verifier, code: resParam.query.code });
+        const resToken = await this.app.post('/oauth/token').send({ code_verifier, code: resParam.query.code });
         this.id_token = resToken.body.id_token;
         this.refresh_token = resToken.body.refresh_token;
         this.access_token = resToken.body.access_token;

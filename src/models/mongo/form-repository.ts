@@ -97,7 +97,13 @@ export class FormsRepository extends BaseRepository<IFormModel> {
         ).map((item) => new this.formatter(item));
     }
 
-    public async findAndPopulate(sort: string, query: any, giveHidden = false, skip = 0, limit = 250): Promise<FormFormatter[]> {
+    public async findAndPopulate(
+        sort: string,
+        query: any,
+        giveHidden = false,
+        skip = 0,
+        limit = 250
+    ): Promise<FormFormatter[]> {
         const sortObject = cleanQuery(sort, this.sortQueryFormatter);
         query.show = !giveHidden;
         return (

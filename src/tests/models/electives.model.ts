@@ -118,8 +118,7 @@ export async function sendResponsesToForms(users: IUserModel[]): Promise<void> {
                 user: v.id as string,
                 electives: chosen
             });
-        }
-        else {
+        } else {
             await responseService.respondToForm(
                 {
                     // @ts-ignore

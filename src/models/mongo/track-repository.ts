@@ -66,4 +66,13 @@ export class TrackRepository extends BaseRepository<ITrackModel> {
                 })
         ).map((item) => new this.formatter(item));
     }
+
+    public async addRecent(item: ITrackModel): Promise<void> {
+        const from = new Date();
+        from.setMinutes(from.getMinutes() - 10);
+        const exists = await this.documentModel.findOne({ user: item.user, createdAt: { $gte: from } });
+        if (!exists) {
+            await this.create(item);
+        }
+    }
 }

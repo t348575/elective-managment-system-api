@@ -42,6 +42,7 @@
 			"src/ioc.ts",
 			"src/server.ts",
 			"src/app.ts",
+			"src/routes/routes.ts",
 			"src/routes/**/controller.ts"
 		],
 		"extension": [

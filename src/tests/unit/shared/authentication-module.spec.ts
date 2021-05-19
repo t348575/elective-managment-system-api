@@ -8,7 +8,7 @@ import { getJWT } from '../../../util/general-util';
 import constants from '../../../constants';
 import { IUserModel } from '../../../models/mongo/user-repository';
 import { jwtToken, scopes } from '../../../models/types';
-import { expressAuthentication, jwtDoesNotContainScope, tokenNoExist } from '../../../shared/authentication-module';
+import { expressAuthentication, invalidToken, jwtDoesNotContainScope, tokenNoExist } from '../../../shared/authentication-module';
 import * as express from 'express';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -96,9 +96,7 @@ describe('Authentication middleware', () => {
             } catch (err) {
                 expect(err.error_description).to.equal(tokenNoExist);
             }
-            after(() => {
-                constants.jwtExpiry.accessExpiry = temp;
-            });
+            constants.jwtExpiry.accessExpiry = temp;
         });
 
         it('Should reject invalid token', async () => {
@@ -215,16 +213,14 @@ describe('Authentication middleware', () => {
                             refresh_token: tokens.refresh_token
                         }
                     } as never) as express.Request,
-                    'jwt',
+                    'jwtRefresh',
                     ['admin']
                 );
                 expect.fail('Expected an error');
             } catch (err) {
                 expect(err.error_description).to.equal(tokenNoExist);
             }
-            after(() => {
-                constants.jwtExpiry.refreshExpiry = temp;
-            });
+            constants.jwtExpiry.refreshExpiry = temp;
         });
     });
 
@@ -235,12 +231,12 @@ describe('Authentication middleware', () => {
                 headers: {
                     authorization: `Bearer ${tokens.access_token}`
                 },
-                body: {
+                query: {
                     refresh_token: tokens.refresh_token,
                     id_token: tokens.id_token
                 }
             };
-            const res: jwtToken = await expressAuthentication((req as never) as express.Request, 'jwtRefresh', [
+            const res: jwtToken = await expressAuthentication((req as never) as express.Request, 'userId', [
                 'admin'
             ]);
             expect(res.id).to.equal('user_1');
@@ -260,16 +256,16 @@ describe('Authentication middleware', () => {
                 headers: {
                     authorization: `Bearer ${tokens.access_token}`
                 },
-                body: {
+                query: {
                     refresh_token: '',
                     id_token: tokens.id_token
                 }
             };
             try {
-                await expressAuthentication((req as never) as express.Request, 'jwtRefresh', ['admin']);
+                await expressAuthentication((req as never) as express.Request, 'userId', ['admin']);
                 expect.fail('Expected an error');
             } catch (err) {
-                expect(err.error_description).to.equal('Refresh token is required');
+                expect(err.error_description).to.equal('Id token and Refresh token is required');
             }
         });
 
@@ -279,13 +275,13 @@ describe('Authentication middleware', () => {
                 headers: {
                     authorization: `Bearer ${tokens.access_token}`
                 },
-                body: {
+                query: {
                     refresh_token: 'asd',
                     id_token: tokens.id_token
                 }
             };
             try {
-                await expressAuthentication((req as never) as express.Request, 'jwtRefresh', ['admin']);
+                await expressAuthentication((req as never) as express.Request, 'userId', ['admin']);
                 expect.fail('Expected an error');
             } catch (err) {
                 expect(err.error_description).to.equal('Invalid refresh token');
@@ -298,13 +294,13 @@ describe('Authentication middleware', () => {
                 headers: {
                     authorization: `Bearer ${tokens.access_token}`
                 },
-                body: {
+                query: {
                     refresh_token: tokens.refresh_token,
                     id_token: tokens.id_token
                 }
             };
             try {
-                await expressAuthentication((req as never) as express.Request, 'jwtRefresh', ['admin']);
+                await expressAuthentication((req as never) as express.Request, 'userId', ['admin']);
                 expect.fail('Expected an error');
             } catch (err) {
                 expect(err.error_description).to.equal(jwtDoesNotContainScope);
@@ -312,8 +308,8 @@ describe('Authentication middleware', () => {
         });
 
         it('Should handle nonexistent userId token', async () => {
-            const temp = constants.jwtExpiry.refreshExpiry;
-            constants.jwtExpiry.refreshExpiry = 1;
+            const temp = constants.jwtExpiry.idExpiry;
+            constants.jwtExpiry.idExpiry = 1;
             const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1');
             await new Promise<void>((resolve) => {
                 setTimeout(() => resolve(), 1050);
@@ -324,21 +320,103 @@ describe('Authentication middleware', () => {
                         headers: {
                             authorization: `Bearer ${tokens.access_token}`
                         },
-                        body: {
+                        query: {
                             refresh_token: tokens.refresh_token,
                             id_token: tokens.id_token
                         }
                     } as never) as express.Request,
-                    'jwt',
+                    'userId',
                     ['admin']
                 );
                 expect.fail('Expected an error');
             } catch (err) {
                 expect(err.error_description).to.equal(tokenNoExist);
             }
-            after(() => {
-                constants.jwtExpiry.refreshExpiry = temp;
+            constants.jwtExpiry.idExpiry = temp;
+        });
+    });
+
+    describe('quiz', () => {
+        it('Should create quiz tokens', async () => {
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1', ['student', 'student', 'student']);
+            const quizToken = await getJWT(({ id: 'user_1' } as never) as IUserModel, 'abcdefghi', constants.jwtExpiry.refreshExpiry, 'quiz', 'student');
+            await Container.get(RedisConnector).setex(`quiz::user_1::${quizToken.expiry}`, constants.jwtExpiry.idExpiry, quizToken.jwt);
+            const req = {
+                headers: {
+                    authorization: `Bearer ${tokens.access_token}`,
+                    quizrequest: `Bearer ${quizToken.jwt}`
+                }
+            };
+            const res: jwtToken = await expressAuthentication((req as never) as express.Request, 'quiz', ['student']);
+            expect(res.id).to.equal('user_1');
+            expect(res.scope).to.equal('student');
+            expect(res.stateSlice).to.equal('abcdefghi');
+            expect(res.sub).to.equal('accessToken');
+            expect(req).to.have.property('quiz');
+            // @ts-ignore
+            const quiz = req.quiz as quizToken;
+            expect(quiz.id).to.equal('user_1');
+            expect(quiz.sub).to.equal('quiz');
+        });
+
+        it('Should handle nonexistent accessToken token', async () => {            
+            const temp = constants.jwtExpiry.accessExpiry;
+            constants.jwtExpiry.accessExpiry = 1;
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1', ['student', 'student', 'student']);
+            const quizToken = await getJWT(({ id: 'user_1' } as never) as IUserModel, 'abcdefghi', constants.jwtExpiry.refreshExpiry, 'quiz', 'student');
+            await Container.get(RedisConnector).setex(`quiz::user_1::${quizToken.expiry}`, constants.jwtExpiry.idExpiry, quizToken.jwt);
+            const req = {
+                headers: {
+                    authorization: `Bearer ${tokens.access_token}`,
+                    quizrequest: `Bearer ${quizToken.jwt}`
+                }
+            };
+            await new Promise<void>((resolve) => {
+                setTimeout(() => resolve(), 1050);
             });
+            try {
+                await expressAuthentication((req as never) as express.Request, 'quiz', ['student']);
+                expect.fail('Expected an error');
+            } catch (err) {
+                expect(err.error_description).to.equal(tokenNoExist);
+            }
+            constants.jwtExpiry.accessExpiry = temp;
+        });
+
+        it('Should handle invalid accessToken token', async () => {
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1', ['student', 'student', 'student']);
+            const quizToken = await getJWT(({ id: 'user_1' } as never) as IUserModel, 'abcdefghi', constants.jwtExpiry.refreshExpiry, 'quiz', 'student');
+            await Container.get(RedisConnector).setex(`quiz::user_1::${quizToken.expiry}`, constants.jwtExpiry.idExpiry, quizToken.jwt);
+            const req = {
+                headers: {
+                    authorization: `Bearer ${tokens.access_token}asdas`,
+                    quizrequest: `Bearer ${quizToken.jwt}`
+                }
+            };
+            try {
+                await expressAuthentication((req as never) as express.Request, 'quiz', ['student']);
+                expect.fail('Expected an error');
+            } catch (err) {
+                expect(err.error_description).to.equal(invalidToken);
+            }
+        });
+
+        it('Should handle invalid quizToken token', async () => {
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1', ['student', 'student', 'student']);
+            const quizToken = await getJWT(({ id: 'user_1' } as never) as IUserModel, 'abcdefghi', constants.jwtExpiry.refreshExpiry, 'quiz', 'student');
+            await Container.get(RedisConnector).setex(`quiz::user_1::${quizToken.expiry}`, constants.jwtExpiry.idExpiry, quizToken.jwt);
+            const req = {
+                headers: {
+                    authorization: `Bearer ${tokens.access_token}`,
+                    quizrequest: `Bearer ${quizToken.jwt}asdas`
+                }
+            };
+            try {
+                await expressAuthentication((req as never) as express.Request, 'quiz', ['student']);
+                expect.fail('Expected an error');
+            } catch (err) {
+                expect(err.error_description).to.equal(invalidToken);
+            }
         });
     });
 });

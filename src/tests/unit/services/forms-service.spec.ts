@@ -65,6 +65,67 @@ describe('Forms service', () => {
         expect(mockNotifyBatches.args[0][0]).to.eql([...new Set(finalBatches)]);
     });
 
+    it('Should not create form by time', async () => {
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + faker.datatype.number({ min: 1, max: 10 }));
+        const startDate = new Date();
+        startDate.setMinutes(startDate.getMinutes() - 6);
+        try {
+            await formsService.createForm({
+                start: startDate.toISOString(),
+                end: endDate.toISOString(),
+                numElectives: 1,
+                // @ts-ignore
+                electives: electives.map((e) => e.id),
+                shouldSelectAll: false
+            });
+            expect.fail('Expected an error');
+        }
+        catch(err) {
+            expect(err.name).to.equal('start_time_too_early');
+        }
+    });
+
+    it('Should not create form by numElectives', async () => {
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + faker.datatype.number({ min: 1, max: 10 }));
+        const startDate = new Date();
+        try {
+            await formsService.createForm({
+                start: startDate.toISOString(),
+                end: endDate.toISOString(),
+                numElectives: electives.length + 1,
+                // @ts-ignore
+                electives: electives.map((e) => e.id),
+                shouldSelectAll: false
+            });
+            expect.fail('Expected an error');
+        }
+        catch(err) {
+            expect(err.name).to.equal('numElectives_too_many');
+        }
+    });
+
+    it('Should not create form by undefined elective', async () => {
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + faker.datatype.number({ min: 1, max: 10 }));
+        const startDate = new Date();
+        try {
+            await formsService.createForm({
+                start: startDate.toISOString(),
+                end: endDate.toISOString(),
+                numElectives: electives.length,
+                // @ts-ignore
+                electives: electives.map((e) => e.id + "asd"),
+                shouldSelectAll: false
+            });
+            expect.fail('Expected an error');
+        }
+        catch(err) {
+            expect(err.name).to.equal('not_found');
+        }
+    });
+
     it('Should return batches', async () => {
         const res = await formsService.getBatches();
         expect(res).to.be.an('array');
@@ -84,6 +145,16 @@ describe('Forms service', () => {
         const resTwo = await formsService.getActiveForms(users[users.length - 1].id as string, 'admin');
         expect(resTwo).to.be.an('array');
         expect(resTwo[0]).to.be.instanceof(FormFormatter);
+    });
+
+    it('Should add explicit response to form', async () => {
+        const form = (await Container.get(FormsRepository).findAndPopulate('', { _id: formId }, false, 0, 25))[0];
+        await formsService.setExplicit(
+            {
+                id: formId,
+                options: [{ user: users[0].id as never as string, electives: form.electives.filter(e => e.batches.findIndex(r => r as never as string === users[0].batch as never as string)).map(e => e.id) as string[]}]
+            }
+        );
     });
 
     it('Should update the form', async () => {
@@ -124,5 +195,9 @@ describe('Forms service', () => {
         expect(res.failed).to.be.an('array');
         expect(res.successful).to.be.an('array');
         expect(res.unresponsive).to.be.an('array');
+    });
+
+    it('Should remove a form', async () => {
+        await formsService.removeForm(formId);
     });
 });

@@ -49,7 +49,7 @@ export class FormsService extends BaseService<IFormModel> {
             if (options.numElectives > options.electives.length) {
                 throw new ApiError({
                     statusCode: 400,
-                    name: 'numElectives_too_few',
+                    name: 'numElectives_too_many',
                     message: 'Number of electives more than electives provided'
                 });
             }
@@ -145,7 +145,7 @@ export class FormsService extends BaseService<IFormModel> {
     public async updateForm(options: UpdateFormOptions) {
         if (options.electives) {
             // @ts-ignore
-            // options.electives = options.electives.map(e => mongoose.Types.ObjectId(e));
+            options.electives = options.electives.map(e => mongoose.Types.ObjectId(e));
         }
         // @ts-ignore
         options._id = options.id;

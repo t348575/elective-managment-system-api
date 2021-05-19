@@ -11,6 +11,7 @@ import { MockMailService, mockMailReplaceSpy } from '../../mocks/mock-mail-servi
 import { MailService } from '../../../shared/mail-service';
 import * as qs from 'query-string';
 import { MongoConnector } from '../../../shared/mongo-connector';
+import { PaginationModel } from '../../../models/shared/pagination-model';
 
 chai.use(chaiAsPromised);
 
@@ -35,6 +36,61 @@ describe('User service', () => {
         expect(res).to.be.an('array');
         expect(res.length).to.be.equal(0);
         expect(mockMailReplaceSpy.callCount).is.equal(1);
+    });
+
+    it('Should fail creating users by invalid role', async () => {
+        const mockUsers = getMockUsers().slice(0, 1);
+        // @ts-ignore
+        mockUsers[0].role = 'asd';
+        const res = await userService.createUsers(mockUsers, { defaultRollNoAsEmail: false });
+        expect(res).to.be.an('array');
+        expect(res.length).to.be.equal(1);
+        expect(res[0]).to.have.property('reason');
+        expect(res[0].reason).to.equal('role: invalid');
+    });
+
+    it('Should fail creating users by invalid rollNo', async () => {
+        const mockUsers = getMockUsers().slice(0, 1);
+        // @ts-ignore
+        mockUsers[0].rollNo = 1;
+        const res = await userService.createUsers(mockUsers, { defaultRollNoAsEmail: false });
+        expect(res).to.be.an('array');
+        expect(res.length).to.be.equal(1);
+        expect(res[0]).to.have.property('reason');
+        expect(res[0].reason).to.equal('rollNo: invalid');
+    });
+
+    it('Should fail creating users by invalid name', async () => {
+        const mockUsers = getMockUsers().slice(0, 1);
+        // @ts-ignore
+        mockUsers[0].name = 1;
+        const res = await userService.createUsers(mockUsers, { defaultRollNoAsEmail: false });
+        expect(res).to.be.an('array');
+        expect(res.length).to.be.equal(1);
+        expect(res[0]).to.have.property('reason');
+        expect(res[0].reason).to.equal('name: invalid');
+    });
+
+    it('Should fail creating users by invalid batch', async () => {
+        const mockUsers = getMockUsers().slice(0, 1);
+        // @ts-ignore
+        mockUsers[0].batch = 'asd';
+        const res = await userService.createUsers(mockUsers, { defaultRollNoAsEmail: false });
+        expect(res).to.be.an('array');
+        expect(res.length).to.be.equal(1);
+        expect(res[0]).to.have.property('reason');
+        expect(res[0].reason).to.equal('batch: invalid');
+    });
+
+    it('Should fail creating users by invalid name', async () => {
+        const mockUsers = getMockUsers().slice(0, 1);
+        // @ts-ignore
+        mockUsers[0].username = 1;
+        const res = await userService.createUsers(mockUsers, { defaultRollNoAsEmail: false });
+        expect(res).to.be.an('array');
+        expect(res.length).to.be.equal(1);
+        expect(res[0]).to.have.property('reason');
+        expect(res[0].reason).to.equal('not_found: username');
     });
 
     it('Should return basic user details', async () => {
@@ -122,5 +178,12 @@ describe('User service', () => {
         const res = await userService.deleteUsers([users[0].id]);
         expect(res).to.be.an('array');
         expect(res.length).to.be.equal(0);
+    });
+
+    it('Should get tracked data paginated', async () => {
+        const res = await userService.getTrackedDataPaginated(0, 25, '', '', {});
+        expect(res).to.be.instanceof(PaginationModel);
+        expect(res.page).to.equal(0);
+        expect(res.docs).to.be.an('array');
     });
 });

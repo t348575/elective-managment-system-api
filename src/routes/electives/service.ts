@@ -125,7 +125,7 @@ export class ElectivesService extends BaseService<IElectiveModel> {
                         if (!checkString(v, 'teachers')) {
                             failed.push({
                                 item: v,
-                                reason: "checkString(v, 'teachers'): invalid"
+                                reason: 'teachers: invalid'
                             });
                             continue;
                         }
@@ -242,10 +242,10 @@ export class ElectivesService extends BaseService<IElectiveModel> {
                         course: batch.course,
                         batchString: batch.batchString
                     });
+                    // @ts-ignore
+                    batchIds.push((await this.batchRepository.findOne({ batchString: batch.batchString })).id.toString());
                     // eslint-disable-next-line no-empty
                 } catch (err) {}
-                // @ts-ignore
-                batchIds.push((await this.batchRepository.findOne({ batchString: batch.batchString })).id.toString());
             }
             model.batches = batchIds;
         }

@@ -12,6 +12,7 @@ const invalidRefreshToken = new OAuthError({
 
 export const jwtDoesNotContainScope = 'JWT does not contain required scope';
 export const tokenNoExist = 'Token does not exist';
+export const invalidToken = 'Invalid token';
 
 export function expressAuthentication(req: express.Request, securityName: string, scopes: string[]): Promise<any> {
     const redis = Container.get(RedisConnector);
@@ -213,7 +214,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                         reject(
                             new OAuthError({
                                 name: 'invalid_request',
-                                error_description: 'Invalid token'
+                                error_description: invalidToken
                             })
                         );
                     });
@@ -278,7 +279,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                                     reject(
                                         new OAuthError({
                                             name: 'invalid_request',
-                                            error_description: 'Invalid token'
+                                            error_description: invalidToken
                                         })
                                     );
                                 });
@@ -295,7 +296,7 @@ export function expressAuthentication(req: express.Request, securityName: string
                         reject(
                             new OAuthError({
                                 name: 'invalid_request',
-                                error_description: 'Invalid token'
+                                error_description: invalidToken
                             })
                         );
                     });

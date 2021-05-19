@@ -217,7 +217,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
         let expireAt: number;
         if (response) {
             if (
-                quiz.time == 0 ||
+                quiz.time === 0 ||
                 new Date(quiz.end).getTime() < new Date(response.start).getTime() + quiz.time * 60 * 1000
             ) {
                 expireAt = Math.floor((new Date(quiz.end).getTime() - new Date().getTime()) / 1000) + 1;
@@ -227,7 +227,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
                     1;
             }
         } else {
-            if (quiz.time == 0 || new Date(quiz.end).getTime() < new Date().getTime() + quiz.time * 60 * 1000) {
+            if (quiz.time === 0 || new Date(quiz.end).getTime() < new Date().getTime() + quiz.time * 60 * 1000) {
                 expireAt = Math.floor((new Date(quiz.end).getTime() - new Date().getTime()) / 1000) + 1;
             } else {
                 expireAt = Math.floor(quiz.time * 60) + 1;
@@ -295,7 +295,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
             } as IQuizResponseModel);
             let expireAt: number;
             if (
-                quiz.time == 0 ||
+                quiz.time === 0 ||
                 new Date(quiz.end).getTime() < new Date(response.start).getTime() + quiz.time * 60 * 1000
             ) {
                 expireAt = Math.floor((new Date(quiz.end).getTime() - new Date().getTime()) / 1000) + 1;
@@ -438,7 +438,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
         }
         const skip: number = Math.max(0, page) * limit;
         // eslint-disable-next-line prefer-const
-        let [count, docs] = await Promise.all([
+        const [count, docs] = await Promise.all([
             this.repository.count({}),
             this.quizResponseRepository.findAndPopulate(skip, limit, '', query)
         ]);

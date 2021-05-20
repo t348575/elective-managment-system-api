@@ -8,7 +8,12 @@ import { getJWT } from '../../../util/general-util';
 import constants from '../../../constants';
 import { IUserModel } from '../../../models/mongo/user-repository';
 import { jwtToken, scopes } from '../../../models/types';
-import { expressAuthentication, invalidToken, jwtDoesNotContainScope, tokenNoExist } from '../../../shared/authentication-module';
+import {
+    expressAuthentication,
+    invalidToken,
+    jwtDoesNotContainScope,
+    tokenNoExist
+} from '../../../shared/authentication-module';
 import * as express from 'express';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -236,9 +241,7 @@ describe('Authentication middleware', () => {
                     id_token: tokens.id_token
                 }
             };
-            const res: jwtToken = await expressAuthentication((req as never) as express.Request, 'userId', [
-                'admin'
-            ]);
+            const res: jwtToken = await expressAuthentication((req as never) as express.Request, 'userId', ['admin']);
             expect(res.id).to.equal('user_1');
             expect(res.scope).to.equal('admin');
             expect(res.stateSlice).to.equal('abcdefghi');
@@ -338,9 +341,23 @@ describe('Authentication middleware', () => {
 
     describe('quiz', () => {
         it('Should create quiz tokens', async () => {
-            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1', ['student', 'student', 'student']);
-            const quizToken = await getJWT(({ id: 'user_1' } as never) as IUserModel, 'abcdefghi', constants.jwtExpiry.refreshExpiry, 'quiz', 'student');
-            await Container.get(RedisConnector).setex(`quiz::user_1::${quizToken.expiry}`, constants.jwtExpiry.idExpiry, quizToken.jwt);
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1', [
+                'student',
+                'student',
+                'student'
+            ]);
+            const quizToken = await getJWT(
+                ({ id: 'user_1' } as never) as IUserModel,
+                'abcdefghi',
+                constants.jwtExpiry.refreshExpiry,
+                'quiz',
+                'student'
+            );
+            await Container.get(RedisConnector).setex(
+                `quiz::user_1::${quizToken.expiry}`,
+                constants.jwtExpiry.idExpiry,
+                quizToken.jwt
+            );
             const req = {
                 headers: {
                     authorization: `Bearer ${tokens.access_token}`,
@@ -359,12 +376,26 @@ describe('Authentication middleware', () => {
             expect(quiz.sub).to.equal('quiz');
         });
 
-        it('Should handle nonexistent accessToken token', async () => {            
+        it('Should handle nonexistent accessToken token', async () => {
             const temp = constants.jwtExpiry.accessExpiry;
             constants.jwtExpiry.accessExpiry = 1;
-            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1', ['student', 'student', 'student']);
-            const quizToken = await getJWT(({ id: 'user_1' } as never) as IUserModel, 'abcdefghi', constants.jwtExpiry.refreshExpiry, 'quiz', 'student');
-            await Container.get(RedisConnector).setex(`quiz::user_1::${quizToken.expiry}`, constants.jwtExpiry.idExpiry, quizToken.jwt);
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1', [
+                'student',
+                'student',
+                'student'
+            ]);
+            const quizToken = await getJWT(
+                ({ id: 'user_1' } as never) as IUserModel,
+                'abcdefghi',
+                constants.jwtExpiry.refreshExpiry,
+                'quiz',
+                'student'
+            );
+            await Container.get(RedisConnector).setex(
+                `quiz::user_1::${quizToken.expiry}`,
+                constants.jwtExpiry.idExpiry,
+                quizToken.jwt
+            );
             const req = {
                 headers: {
                     authorization: `Bearer ${tokens.access_token}`,
@@ -384,9 +415,23 @@ describe('Authentication middleware', () => {
         });
 
         it('Should handle invalid accessToken token', async () => {
-            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1', ['student', 'student', 'student']);
-            const quizToken = await getJWT(({ id: 'user_1' } as never) as IUserModel, 'abcdefghi', constants.jwtExpiry.refreshExpiry, 'quiz', 'student');
-            await Container.get(RedisConnector).setex(`quiz::user_1::${quizToken.expiry}`, constants.jwtExpiry.idExpiry, quizToken.jwt);
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1', [
+                'student',
+                'student',
+                'student'
+            ]);
+            const quizToken = await getJWT(
+                ({ id: 'user_1' } as never) as IUserModel,
+                'abcdefghi',
+                constants.jwtExpiry.refreshExpiry,
+                'quiz',
+                'student'
+            );
+            await Container.get(RedisConnector).setex(
+                `quiz::user_1::${quizToken.expiry}`,
+                constants.jwtExpiry.idExpiry,
+                quizToken.jwt
+            );
             const req = {
                 headers: {
                     authorization: `Bearer ${tokens.access_token}asdas`,
@@ -402,9 +447,23 @@ describe('Authentication middleware', () => {
         });
 
         it('Should handle invalid quizToken token', async () => {
-            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1', ['student', 'student', 'student']);
-            const quizToken = await getJWT(({ id: 'user_1' } as never) as IUserModel, 'abcdefghi', constants.jwtExpiry.refreshExpiry, 'quiz', 'student');
-            await Container.get(RedisConnector).setex(`quiz::user_1::${quizToken.expiry}`, constants.jwtExpiry.idExpiry, quizToken.jwt);
+            const tokens = await setupLoginJWTs(Container.get(RedisConnector), 'user_1', [
+                'student',
+                'student',
+                'student'
+            ]);
+            const quizToken = await getJWT(
+                ({ id: 'user_1' } as never) as IUserModel,
+                'abcdefghi',
+                constants.jwtExpiry.refreshExpiry,
+                'quiz',
+                'student'
+            );
+            await Container.get(RedisConnector).setex(
+                `quiz::user_1::${quizToken.expiry}`,
+                constants.jwtExpiry.idExpiry,
+                quizToken.jwt
+            );
             const req = {
                 headers: {
                     authorization: `Bearer ${tokens.access_token}`,

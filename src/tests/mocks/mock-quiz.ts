@@ -7,15 +7,13 @@ export function getMockQuiz(numQuestions = 4): any[] {
         for (let i = 0; i < options.length; i++) {
             options[i] = faker.random.words(2);
         }
-        result.push(
-            {
-                question: faker.random.words(5),
-                points: faker.datatype.number({ min: 0, max: 10 }),
-                negativePoints: faker.datatype.number({ min: -5, max: 5 }),
-                answer: faker.datatype.number({ min: 1, max: options.length }),
-                ...arrayToObject(options)
-            }
-        );
+        result.push({
+            question: faker.random.words(5),
+            points: faker.datatype.number({ min: 0, max: 10 }),
+            negativePoints: faker.datatype.number({ min: -5, max: 5 }),
+            answer: faker.datatype.number({ min: 1, max: options.length }),
+            ...arrayToObject(options)
+        });
     }
     return result;
 }

@@ -242,8 +242,10 @@ export class ElectivesService extends BaseService<IElectiveModel> {
                         course: batch.course,
                         batchString: batch.batchString
                     });
-                    // @ts-ignore
-                    batchIds.push((await this.batchRepository.findOne({ batchString: batch.batchString })).id.toString());
+                    batchIds.push(
+                        // @ts-ignore
+                        (await this.batchRepository.findOne({ batchString: batch.batchString })).id.toString()
+                    );
                     // eslint-disable-next-line no-empty
                 } catch (err) {}
             }

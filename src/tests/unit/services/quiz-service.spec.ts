@@ -34,7 +34,6 @@ let form: IFormModel;
 let classes: IClassModel[] = [];
 
 describe('Quiz service', () => {
-
     before(async () => {
         await unitHelper.init();
         Container.bind(NotificationService).to(MockNotificationService);
@@ -49,7 +48,6 @@ describe('Quiz service', () => {
     const quizService = Container.get(QuizzesService);
 
     describe('Create quiz', () => {
-
         it('Should create a quiz with time', async () => {
             const start = new Date();
             const end = new Date();
@@ -61,7 +59,9 @@ describe('Quiz service', () => {
                 end: end.toISOString(),
                 time: 3
             });
-            expect(await Container.get(QuizRepository).find('', '')).to.be.an('array').and.have.length(1);
+            expect(await Container.get(QuizRepository).find('', ''))
+                .to.be.an('array')
+                .and.have.length(1);
         });
 
         it('Should create a quiz with no time', async () => {
@@ -75,7 +75,9 @@ describe('Quiz service', () => {
                 end: end.toISOString(),
                 time: 0
             });
-            expect(await Container.get(QuizRepository).find('', '')).to.be.an('array').and.have.length(2);
+            expect(await Container.get(QuizRepository).find('', ''))
+                .to.be.an('array')
+                .and.have.length(2);
         });
 
         it('Should create a quiz with password', async () => {
@@ -90,7 +92,9 @@ describe('Quiz service', () => {
                 end: end.toISOString(),
                 time: 3
             });
-            expect(await Container.get(QuizRepository).find('', '')).to.be.an('array').and.have.length(3);
+            expect(await Container.get(QuizRepository).find('', ''))
+                .to.be.an('array')
+                .and.have.length(3);
         });
 
         it('It should fail with improper options', async () => {
@@ -98,22 +102,26 @@ describe('Quiz service', () => {
             const end = new Date();
             end.setMinutes(end.getMinutes() + 15);
             try {
-                await quizService.createQuiz([{
-                    question: faker.random.words(5),
-                    points: faker.datatype.number({ min: 0, max: 10 }),
-                    negativePoints: faker.datatype.number({ min: -5, max: 5 }),
-                    answer: faker.datatype.number({ min: 1, max: 2 })
-                }], {
-                    password: await getArgonHash(faker.random.word()),
-                    classItem: classes[0].id as string,
-                    name: faker.random.words(3),
-                    start: start.toISOString(),
-                    end: end.toISOString(),
-                    time: 3
-                });
+                await quizService.createQuiz(
+                    [
+                        {
+                            question: faker.random.words(5),
+                            points: faker.datatype.number({ min: 0, max: 10 }),
+                            negativePoints: faker.datatype.number({ min: -5, max: 5 }),
+                            answer: faker.datatype.number({ min: 1, max: 2 })
+                        }
+                    ],
+                    {
+                        password: await getArgonHash(faker.random.word()),
+                        classItem: classes[0].id as string,
+                        name: faker.random.words(3),
+                        start: start.toISOString(),
+                        end: end.toISOString(),
+                        time: 3
+                    }
+                );
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('improper_format');
             }
         });
@@ -123,22 +131,26 @@ describe('Quiz service', () => {
             const end = new Date();
             end.setMinutes(end.getMinutes() + 15);
             try {
-                await quizService.createQuiz([{
-                    question: 3,
-                    points: faker.datatype.number({ min: 0, max: 10 }),
-                    negativePoints: faker.datatype.number({ min: -5, max: 5 }),
-                    ...getMockOptions()
-                }], {
-                    password: await getArgonHash(faker.random.word()),
-                    classItem: classes[0].id as string,
-                    name: faker.random.words(3),
-                    start: start.toISOString(),
-                    end: end.toISOString(),
-                    time: 3
-                });
+                await quizService.createQuiz(
+                    [
+                        {
+                            question: 3,
+                            points: faker.datatype.number({ min: 0, max: 10 }),
+                            negativePoints: faker.datatype.number({ min: -5, max: 5 }),
+                            ...getMockOptions()
+                        }
+                    ],
+                    {
+                        password: await getArgonHash(faker.random.word()),
+                        classItem: classes[0].id as string,
+                        name: faker.random.words(3),
+                        start: start.toISOString(),
+                        end: end.toISOString(),
+                        time: 3
+                    }
+                );
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('question_no_exist');
             }
         });
@@ -148,22 +160,26 @@ describe('Quiz service', () => {
             const end = new Date();
             end.setMinutes(end.getMinutes() + 15);
             try {
-                await quizService.createQuiz([{
-                    question: faker.random.words(5),
-                    points: '',
-                    negativePoints: faker.datatype.number({ min: -5, max: 5 }),
-                    ...getMockOptions()
-                }], {
-                    password: await getArgonHash(faker.random.word()),
-                    classItem: classes[0].id as string,
-                    name: faker.random.words(3),
-                    start: start.toISOString(),
-                    end: end.toISOString(),
-                    time: 3
-                });
+                await quizService.createQuiz(
+                    [
+                        {
+                            question: faker.random.words(5),
+                            points: '',
+                            negativePoints: faker.datatype.number({ min: -5, max: 5 }),
+                            ...getMockOptions()
+                        }
+                    ],
+                    {
+                        password: await getArgonHash(faker.random.word()),
+                        classItem: classes[0].id as string,
+                        name: faker.random.words(3),
+                        start: start.toISOString(),
+                        end: end.toISOString(),
+                        time: 3
+                    }
+                );
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('points_err');
             }
         });
@@ -173,22 +189,26 @@ describe('Quiz service', () => {
             const end = new Date();
             end.setMinutes(end.getMinutes() + 15);
             try {
-                await quizService.createQuiz([{
-                    question: faker.random.words(5),
-                    points: faker.datatype.number({ min: 0, max: 10 }),
-                    negativePoints: '',
-                    ...getMockOptions()
-                }], {
-                    password: await getArgonHash(faker.random.word()),
-                    classItem: classes[0].id as string,
-                    name: faker.random.words(3),
-                    start: start.toISOString(),
-                    end: end.toISOString(),
-                    time: 3
-                });
+                await quizService.createQuiz(
+                    [
+                        {
+                            question: faker.random.words(5),
+                            points: faker.datatype.number({ min: 0, max: 10 }),
+                            negativePoints: '',
+                            ...getMockOptions()
+                        }
+                    ],
+                    {
+                        password: await getArgonHash(faker.random.word()),
+                        classItem: classes[0].id as string,
+                        name: faker.random.words(3),
+                        start: start.toISOString(),
+                        end: end.toISOString(),
+                        time: 3
+                    }
+                );
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('neg_points_err');
             }
         });
@@ -198,23 +218,27 @@ describe('Quiz service', () => {
             const end = new Date();
             end.setMinutes(end.getMinutes() + 15);
             try {
-                await quizService.createQuiz([{
-                    question: faker.random.words(5),
-                    points: faker.datatype.number({ min: 0, max: 10 }),
-                    negativePoints: faker.datatype.number({ min: -5, max: 5 }),
-                    ...getMockOptions(),
-                    answer: ''
-                }], {
-                    password: await getArgonHash(faker.random.word()),
-                    classItem: classes[0].id as string,
-                    name: faker.random.words(3),
-                    start: start.toISOString(),
-                    end: end.toISOString(),
-                    time: 3
-                });
+                await quizService.createQuiz(
+                    [
+                        {
+                            question: faker.random.words(5),
+                            points: faker.datatype.number({ min: 0, max: 10 }),
+                            negativePoints: faker.datatype.number({ min: -5, max: 5 }),
+                            ...getMockOptions(),
+                            answer: ''
+                        }
+                    ],
+                    {
+                        password: await getArgonHash(faker.random.word()),
+                        classItem: classes[0].id as string,
+                        name: faker.random.words(3),
+                        start: start.toISOString(),
+                        end: end.toISOString(),
+                        time: 3
+                    }
+                );
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('answer_err');
             }
         });
@@ -224,23 +248,27 @@ describe('Quiz service', () => {
             const end = new Date();
             end.setMinutes(end.getMinutes() + 15);
             try {
-                await quizService.createQuiz([{
-                    question: faker.random.words(5),
-                    points: faker.datatype.number({ min: 0, max: 10 }),
-                    negativePoints: faker.datatype.number({ min: -5, max: 5 }),
-                    ...getMockOptions(),
-                    answer: 0
-                }], {
-                    password: await getArgonHash(faker.random.word()),
-                    classItem: classes[0].id as string,
-                    name: faker.random.words(3),
-                    start: start.toISOString(),
-                    end: end.toISOString(),
-                    time: 3
-                });
+                await quizService.createQuiz(
+                    [
+                        {
+                            question: faker.random.words(5),
+                            points: faker.datatype.number({ min: 0, max: 10 }),
+                            negativePoints: faker.datatype.number({ min: -5, max: 5 }),
+                            ...getMockOptions(),
+                            answer: 0
+                        }
+                    ],
+                    {
+                        password: await getArgonHash(faker.random.word()),
+                        classItem: classes[0].id as string,
+                        name: faker.random.words(3),
+                        start: start.toISOString(),
+                        end: end.toISOString(),
+                        time: 3
+                    }
+                );
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('answer_err');
             }
         });
@@ -250,23 +278,27 @@ describe('Quiz service', () => {
             const end = new Date();
             end.setMinutes(end.getMinutes() + 15);
             try {
-                await quizService.createQuiz([{
-                    question: faker.random.words(5),
-                    points: faker.datatype.number({ min: 0, max: 10 }),
-                    negativePoints: faker.datatype.number({ min: -5, max: 5 }),
-                    ...getMockOptions(),
-                    answer: 100
-                }], {
-                    password: await getArgonHash(faker.random.word()),
-                    classItem: classes[0].id as string,
-                    name: faker.random.words(3),
-                    start: start.toISOString(),
-                    end: end.toISOString(),
-                    time: 3
-                });
+                await quizService.createQuiz(
+                    [
+                        {
+                            question: faker.random.words(5),
+                            points: faker.datatype.number({ min: 0, max: 10 }),
+                            negativePoints: faker.datatype.number({ min: -5, max: 5 }),
+                            ...getMockOptions(),
+                            answer: 100
+                        }
+                    ],
+                    {
+                        password: await getArgonHash(faker.random.word()),
+                        classItem: classes[0].id as string,
+                        name: faker.random.words(3),
+                        start: start.toISOString(),
+                        end: end.toISOString(),
+                        time: 3
+                    }
+                );
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('answer_err');
             }
         });
@@ -286,8 +318,7 @@ describe('Quiz service', () => {
                     time: 3
                 });
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('start_end_err');
             }
         });
@@ -306,8 +337,7 @@ describe('Quiz service', () => {
                     time: -321
                 });
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('improper_time');
             }
         });
@@ -326,8 +356,7 @@ describe('Quiz service', () => {
                     time: 16
                 });
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('improper_time');
             }
         });
@@ -346,25 +375,30 @@ describe('Quiz service', () => {
                     time: 3
                 });
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('class_err');
             }
         });
-
     });
 
     describe('Get new quizzes', () => {
-
         it('Should return new quizzes for a student', async () => {
-            const res = await quizService.getNewQuizzes(classes[0].id as string, classes[0].students[0] as never as string, 'student');
+            const res = await quizService.getNewQuizzes(
+                classes[0].id as string,
+                (classes[0].students[0] as never) as string,
+                'student'
+            );
             expect(res).to.be.an('array').and.have.length.greaterThan(0);
             expect(res[0].password).to.have.length.lessThan(2);
             expect(res[0].questions).to.be.a('number');
         });
 
         it('Should return new quizzes for a teacher', async () => {
-            const res = await quizService.getNewQuizzes(classes[0].id as string, classes[0].teacher.id as never as string, 'student');
+            const res = await quizService.getNewQuizzes(
+                classes[0].id as string,
+                (classes[0].teacher.id as never) as string,
+                'student'
+            );
             expect(res).to.be.an('array').and.have.length.greaterThan(0);
             expect(res[0].password).to.have.length.lessThan(2);
             expect(res[0].questions).to.be.a('number');
@@ -372,34 +406,38 @@ describe('Quiz service', () => {
 
         it('Should fail to new quizzes for a student by bad class', async () => {
             try {
-                await quizService.getNewQuizzes(classes.filter(e => e.students.indexOf(classes[0].students[0]) === -1)[0].id as string, classes[0].students[0] as never as string, 'student');
+                await quizService.getNewQuizzes(
+                    classes.filter((e) => e.students.indexOf(classes[0].students[0]) === -1)[0].id as string,
+                    (classes[0].students[0] as never) as string,
+                    'student'
+                );
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('Forbidden');
             }
         });
-
     });
 
     describe('Get old quizzes', () => {
-
         it('Should return old quizzes', async () => {
-            const res = await quizService.getOldQuizzes(classes[0].id as string, classes[0].students[0] as never as string);
+            const res = await quizService.getOldQuizzes(
+                classes[0].id as string,
+                (classes[0].students[0] as never) as string
+            );
             expect(res).to.be.an('array');
         });
 
         it('Should fail to get old quizzes by bad class', async () => {
             try {
-                await quizService.getOldQuizzes(classes.filter(e => e.students.indexOf(classes[0].students[0]) === -1)[0].id as string, classes[0].students[0] as never as string);
+                await quizService.getOldQuizzes(
+                    classes.filter((e) => e.students.indexOf(classes[0].students[0]) === -1)[0].id as string,
+                    (classes[0].students[0] as never) as string
+                );
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('Forbidden');
             }
         });
-
-
     });
 
     describe('Delete quiz', () => {
@@ -413,41 +451,46 @@ describe('Quiz service', () => {
                 const quiz = (await Container.get(QuizRepository).find('', ''))[0];
                 await quizService.deleteQuiz(quiz.id as string, classes[0].id as string);
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('Forbidden');
             }
         });
     });
 
     describe('Update quiz', () => {
-
-        it ('Should update quiz', async () => {
+        it('Should update quiz', async () => {
             const quiz = (await Container.get(QuizRepository).find('', ''))[0];
-            await quizService.updateQuiz({ quizId: quiz.id as string, name: 'new quiz name' }, classes[0].teacher.id as string);
+            await quizService.updateQuiz(
+                { quizId: quiz.id as string, name: 'new quiz name' },
+                classes[0].teacher.id as string
+            );
         });
 
         it('Should update quiz password', async () => {
             const quiz = (await Container.get(QuizRepository).find('', ''))[0];
-            await quizService.updateQuiz({ quizId: quiz.id as string, password: 'new quiz password' }, classes[0].teacher.id as string);
+            await quizService.updateQuiz(
+                { quizId: quiz.id as string, password: 'new quiz password' },
+                classes[0].teacher.id as string
+            );
         });
 
-        it ('Should fail to update quiz by bad teacher', async () => {
+        it('Should fail to update quiz by bad teacher', async () => {
             try {
                 const quiz = (await Container.get(QuizRepository).find('', ''))[0];
-                await quizService.updateQuiz({ quizId: quiz.id as string, name: 'new quiz name' }, classes[0].id as string);
+                await quizService.updateQuiz(
+                    { quizId: quiz.id as string, name: 'new quiz name' },
+                    classes[0].id as string
+                );
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('Forbidden');
             }
         });
     });
 
     describe('Start quiz', () => {
-
         afterEach(async () => {
-            const quizzes = (await Container.get(QuizRepository).find('', ''));
+            const quizzes = await Container.get(QuizRepository).find('', '');
             for (const v of quizzes) {
                 await Container.get(QuizResponseRepository).deleteQuizResponses(v.id as string);
             }
@@ -455,7 +498,10 @@ describe('Quiz service', () => {
 
         it('Should start the quiz', async () => {
             const quiz = (await Container.get(QuizRepository).find('', ''))[0];
-            const res = await quizService.startQuiz({ quizId: quiz.id as string, password: 'new quiz password' }, classes[0].students[0] as never as string);
+            const res = await quizService.startQuiz(
+                { quizId: quiz.id as string, password: 'new quiz password' },
+                (classes[0].students[0] as never) as string
+            );
             expect(res).to.have.property('question').and.be.an('object');
             expect(res).to.have.property('nextRequest').and.be.a('string');
             expect(res).to.have.property('endAt').and.be.a('string');
@@ -465,10 +511,13 @@ describe('Quiz service', () => {
         it('Should fail with improper class', async () => {
             try {
                 const quiz = (await Container.get(QuizRepository).find('', ''))[0];
-                await quizService.startQuiz({ quizId: quiz.id as string, password: 'new quiz password' }, classes.filter(e => e.students.indexOf(classes[0].students[0]) === -1)[0].students[0] as never as string);
+                await quizService.startQuiz(
+                    { quizId: quiz.id as string, password: 'new quiz password' },
+                    (classes.filter((e) => e.students.indexOf(classes[0].students[0]) === -1)[0]
+                        .students[0] as never) as string
+                );
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('Forbidden');
             }
         });
@@ -476,10 +525,12 @@ describe('Quiz service', () => {
         it('Should fail with improper password', async () => {
             try {
                 const quiz = (await Container.get(QuizRepository).find('', ''))[0];
-                await quizService.startQuiz({ quizId: quiz.id as string, password: 'password' }, classes[0].students[0] as never as string);
+                await quizService.startQuiz(
+                    { quizId: quiz.id as string, password: 'password' },
+                    (classes[0].students[0] as never) as string
+                );
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('password_incorrect');
             }
         });
@@ -487,31 +538,43 @@ describe('Quiz service', () => {
         it('Should fail with no password given', async () => {
             try {
                 const quiz = (await Container.get(QuizRepository).find('', ''))[0];
-                await quizService.startQuiz({ quizId: quiz.id as string }, classes[0].students[0] as never as string);
+                await quizService.startQuiz({ quizId: quiz.id as string }, (classes[0].students[0] as never) as string);
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('password_no_exist');
             }
         });
 
         it('Should continue quiz', async () => {
             const quiz = (await Container.get(QuizRepository).find('', ''))[0];
-            await quizService.startQuiz({ quizId: quiz.id as string, password: 'new quiz password' }, classes[0].students[0] as never as string);
-            await quizService.startQuiz({ quizId: quiz.id as string, password: 'new quiz password' }, classes[0].students[0] as never as string);
+            await quizService.startQuiz(
+                { quizId: quiz.id as string, password: 'new quiz password' },
+                (classes[0].students[0] as never) as string
+            );
+            await quizService.startQuiz(
+                { quizId: quiz.id as string, password: 'new quiz password' },
+                (classes[0].students[0] as never) as string
+            );
         });
-
     });
 
     describe('Quiz navigation', () => {
         let nextTokens: { question: IQuestionModel; nextRequest: string; endAt: string };
         before(async () => {
             const quiz = (await Container.get(QuizRepository).find('', ''))[0];
-            nextTokens = await quizService.startQuiz({ quizId: quiz.id as string, password: 'new quiz password' }, classes[0].students[0] as never as string);
+            nextTokens = await quizService.startQuiz(
+                { quizId: quiz.id as string, password: 'new quiz password' },
+                (classes[0].students[0] as never) as string
+            );
         });
 
         it('Should get second question', async () => {
-            const res = await quizService.getQuestion(2, await decipherJWT(nextTokens.nextRequest, 'quiz') as never as quizToken, 'next', 1);
+            const res = await quizService.getQuestion(
+                2,
+                ((await decipherJWT(nextTokens.nextRequest, 'quiz')) as never) as quizToken,
+                'next',
+                1
+            );
             expect(res).to.have.property('question').and.be.an('object');
             expect(res).to.have.property('nextRequest').and.be.a('string');
             expect(res).to.have.property('endAt').and.be.a('string');
@@ -521,7 +584,12 @@ describe('Quiz service', () => {
         });
 
         it('Should get first question', async () => {
-            const res = await quizService.getQuestion(1, await decipherJWT(nextTokens.nextRequest, 'quiz') as never as quizToken, 'prev', 1);
+            const res = await quizService.getQuestion(
+                1,
+                ((await decipherJWT(nextTokens.nextRequest, 'quiz')) as never) as quizToken,
+                'prev',
+                1
+            );
             expect(res).to.have.property('question').and.be.an('object');
             expect(res).to.have.property('nextRequest').and.be.a('string');
             expect(res).to.have.property('endAt').and.be.a('string');
@@ -532,10 +600,14 @@ describe('Quiz service', () => {
 
         it('Should fail to get third question', async () => {
             try {
-                await quizService.getQuestion(3, await decipherJWT(nextTokens.nextRequest, 'quiz') as never as quizToken, 'next', 1);
+                await quizService.getQuestion(
+                    3,
+                    ((await decipherJWT(nextTokens.nextRequest, 'quiz')) as never) as quizToken,
+                    'next',
+                    1
+                );
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('answer_mismatch');
             }
         });
@@ -544,29 +616,39 @@ describe('Quiz service', () => {
             const quiz = (await Container.get(QuizRepository).find('', ''))[0];
             await quizService.deleteQuiz(quiz.id as string, classes[0].teacher.id as string);
             try {
-                await quizService.getQuestion(2, await decipherJWT(nextTokens.nextRequest, 'quiz') as never as quizToken, 'next', 1);
+                await quizService.getQuestion(
+                    2,
+                    ((await decipherJWT(nextTokens.nextRequest, 'quiz')) as never) as quizToken,
+                    'next',
+                    1
+                );
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('Not Found');
             }
         });
 
         it('Should submit quiz', async () => {
             const quiz = (await Container.get(QuizRepository).find('', ''))[0];
-            nextTokens = await quizService.startQuiz({ quizId: quiz.id as string, password: 'test_password' }, classes[0].students[0] as never as string);
+            nextTokens = await quizService.startQuiz(
+                { quizId: quiz.id as string, password: 'test_password' },
+                (classes[0].students[0] as never) as string
+            );
             // @ts-ignore
-            for (let i = 0; i < quiz.questions as never as number; i++) {
+            for (let i = 0; ((i < quiz.questions) as never) as number; i++) {
                 // @ts-ignore
-                nextTokens = await quizService.getQuestion(i += 2, await decipherJWT(nextTokens.nextRequest, 'quiz') as never as quizToken, 'next', 1);
+                nextTokens = await quizService.getQuestion(
+                    (i += 2),
+                    ((await decipherJWT(nextTokens.nextRequest, 'quiz')) as never) as quizToken,
+                    'next',
+                    1
+                );
             }
-            await quizService.submitQuiz(await decipherJWT(nextTokens.nextRequest, 'quiz') as never as quizToken);
+            await quizService.submitQuiz(((await decipherJWT(nextTokens.nextRequest, 'quiz')) as never) as quizToken);
         });
-
     });
 
     describe('Publish scores', () => {
-
         it('Should publish scores', async () => {
             const quiz = (await Container.get(QuizRepository).find('', ''))[0];
             await quizService.publishScores(quiz.id as string, classes[0].teacher.id as string);
@@ -577,16 +659,13 @@ describe('Quiz service', () => {
             try {
                 await quizService.publishScores(quiz.id as string, classes[0].id as string);
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('Forbidden');
             }
         });
-
     });
 
     describe('Get results', () => {
-
         it('Should publish scores', async () => {
             const quiz = (await Container.get(QuizRepository).find('', ''))[0];
             const res = await quizService.getResults(0, 25, quiz.id as string, classes[0].teacher.id as string);
@@ -598,11 +677,9 @@ describe('Quiz service', () => {
             try {
                 await quizService.getResults(0, 25, quiz.id as string, classes[0].id as string);
                 expect.fail('Expected an error!');
-            }
-            catch(err) {
+            } catch (err) {
                 expect(err.name).to.equal('Forbidden');
             }
         });
-
     });
 });

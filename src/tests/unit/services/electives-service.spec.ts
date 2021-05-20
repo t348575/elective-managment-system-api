@@ -164,14 +164,11 @@ describe('Elective service', () => {
 
     it('Should update electives', async () => {
         const electives: PaginationModel<IElectiveModel> = await electivesService.getPaginated(0, 25, '', '', '');
-        await electivesService.updateElective(electives.docs[0].id as string,
-            {
-                id: electives.docs[0].id as string,
-                batches: ['2019-4-ASD-RES'],
-                teachers: [users[0].rollNo as string],
-
-            }
-        );
+        await electivesService.updateElective(electives.docs[0].id as string, {
+            id: electives.docs[0].id as string,
+            batches: ['2019-4-ASD-RES'],
+            teachers: [users[0].rollNo as string]
+        });
     });
 
     it('Should get user batch', async () => {

@@ -220,9 +220,10 @@ export class QuizzesService extends BaseService<IQuizModel> {
                 new Date(quiz.end).getTime() < new Date(response.start).getTime() + quiz.time * 60 * 1000
             ) {
                 expireAt = Math.floor((new Date(quiz.end).getTime() - new Date().getTime()) / 1000) + 1;
-            }
-            else {
-                expireAt = Math.floor((quiz.time - (new Date().getTime() - new Date(response.start).getTime()) / 60000) * 60) + 1;
+            } else {
+                expireAt =
+                    Math.floor((quiz.time - (new Date().getTime() - new Date(response.start).getTime()) / 60000) * 60) +
+                    1;
             }
         } else {
             if (quiz.time === 0 || new Date(quiz.end).getTime() < new Date().getTime() + quiz.time * 60 * 1000) {
@@ -290,7 +291,9 @@ export class QuizzesService extends BaseService<IQuizModel> {
             ) {
                 expireAt = Math.floor((new Date(quiz.end).getTime() - new Date().getTime()) / 1000) + 1;
             } else {
-                expireAt = Math.floor((quiz.time - (new Date().getTime() - new Date(response.start).getTime()) / 60000) * 60) + 1;
+                expireAt =
+                    Math.floor((quiz.time - (new Date().getTime() - new Date(response.start).getTime()) / 60000) * 60) +
+                    1;
             }
             const endAt = new Date(new Date().getTime() + expireAt * 1000).toISOString();
             const questionRequest = await getJWT(

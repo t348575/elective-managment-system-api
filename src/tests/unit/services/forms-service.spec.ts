@@ -80,8 +80,7 @@ describe('Forms service', () => {
                 shouldSelectAll: false
             });
             expect.fail('Expected an error');
-        }
-        catch(err) {
+        } catch (err) {
             expect(err.name).to.equal('start_time_too_early');
         }
     });
@@ -100,8 +99,7 @@ describe('Forms service', () => {
                 shouldSelectAll: false
             });
             expect.fail('Expected an error');
-        }
-        catch(err) {
+        } catch (err) {
             expect(err.name).to.equal('numElectives_too_many');
         }
     });
@@ -116,12 +114,11 @@ describe('Forms service', () => {
                 end: endDate.toISOString(),
                 numElectives: electives.length,
                 // @ts-ignore
-                electives: electives.map((e) => e.id + "asd"),
+                electives: electives.map((e) => e.id + 'asd'),
                 shouldSelectAll: false
             });
             expect.fail('Expected an error');
-        }
-        catch(err) {
+        } catch (err) {
             expect(err.name).to.equal('not_found');
         }
     });
@@ -149,12 +146,21 @@ describe('Forms service', () => {
 
     it('Should add explicit response to form', async () => {
         const form = (await Container.get(FormsRepository).findAndPopulate('', { _id: formId }, false, 0, 25))[0];
-        await formsService.setExplicit(
-            {
-                id: formId,
-                options: [{ user: users[0].id as never as string, electives: form.electives.filter(e => e.batches.findIndex(r => r as never as string === users[0].batch as never as string)).map(e => e.id) as string[]}]
-            }
-        );
+        await formsService.setExplicit({
+            id: formId,
+            options: [
+                {
+                    user: (users[0].id as never) as string,
+                    electives: form.electives
+                        .filter((e) =>
+                            e.batches.findIndex(
+                                (r) => ((r as never) as string) === ((users[0].batch as never) as string)
+                            )
+                        )
+                        .map((e) => e.id) as string[]
+                }
+            ]
+        });
     });
 
     it('Should update the form', async () => {

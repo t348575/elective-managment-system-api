@@ -145,7 +145,7 @@ export class FormsService extends BaseService<IFormModel> {
     public async updateForm(options: UpdateFormOptions) {
         if (options.electives) {
             // @ts-ignore
-            options.electives = options.electives.map(e => mongoose.Types.ObjectId(e));
+            options.electives = options.electives.map((e) => mongoose.Types.ObjectId(e));
         }
         // @ts-ignore
         options._id = options.id;

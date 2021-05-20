@@ -32,7 +32,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
             if (Object.keys(v).length < 5) {
                 throw {
                     name: 'improper_format',
-                    message: 'Minumum required fields not present'
+                    message: 'Minimum required fields not present'
                 };
             }
             if (!checkString(v, 'question')) {
@@ -62,7 +62,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
             if (v.answer < 1 || v.answer > Object.keys(v).length - 4) {
                 throw {
                     name: 'answer_err',
-                    message: 'Answer not within boundry of options'
+                    message: 'Answer not within boundary of options'
                 };
             }
             const headerNames = ['question', 'points', 'negativePoints', 'answer'];
@@ -100,7 +100,6 @@ export class QuizzesService extends BaseService<IQuizModel> {
                 message: 'Test duration is greater than test range datetime'
             };
         }
-
         if (
             (await this.classService.getPaginated(0, 1, '', '', { _id: { $in: options.classItem } })).docs.length !== 1
         ) {
@@ -221,10 +220,9 @@ export class QuizzesService extends BaseService<IQuizModel> {
                 new Date(quiz.end).getTime() < new Date(response.start).getTime() + quiz.time * 60 * 1000
             ) {
                 expireAt = Math.floor((new Date(quiz.end).getTime() - new Date().getTime()) / 1000) + 1;
-            } else {
-                expireAt =
-                    Math.floor((quiz.time - (new Date().getTime() - new Date(response.start).getTime()) / 60000) * 60) +
-                    1;
+            }
+            else {
+                expireAt = Math.floor((quiz.time - (new Date().getTime() - new Date(response.start).getTime()) / 60000) * 60) + 1;
             }
         } else {
             if (quiz.time === 0 || new Date(quiz.end).getTime() < new Date().getTime() + quiz.time * 60 * 1000) {
@@ -272,15 +270,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
         const secondField =
             dir === 'next' ? quizTokenItem.stateSlice.question + 1 : quizTokenItem.stateSlice.question - 1;
         if (secondField === questionNumber) {
-            let quiz: IQuizModel;
-            try {
-                quiz = await this.repository.getById(quizTokenItem.stateSlice.quizId);
-            } catch (err) {
-                throw {
-                    name: 'removed',
-                    message: 'Quiz has been deleted'
-                };
-            }
+            const quiz = await this.repository.getById(quizTokenItem.stateSlice.quizId);
             if (questionNumber - 1 < response.answers.length) {
                 response.answers[questionNumber - (dir === 'prev' ? 0 : 2)] = answer;
             } else {
@@ -300,9 +290,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
             ) {
                 expireAt = Math.floor((new Date(quiz.end).getTime() - new Date().getTime()) / 1000) + 1;
             } else {
-                expireAt =
-                    Math.floor((quiz.time - (new Date().getTime() - new Date(response.start).getTime()) / 60000) * 60) +
-                    1;
+                expireAt = Math.floor((quiz.time - (new Date().getTime() - new Date(response.start).getTime()) / 60000) * 60) + 1;
             }
             const endAt = new Date(new Date().getTime() + expireAt * 1000).toISOString();
             const questionRequest = await getJWT(

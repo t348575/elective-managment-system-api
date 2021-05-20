@@ -65,7 +65,7 @@ export class ClassController extends Controller {
                 break;
             }
         }
-        return this.service.getPaginated<IClassModel>(page, pageSize, '', JSON.stringify({ [sortBy]: dir }), query);
+        return this.service.getPaginated(page, pageSize, '', JSON.stringify({ [sortBy]: dir }), query);
     }
 
     @Get('active')

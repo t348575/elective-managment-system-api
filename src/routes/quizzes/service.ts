@@ -125,17 +125,18 @@ export class QuizzesService extends BaseService<IQuizModel> {
         if (classes.findIndex((e) => (e.id as string) === classId) === -1) {
             throw new ApiError(constants.errorTypes.forbidden);
         }
+        const makeQuizSafe = (e: IQuizModel) => ({
+            ...e,
+            password: e?.password ? ' ' : '',
+            // @ts-ignore
+            questions: e.questions.length
+        });
         if (scope === 'teacher') {
             return (
                 await this.repository.findAndPopulate(0, undefined, JSON.stringify({ start: 'desc' }), {
                     classItem: classId
                 })
-            ).map((e) => ({
-                ...e,
-                password: e?.password ? ' ' : '',
-                // @ts-ignore
-                questions: e.questions.length
-            }));
+            ).map(makeQuizSafe);
         } else {
             const responses = await this.quizResponseRepository.find('', { classItem: classId });
             return (
@@ -146,12 +147,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
                     }
                 })
             )
-                .map((e) => ({
-                    ...e,
-                    password: e?.password ? ' ' : '',
-                    // @ts-ignore
-                    questions: e.questions.length
-                }))
+                .map(makeQuizSafe)
                 .filter(
                     (e) =>
                         responses.findIndex((r) => ((r.quiz as never) as string) === e.id && r.end !== undefined) === -1
@@ -215,16 +211,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
         const quizResponse = await this.quizResponseRepository.findOne({ user: userId, quiz: quiz.id });
         let expireAt: number;
         if (response) {
-            if (
-                quiz.time === 0 ||
-                new Date(quiz.end).getTime() < new Date(response.start).getTime() + quiz.time * 60 * 1000
-            ) {
-                expireAt = Math.floor((new Date(quiz.end).getTime() - new Date().getTime()) / 1000) + 1;
-            } else {
-                expireAt =
-                    Math.floor((quiz.time - (new Date().getTime() - new Date(response.start).getTime()) / 60000) * 60) +
-                    1;
-            }
+            expireAt = this.setExpiry(quiz, response);
         } else {
             if (quiz.time === 0 || new Date(quiz.end).getTime() < new Date().getTime() + quiz.time * 60 * 1000) {
                 expireAt = Math.floor((new Date(quiz.end).getTime() - new Date().getTime()) / 1000) + 1;
@@ -257,6 +244,19 @@ export class QuizzesService extends BaseService<IQuizModel> {
         };
     }
 
+    private setExpiry(quiz: IQuizModel, response: IQuizResponseModel) {
+        if (
+            quiz.time === 0 ||
+            new Date(quiz.end).getTime() < new Date(response.start).getTime() + quiz.time * 60 * 1000
+        ) {
+            return Math.floor((new Date(quiz.end).getTime() - new Date().getTime()) / 1000) + 1;
+        } else {
+            return (
+                Math.floor((quiz.time - (new Date().getTime() - new Date(response.start).getTime()) / 60000) * 60) + 1
+            );
+        }
+    }
+
     public async getQuestion(
         questionNumber: number,
         quizTokenItem: quizToken,
@@ -284,17 +284,7 @@ export class QuizzesService extends BaseService<IQuizModel> {
             await this.quizResponseRepository.findAndUpdate({ _id: response.id as string }, {
                 answers: response.answers
             } as IQuizResponseModel);
-            let expireAt: number;
-            if (
-                quiz.time === 0 ||
-                new Date(quiz.end).getTime() < new Date(response.start).getTime() + quiz.time * 60 * 1000
-            ) {
-                expireAt = Math.floor((new Date(quiz.end).getTime() - new Date().getTime()) / 1000) + 1;
-            } else {
-                expireAt =
-                    Math.floor((quiz.time - (new Date().getTime() - new Date(response.start).getTime()) / 60000) * 60) +
-                    1;
-            }
+            const expireAt = this.setExpiry(quiz, response);
             const endAt = new Date(new Date().getTime() + expireAt * 1000).toISOString();
             const questionRequest = await getJWT(
                 { id: quizTokenItem.id } as IUserModel,

@@ -78,23 +78,9 @@ export class AuthService extends BaseService<IUserModel> {
                                                             );
                                                         }
                                                     })
-                                                    .catch((err) => {
-                                                        reject(
-                                                            new OAuthError({
-                                                                name: 'server_error',
-                                                                error_description: err?.message
-                                                            })
-                                                        );
-                                                    });
+                                                    .catch((err) => serverError(err, reject));
                                             })
-                                            .catch((err) => {
-                                                return reject(
-                                                    new OAuthError({
-                                                        name: 'server_error',
-                                                        error_description: err?.message
-                                                    })
-                                                );
-                                            });
+                                            .catch((err) => serverError(err, reject));
                                     } else {
                                         return reject(
                                             new OAuthError({
@@ -104,12 +90,7 @@ export class AuthService extends BaseService<IUserModel> {
                                         );
                                     }
                                 } catch (err) {
-                                    reject(
-                                        new OAuthError({
-                                            name: 'server_error',
-                                            error_description: err?.message
-                                        })
-                                    );
+                                    serverError(err, reject);
                                 }
                             })
                             .catch(() => {
@@ -138,12 +119,7 @@ export class AuthService extends BaseService<IUserModel> {
                             })
                         );
                     }
-                    reject(
-                        new OAuthError({
-                            name: 'server_error',
-                            error_description: err?.message
-                        })
-                    );
+                    serverError(err, reject);
                 });
         });
     }
@@ -199,23 +175,9 @@ export class AuthService extends BaseService<IUserModel> {
                                                     );
                                                 }
                                             })
-                                            .catch((err) => {
-                                                reject(
-                                                    new OAuthError({
-                                                        name: 'server_error',
-                                                        error_description: err?.message
-                                                    })
-                                                );
-                                            });
+                                            .catch((err) => serverError(err, reject));
                                     })
-                                    .catch((err) => {
-                                        return reject(
-                                            new OAuthError({
-                                                name: 'server_error',
-                                                error_description: err?.message
-                                            })
-                                        );
-                                    });
+                                    .catch((err) => serverError(err, reject));
                             } else {
                                 return reject(
                                     new OAuthError({
@@ -225,14 +187,7 @@ export class AuthService extends BaseService<IUserModel> {
                                 );
                             }
                         })
-                        .catch((err) =>
-                            reject(
-                                new OAuthError({
-                                    name: 'server_error',
-                                    error_description: err.message
-                                })
-                            )
-                        );
+                        .catch((err) => serverError(err, reject));
                 })
                 .catch(() =>
                     reject(
@@ -252,12 +207,7 @@ export class AuthService extends BaseService<IUserModel> {
                     this.redis.db.get(`oneTimeAuthCode::${jwtObject.id}::${jwtObject.stateSlice}`, (err, reply) => {
                         try {
                             if (err) {
-                                reject(
-                                    new OAuthError({
-                                        name: 'server_error',
-                                        error_description: err?.message
-                                    })
-                                );
+                                serverError(err, reject);
                             } else if (reply) {
                                 const [storedCode, codeChallenge] = reply.split('::');
                                 if (code === storedCode && getSHA256(codeVerifier) === codeChallenge) {
@@ -280,14 +230,7 @@ export class AuthService extends BaseService<IUserModel> {
                                                 .catch();
                                             resolve({ ...tokens });
                                         })
-                                        .catch((errInner) =>
-                                            reject(
-                                                new OAuthError({
-                                                    name: 'server_error',
-                                                    error_description: errInner?.message
-                                                })
-                                            )
-                                        );
+                                        .catch((errInner) => serverError(errInner, reject));
                                 } else {
                                     reject(
                                         new OAuthError({
@@ -297,20 +240,11 @@ export class AuthService extends BaseService<IUserModel> {
                                     );
                                 }
                             } else {
-                                reject(
-                                    new OAuthError({
-                                        name: 'server_error',
-                                        error_description: 'An unknown error'
-                                    })
-                                );
+                                // @ts-ignore
+                                serverError({ message: 'An unknown error' }, reject);
                             }
                         } catch (errOuter) {
-                            reject(
-                                new OAuthError({
-                                    name: 'server_error',
-                                    error_description: errOuter?.message
-                                })
-                            );
+                            serverError(errOuter, reject);
                         }
                     });
                 })
@@ -448,4 +382,13 @@ export class AuthService extends BaseService<IUserModel> {
         }
         return 'unknown';
     }
+}
+
+function serverError(err: Error, reject: any) {
+    reject(
+        new OAuthError({
+            name: 'server_error',
+            error_description: err?.message
+        })
+    );
 }

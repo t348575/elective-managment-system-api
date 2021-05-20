@@ -1,5 +1,5 @@
-import { BaseService } from '../../models/shared/base-service';
-import { IResponseModel, ResponseRepository } from '../../models/mongo/response-repository';
+import { BaseService, paginationParser } from '../../models/shared/base-service';
+import { IResponseModel, ResponseFormatter, ResponseRepository } from '../../models/mongo/response-repository';
 import { Singleton, Inject } from 'typescript-ioc';
 import { UserRepository } from '../../models/mongo/user-repository';
 import { FormResponseOptions } from './controller';
@@ -101,37 +101,19 @@ export class ResponseService extends BaseService<IResponseModel> {
         }
     }
 
-    public async getPaginated<Entity>(
+    public async getPaginated(
         page: number,
         limit: number,
         fields: string,
         sort: string,
         query: any
-    ): Promise<PaginationModel<Entity>> {
+    ): Promise<PaginationModel<ResponseFormatter>> {
         const skip: number = Math.max(0, page) * limit;
         // eslint-disable-next-line prefer-const
-        let [count, docs] = await Promise.all([
+        const [count, docs] = await Promise.all([
             this.repository.count(query),
             this.repository.findAndPopulate(sort, query, skip, limit)
         ]);
-        const fieldArray = (fields || '')
-            .split(',')
-            .map((field) => field.trim())
-            .filter(Boolean);
-        if (fieldArray.length) {
-            docs = docs.map((d: { [x: string]: any }) => {
-                const attrs: any = {};
-                // @ts-ignore
-                fieldArray.forEach((f) => (attrs[f] = d[f]));
-                return attrs;
-            });
-        }
-        return new PaginationModel<Entity>({
-            count,
-            page,
-            limit,
-            docs,
-            totalPages: Math.ceil(count / limit)
-        });
+        return paginationParser<ResponseFormatter>(fields, count, docs, page, limit);
     }
 }

@@ -169,13 +169,7 @@ export class ElectivesController extends Controller {
                 queryObj.courseCode = courseCode;
             }
         }
-        return this.service.getPaginated<IElectiveModel>(
-            pageNumber,
-            limit,
-            fields || '',
-            sortBy || '{"name":"asc"}',
-            queryObj
-        );
+        return this.service.getPaginated(pageNumber, limit, fields || '', sortBy || '{"name":"asc"}', queryObj);
     }
 
     @Post('')

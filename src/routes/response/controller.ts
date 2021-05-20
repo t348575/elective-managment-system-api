@@ -4,6 +4,8 @@ import { ErrorType } from '../../shared/error-handler';
 import { Request as ExRequest } from 'express';
 import { jwtToken, unknownServerError, validationError } from '../../models/types';
 import { Inject, Singleton } from 'typescript-ioc';
+import { PaginationModel } from '../../models/shared/pagination-model';
+import { IResponseModel } from '../../models/mongo/response-repository';
 const studentOnly: string[] = ['student'];
 const teacherOrAdmin: string[] = ['admin', 'teacher'];
 
@@ -36,7 +38,11 @@ export class ResponseController extends Controller {
     @Security('jwt', teacherOrAdmin)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async getResponses(@Query() id: string, @Query() pageNumber: number, @Query() limit: number) {
+    public async getResponses(
+        @Query() id: string,
+        @Query() pageNumber: number,
+        @Query() limit: number
+    ): Promise<PaginationModel<IResponseModel>> {
         return this.service.getPaginated(pageNumber, limit, '', '{"time":"desc"}', {
             form: id
         });

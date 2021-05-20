@@ -1,5 +1,5 @@
-import { ClassRepository, IClassModel } from '../../models/mongo/class-repository';
-import { BaseService } from '../../models/shared/base-service';
+import { ClassFormatter, ClassRepository, IClassModel } from '../../models/mongo/class-repository';
+import { BaseService, paginationParser } from '../../models/shared/base-service';
 import { IUserModel, UserRepository } from '../../models/mongo/user-repository';
 import { FormsRepository, IFormModel } from '../../models/mongo/form-repository';
 import { chunkArray } from '../../util/general-util';
@@ -67,38 +67,21 @@ export class ClassService extends BaseService<IClassModel> {
         }
     }
 
-    public async getPaginated<Entity>(
+    public async getPaginated(
         page: number,
         limit: number,
         fields: string,
         sort: string,
         query: any
-    ): Promise<PaginationModel<Entity>> {
+    ): Promise<PaginationModel<ClassFormatter>> {
         const skip: number = Math.max(0, page) * limit;
         // eslint-disable-next-line prefer-const
-        let [count, docs] = await Promise.all([
+        const [count, docs] = await Promise.all([
             this.repository.count(query),
             this.repository.findAndPopulate(skip, limit, sort, query)
         ]);
-        const fieldArray = (fields || '')
-            .split(',')
-            .map((field) => field.trim())
-            .filter(Boolean);
-        if (fieldArray.length) {
-            docs = docs.map((d: { [x: string]: any }) => {
-                const attrs: any = {};
-                // @ts-ignore
-                fieldArray.forEach((f) => (attrs[f] = d[f]));
-                return attrs;
-            });
-        }
-        return new PaginationModel<Entity>({
-            count,
-            page,
-            limit,
-            docs,
-            totalPages: Math.ceil(count / limit)
-        });
+        // @ts-ignore
+        return paginationParser<ClassFormatter>(fields, count, docs, page, limit);
     }
 
     public async getActiveClasses(userId: string) {

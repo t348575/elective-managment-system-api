@@ -1,5 +1,5 @@
-import { ExplicitElectives, FormsRepository, IFormModel } from '../../models/mongo/form-repository';
-import { BaseService } from '../../models/shared/base-service';
+import { ExplicitElectives, FormFormatter, FormsRepository, IFormModel } from '../../models/mongo/form-repository';
+import { BaseService, paginationParser } from '../../models/shared/base-service';
 import { BatchRepository } from '../../models/mongo/batch-repository';
 import { AddExplicitOptions, CreateFormOptions, GenerateListResponse, UpdateFormOptions } from './controller';
 import { ElectiveRepository, IElectiveModel } from '../../models/mongo/elective-repository';
@@ -9,7 +9,7 @@ import { Failed, scopes } from '../../models/types';
 import { PaginationModel } from '../../models/shared/pagination-model';
 import { ResponseRepository } from '../../models/mongo/response-repository';
 import mongoose from 'mongoose';
-import { createWriteStream } from 'fs';
+import { createWriteStream, WriteStream } from 'fs';
 import * as path from 'path';
 import { randomBytes } from 'crypto';
 import constants from '../../constants';
@@ -155,38 +155,20 @@ export class FormsService extends BaseService<IFormModel> {
         return this.repository.update(options._id, options);
     }
 
-    public async getPaginated<Entity>(
+    public async getPaginated(
         page: number,
         limit: number,
         fields: string,
         sort: string,
         query: any
-    ): Promise<PaginationModel<Entity>> {
+    ): Promise<PaginationModel<FormFormatter>> {
         const skip: number = Math.max(0, page) * limit;
         // eslint-disable-next-line prefer-const
-        let [count, docs] = await Promise.all([
+        const [count, docs] = await Promise.all([
             this.repository.count(query),
             this.repository.findAndPopulate(sort, query, false, skip, limit)
         ]);
-        const fieldArray = (fields || '')
-            .split(',')
-            .map((field) => field.trim())
-            .filter(Boolean);
-        if (fieldArray.length) {
-            docs = docs.map((d: { [x: string]: any }) => {
-                const attrs: any = {};
-                // @ts-ignore
-                fieldArray.forEach((f) => (attrs[f] = d[f]));
-                return attrs;
-            });
-        }
-        return new PaginationModel<Entity>({
-            count,
-            page,
-            limit,
-            docs,
-            totalPages: Math.ceil(count / limit)
-        });
+        return paginationParser<FormFormatter>(fields, count, docs, page, limit);
     }
 
     public async generateList(id: string, closeForm: boolean, userId: string): Promise<GenerateListResponse> {
@@ -202,31 +184,19 @@ export class FormsService extends BaseService<IFormModel> {
             const opts = { fields };
             const asyncSelectionsParser = new AsyncParser(opts);
             asyncSelectionsParser.processor.on('data', (chunk) => file.write(chunk.toString()));
-            asyncSelectionsParser.processor.on('error', (err) => {
-                file.close();
-                removeFile(filePath);
-                reject(UnknownApiError(err));
-            });
+            asyncSelectionsParser.processor.on('error', (err) => fileErrorHandler(err, reject, file, filePath));
             asyncSelectionsParser.processor.on('end', () => {
                 const fields = ['rollNo'];
                 const opts = { fields };
                 const asyncUnresponsiveParser = new AsyncParser(opts);
                 asyncUnresponsiveParser.processor.on('data', (chunk) => file.write(chunk.toString()));
-                asyncUnresponsiveParser.processor.on('error', (err) => {
-                    file.close();
-                    removeFile(filePath);
-                    reject(UnknownApiError(err));
-                });
+                asyncUnresponsiveParser.processor.on('error', (err) => fileErrorHandler(err, reject, file, filePath));
                 asyncUnresponsiveParser.processor.on('end', () => {
                     const fields = ['rollNo'];
                     const opts = { fields };
                     const asyncFailedParser = new AsyncParser(opts);
                     asyncFailedParser.processor.on('data', (chunk) => file.write(chunk.toString()));
-                    asyncFailedParser.processor.on('error', (err) => {
-                        file.close();
-                        removeFile(filePath);
-                        reject(UnknownApiError(err));
-                    });
+                    asyncFailedParser.processor.on('error', (err) => fileErrorHandler(err, reject, file, filePath));
                     asyncFailedParser.processor.on('end', async () => {
                         const link = await this.downloadService.addTemporaryUserLink([userId], filePath, name);
                         resolve({
@@ -415,4 +385,10 @@ export class FormsService extends BaseService<IFormModel> {
         // @ts-ignore
         return this.repository.findAndUpdate({ _id: formId }, { show: false });
     }
+}
+
+function fileErrorHandler(err: Error, reject: any, file: WriteStream, filePath: string) {
+    file.close();
+    removeFile(filePath);
+    reject(UnknownApiError(err));
 }

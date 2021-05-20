@@ -4,6 +4,8 @@ import { ErrorType } from '../../shared/error-handler';
 import { Request as ExRequest } from 'express';
 import { Failed, jwtToken, unknownServerError, validationError } from '../../models/types';
 import { Inject, Singleton } from 'typescript-ioc';
+import { PaginationModel } from '../../models/shared/pagination-model';
+import { IFormModel } from '../../models/mongo/form-repository';
 
 const scopeArray: string[] = ['teacher', 'admin', 'student'];
 const adminOnly: string[] = ['admin'];
@@ -81,7 +83,7 @@ export class FormsController extends Controller {
     @Security('jwt', teacherOrAdmin)
     @Response<ErrorType>(401, validationError)
     @Response<ErrorType>(500, unknownServerError)
-    public async allForms(@Query() pageNumber: number, @Query() limit: number) {
+    public async allForms(@Query() pageNumber: number, @Query() limit: number): Promise<PaginationModel<IFormModel>> {
         return this.service.getPaginated(pageNumber, limit, '', '{"end": "desc"}', {});
     }
 

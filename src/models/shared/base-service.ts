@@ -10,40 +10,6 @@ export abstract class BaseService<EntityModel> {
         return this.repository.findOne({ _id });
     }
 
-    public async getPaginated(
-        page: number,
-        limit: number,
-        fields: string,
-        sort: string,
-        query: any
-    ): Promise<PaginationModel<EntityModel>> {
-        const skip: number = Math.max(0, page) * limit;
-        // eslint-disable-next-line prefer-const
-        let [count, docs] = await Promise.all([
-            this.repository.count(query),
-            this.repository.find(sort, query, limit, skip)
-        ]);
-        const fieldArray = (fields || '')
-            .split(',')
-            .map((field) => field.trim())
-            .filter(Boolean);
-        if (fieldArray.length) {
-            docs = docs.map((d: { [x: string]: any }) => {
-                const attrs: any = {};
-                // @ts-ignore
-                fieldArray.forEach((f) => (attrs[f] = d[f]));
-                return attrs;
-            });
-        }
-        return new PaginationModel<EntityModel>({
-            count,
-            page,
-            limit,
-            docs,
-            totalPages: Math.ceil(count / limit)
-        });
-    }
-
     public async create(entity: EntityModel): Promise<EntityModel> {
         const res = await this.repository.create(entity);
         return this.getById((res as any)._id);
@@ -60,4 +26,32 @@ export abstract class BaseService<EntityModel> {
             throw new ApiError(constants.errorTypes.notFound);
         }
     }
+}
+
+export function paginationParser<Entity>(
+    fields: string,
+    count: number,
+    docs: Entity[],
+    page: number,
+    limit: number
+): PaginationModel<Entity> {
+    const fieldArray = (fields || '')
+        .split(',')
+        .map((field) => field.trim())
+        .filter(Boolean);
+    if (fieldArray.length) {
+        docs = docs.map((d: { [x: string]: any }) => {
+            const attrs: any = {};
+            // @ts-ignore
+            fieldArray.forEach((f) => (attrs[f] = d[f]));
+            return attrs;
+        });
+    }
+    return new PaginationModel<Entity>({
+        count,
+        page,
+        limit,
+        docs,
+        totalPages: Math.ceil(count / limit)
+    });
 }

@@ -11,13 +11,15 @@ import { DownloadService } from '../../../routes/download/service';
 import { MockDownloadService } from '../../mocks/mock-download-service';
 import { setupMockElectives } from '../../models/electives.model';
 import { IElectiveModel } from '../../../models/mongo/elective-repository';
-import { FormsRepository, IFormModel } from '../../../models/mongo/form-repository';
+import { FormFormatter, FormsRepository, IFormModel } from '../../../models/mongo/form-repository';
 import { createForm } from '../../models/form.model';
 import { ClassService } from '../../../routes/classes/service';
 import { FormsService } from '../../../routes/forms/service';
 import { PaginationModel } from '../../../models/shared/pagination-model';
 import { respondToForm } from '../../models/response.model';
-import { ClassFormatter } from '../../../models/mongo/class-repository';
+import { ClassFormatter, IClassModel } from '../../../models/mongo/class-repository';
+import { createClasses } from '../../models/classes.model';
+import { RequestChangeFormatter, RequestChangeRepository } from '../../../models/mongo/request-change-repository';
 
 chai.use(chaiAsPromised);
 let users: IUserModel[] = [];
@@ -26,6 +28,7 @@ let form: IFormModel;
 let responses: string[] = [];
 let useClass: string;
 let classCount = 0;
+let classes: IClassModel[] = [];
 
 describe('Classes service', () => {
     const classService = Container.get(ClassService);
@@ -100,5 +103,53 @@ describe('Classes service', () => {
     it('Should delete class', async () => {
         await classService.deleteClass(useClass);
         expect((await classService.getPaginated(0, 500, '', '', '')).count).to.equal(classCount - 1);
+    });
+
+    it('Can request elective change', async () => {
+        form = await createForm(electives);
+        await respondToForm(form, users, electives);
+        classes = (await createClasses(form)).docs as IClassModel[];
+        await Container.get(FormsService).removeForm(form.id as string);
+        const res = await classService.canRequestElectiveChange(users[0].id as string);
+        expect(res).to.be.an('array');
+        expect(res.length).to.be.greaterThan(0);
+        expect(res[0]).to.be.instanceof(FormFormatter);
+    });
+
+    it('Should get valid request electives', async () => {
+        const res = await classService.getValidRequestElectives(users[0].id as string);
+        expect(res).to.be.an('array');
+        expect(res.length).to.be.greaterThan(0);
+    });
+
+    it('Should add elective change request', async () => {
+        const items = await classService.getValidRequestElectives(users[0].id as string);
+        const activeClasses = await classService.getActiveClasses(users[0].id as string);
+        const res = await classService.addElectiveChange({
+            from: activeClasses[0].elective.id as string,
+            to: items[0].id as string
+        }, users[0].id as string);
+        expect(res).to.be.instanceof(RequestChangeFormatter);
+    });
+
+    it('Should get elective change requests', async () => {
+        const res = await classService.getElectiveChanges();
+        expect(res).to.be.an('array');
+        expect(res.length).to.be.greaterThan(0);
+        expect(res[0]).to.be.instanceof(RequestChangeFormatter);
+    });
+
+    it('Should delete change request', async () => {
+        await classService.deleteElectiveChange((await Container.get(RequestChangeRepository).find('', ''))[0].id as string);
+    });
+
+    it('Should confirm change request', async () => {
+        const items = await classService.getValidRequestElectives(users[0].id as string);
+        const activeClasses = await classService.getActiveClasses(users[0].id as string);
+        await classService.addElectiveChange({
+            from: activeClasses[0].elective.id as string,
+            to: items[0].id as string
+        }, users[0].id as string);
+        await classService.confirmElectiveChange((await Container.get(RequestChangeRepository).find('', ''))[0].id as string);
     });
 });

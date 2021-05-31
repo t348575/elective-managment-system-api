@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Query, Route, Tags, Request, Hidden, Security } from 'tsoa';
 import { Request as ExRequest, Response as ExResponse } from 'express';
-import { AuthService } from './service';
+import { OAuthService } from './service';
 import * as fs from 'fs';
 import * as path from 'path';
 import { jwtToken, refreshToken, scopes, tokenBodyType } from '../../models/types';
@@ -17,7 +17,7 @@ const scopeArray: string[] = ['teacher', 'admin', 'student'];
 @Singleton
 export class AuthController extends Controller {
     @Inject
-    private service: AuthService;
+    private service: OAuthService;
     constructor() {
         super();
     }

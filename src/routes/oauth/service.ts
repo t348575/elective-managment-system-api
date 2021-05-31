@@ -14,7 +14,7 @@ import { TrackRepository } from '../../models/mongo/track-repository';
 const userDoesNotExist = 'User does not exist';
 
 @Singleton
-export class AuthService extends BaseService<IUserModel> {
+export class OAuthService extends BaseService<IUserModel> {
     @Inject protected repository: UserRepository;
     @Inject protected redis: RedisConnector;
     @Inject protected trackRepository: TrackRepository;
@@ -81,7 +81,8 @@ export class AuthService extends BaseService<IUserModel> {
                                                     .catch((err) => serverError(err, reject));
                                             })
                                             .catch((err) => serverError(err, reject));
-                                    } else {
+                                    }
+                                    else {
                                         return reject(
                                             new OAuthError({
                                                 name: 'access_denied',
@@ -215,7 +216,7 @@ export class AuthService extends BaseService<IUserModel> {
                                         .then((tokens) => {
                                             this.trackRepository
                                                 .addRecent({
-                                                    device: AuthService.getDevice(req.useragent),
+                                                    device: OAuthService.getDevice(req.useragent),
                                                     browser: req.useragent?.browser || 'unknown',
                                                     platform: req.useragent?.platform || 'unknown',
                                                     // @ts-ignore
@@ -384,7 +385,8 @@ export class AuthService extends BaseService<IUserModel> {
     }
 }
 
-function serverError(err: Error, reject: any) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function serverError(err: Error, reject: any) {
     reject(
         new OAuthError({
             name: 'server_error',

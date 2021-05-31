@@ -124,7 +124,7 @@ export class ClassService extends BaseService<IClassModel> {
         await this.notificationService.notifyUsers([item.user.id as string], {
             notification: {
                 title: 'Elective change request',
-                body: `Requested change from elective: ${item.from.name} to ${item.to.name}`,
+                body: `Requested change from elective: ${item.from.name} to ${item.to.name} has been denied!`,
                 vibrate: [100, 50, 100],
                 requireInteraction: true
             }

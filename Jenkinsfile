@@ -1,15 +1,28 @@
 pipeline {
   agent any
   stages {
+    stage('Build') {
+      steps {
+        sh 'yarn install'
+        sh 'yarn build:prod'
+      }
+    }
     stage('Deploy') {
       when {
         branch 'master'
       }
+      environment {
+        docker_pwd = credentials('docker_pwd')
+        sonar_login = credentials('sonar_login')
+        webhook_api = credentials('webhook_api')
+      }
       steps {
-        sh 'docker login -u "admin" -p "26bac9a06d51fab3a396f9afe2b22678" amrita-elective.tk:5000'
+        sh 'docker login -u "admin" -p "$docker_pwd" amrita-elective.tk:5000'
         sh 'docker build -t amrita-elective.tk:5000/api .'
         sh 'docker push amrita-elective.tk:5000/api'
-        sh 'sonar-scanner -Dsonar.login="6ffd0b5dfbc1cfaf150add2d6f65f22e450200ce"'
+        sh 'sonar-scanner -Dsonar.login="$sonar_login"'
+        sh 'docker rmi amrita-elective.tk:5000/api'
+        sh 'curl -d \'{ user: "admin", pwd: "$webhook_api" }\' -H \'Content-Type: application/json\' http://amrita-elective.tk:4000/new-api-container'
       }
     }
 
@@ -18,12 +31,10 @@ pipeline {
         not {
           branch 'master'
         }
-
       }
       steps {
-        sh '''yarn install
-yarn test:unit
-yarn test:integration'''
+        sh 'yarn test:unit'
+        sh 'yarn test:integration'
       }
     }
 

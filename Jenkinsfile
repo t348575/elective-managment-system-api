@@ -23,7 +23,7 @@ pipeline {
         sh 'docker push amrita-elective.tk:5000/api'
         sh 'sonar-scanner -Dsonar.login="$sonar_login"'
         sh 'docker rmi amrita-elective.tk:5000/api'
-        sh 'curl -d \'{ user: "admin", pwd: "$webhook_api" }\' -H \'Content-Type: application/json\' --request POST http://amrita-elective.tk:4000/new-api-container'
+        sh 'curl -d \'{ "user": "admin", "pwd": "$webhook_api" }\' -H \'Content-Type: application/json\' --request POST http://amrita-elective.tk:4000/new-api-container'
       }
     }
 

@@ -10,7 +10,7 @@
 ```
 yarn install
 yarn build:prod
-yarn start:prod
+yarn start:prod:debug
 ```
 
 > Note: setup a production.env file based on included test.env.

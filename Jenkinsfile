@@ -19,8 +19,8 @@ pipeline {
         }
       }
       steps {
+        sh 'test'
       }
     }
-
   }
 }

@@ -98,6 +98,7 @@ export class IntegrationHelper {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function fromHexString(hexString: string) {
     // @ts-ignore
     return new Uint8Array(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));

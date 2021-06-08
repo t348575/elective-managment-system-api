@@ -35,8 +35,7 @@ pipeline {
 
       }
       steps {
-        sh 'yarn test:unit'
-        sh 'yarn test:integration'
+        sh 'yarn test'
       }
     }
   }

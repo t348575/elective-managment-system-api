@@ -12,15 +12,20 @@ pipeline {
         sh 'sonar-scanner -Dsonar.login="6ffd0b5dfbc1cfaf150add2d6f65f22e450200ce"'
       }
     }
+
     stage('Integrate') {
       when {
         not {
           branch 'master'
         }
+
       }
       steps {
-        sh 'test'
+        sh '''yarn install
+yarn test:unit
+yarn test:integration'''
       }
     }
+
   }
 }

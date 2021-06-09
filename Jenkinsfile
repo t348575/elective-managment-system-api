@@ -47,13 +47,5 @@ pipeline {
         sh 'curl -d \'{ "user": "admin", "pwd": "$webhook_api" }\' -H \'Content-Type: application/json\' --request POST http://amrita-elective.tk:4000/new-api-container'
       }
     }
-    post {
-      success {
-        setBuildStatus("Build succeeded", "SUCCESS");
-      }
-      failure {
-        setBuildStatus("Build failed", "FAILURE");
-      }
-    }
   }
 }

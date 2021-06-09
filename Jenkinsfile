@@ -8,6 +8,18 @@ pipeline {
       }
     }
 
+    stage('Integrate') {
+      when {
+        not {
+          branch 'master'
+        }
+
+      }
+      steps {
+        sh 'yarn test'
+      }
+    }
+
     stage('Deploy') {
       when {
         branch 'master'
@@ -27,16 +39,11 @@ pipeline {
       }
     }
 
-    stage('Integrate') {
-      when {
-        not {
-          branch 'master'
-        }
-
-      }
+    stage('Cleanup') {
       steps {
-        sh 'yarn test'
+        cleanWs(cleanWhenAborted: true, cleanWhenFailure: true, cleanWhenNotBuilt: true, cleanWhenSuccess: true, cleanWhenUnstable: true, cleanupMatrixParent: true, deleteDirs: true, disableDeferredWipeout: true)
       }
     }
+
   }
 }

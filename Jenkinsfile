@@ -8,6 +8,18 @@ pipeline {
       }
     }
 
+    stage('Integrate') {
+      when {
+        not {
+          branch 'master'
+        }
+
+      }
+      steps {
+        sh 'yarn test'
+      }
+    }
+    
     stage('Deploy') {
       when {
         branch 'master'
@@ -26,19 +38,5 @@ pipeline {
         sh 'curl -d \'{ "user": "admin", "pwd": "$webhook_api" }\' -H \'Content-Type: application/json\' --request POST http://amrita-elective.tk:4000/new-api-container'
       }
     }
-
-    stage('Integrate') {
-      when {
-        not {
-          branch 'master'
-        }
-
-      }
-      steps {
-        sh 'yarn test:unit'
-        sh 'yarn test:integration'
-      }
-    }
-
   }
 }
